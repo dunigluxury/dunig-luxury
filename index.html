@@ -280,7 +280,7 @@
         // CONFIGURACIÓN DE TU ENLACE SUPABASE (VITRINA)
         // ==========================================
         const SUPABASE_URL = "https://dtjwvllldxpblhisblhq.supabase.co"; 
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0and2bGxsZHhwYmxoaXNibGhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzU4OTAsImV4cCI6MjA5NTY1MTg5MH0.SqzQXSmh1nAnlKpD39khgSQSokFeY_1Hp37PWX2RVsw";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0and2bGxsZHhwYmxoaXNibGhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzU4OTAsImV4cCI6MjA5NTY1MTg5MH0.SqzQXSmh1nAnlKpD39khgSQSokFeY_1Hp37PWX2RVsw"; 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // FUNCIÓN DE DESCARGA E INYECCIÓN EN TIEMPO REAL
@@ -354,6 +354,9 @@
                     }
                 };
 
+                // Cambio dinámico para leer p.titulo si p.nombre viene indefinido desde el panel
+                const nombreProducto = p.titulo || p.nombre || 'Producto VIP';
+
                 card.innerHTML = `
                     <div class="w-24 h-24 rounded-2xl bg-black border border-stone-950 overflow-hidden shrink-0 relative">
                         <img src="${fotoPrincipal}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
@@ -366,7 +369,7 @@
                     <div class="flex flex-col justify-between flex-1 min-w-0">
                         <div>
                             <span class="text-[8px] font-black text-gold tracking-widest uppercase block mb-1 opacity-70">${p.categoria || 'GENERAL'}</span>
-                            <h3 class="text-xs font-black text-white uppercase tracking-wide truncate">${p.nombre}</h3>
+                            <h3 class="text-xs font-black text-white uppercase tracking-wide truncate">${nombreProducto}</h3>
                             <p class="text-[11px] text-stone-400 mt-1 line-clamp-2 font-light">${p.descripcion || 'Sin descripción adicional disponible.'}</p>
                         </div>
                         <div class="flex items-center justify-between mt-2 pt-1 border-t border-stone-950/40">
@@ -387,10 +390,12 @@
             document.getElementById('vista-catalogo').classList.add('hidden');
             document.getElementById('vista-detalle-producto').classList.remove('hidden');
 
+            const nombreProducto = p.titulo || p.nombre || 'Producto VIP';
+
             document.getElementById('det-categoria').innerText = p.categoria || "GENERAL";
-            document.getElementById('det-titulo').innerText = p.nombre;
+            document.getElementById('det-titulo').innerText = nombreProducto;
             document.getElementById('det-precio').innerText = `$${parseFloat(p.precio).toFixed(2)}`;
-            document.getElementById('det-descripcion').innerText = p.descripcion || "Sin especificaciones de diseño provistas para este activo exclusivo.";
+            document.getElementById('det-descripcion').innerText = p.descripcion || "Sin especificaciones de designación provistas para este activo exclusivo.";
             document.getElementById('det-stock').innerText = `${p.stock || 1} unidades disponibles`;
 
             const imgVisor = document.getElementById('foto-principal-visor');
@@ -594,12 +599,14 @@
 
         function anadirAlCarrito(p) {
             const existe = carrito.find(item => item.id === p.id);
+            const nombreProducto = p.titulo || p.nombre || 'Producto VIP';
+            
             if(existe) {
                 existe.cantidad++;
             } else {
                 carrito.push({
                     id: p.id,
-                    nombre: p.nombre,
+                    nombre: nombreProducto,
                     precio: parseFloat(p.precio),
                     categoria: p.categoria || 'VIP',
                     imagen: (p.imagenes && p.imagenes.length > 0) ? p.imagenes[0] : '',
@@ -836,24 +843,54 @@
             }
         }
 
-        function enviarPedidoFinal() {
-            alert("¡Transacción Recibida con Éxito!\nSu orden ha sido transmitida de manera encriptada a nuestro sistema de despacho VIP.");
-            carrito = [];
-            comprobanteBase64 = "";
-            costoDelivery = 0;
-            kilometrosSimulados = 0;
+        // FUNCIÓN INTEGRADA DE TRANSMISIÓN DIRECTA A TU TABLA DE RECIBOS EN CLOUD SUPABASE
+        async function enviarPedidoFinal() {
+            const sub = calcularSubtotalCarrito();
+            const total = sub + (modalidadActualModal === 'delivery' ? costoDelivery : 0);
             
-            document.getElementById('modal-direccion-cliente').value = "";
-            document.getElementById('modal-referencia').value = "";
-            document.getElementById('modal-select-cuenta').value = "";
-            document.getElementById('txt-upload-status').innerText = "Cargar captura del comprobante";
-            document.getElementById('upload-status-box').className = "flex items-center gap-2 text-stone-400";
-            
-            mostrarDatosCuenta();
-            cerrarModalModalidad();
-            toggleCarrito();
-            actualizarInterfazCarrito();
-            regresarAlMenu();
+            // Compilación estructurada de la orden para auditoría manual posterior
+            const datosOrden = {
+                productos: JSON.stringify(carrito), 
+                subtotal: sub,
+                total: total,
+                modalidad: modalidadActualModal,
+                referencia: document.getElementById('modal-referencia').value.trim(),
+                comprobante_base64: comprobanteBase64, 
+                estado: 'Pendiente' 
+            };
+
+            try {
+                // Envío en tiempo real a Supabase
+                const { error } = await supabaseClient
+                    .from('ordenes_vip')
+                    .insert([datosOrden]);
+
+                if (error) throw error;
+
+                alert("¡Transacción Recibida con Éxito!\nSu comprobante ha sido registrado. Procesaremos su orden VIP a la brevedad.");
+                
+                // Limpieza del entorno local del carrito de compras
+                carrito = [];
+                comprobanteBase64 = "";
+                costoDelivery = 0;
+                kilometrosSimulados = 0;
+                
+                document.getElementById('modal-direccion-cliente').value = "";
+                document.getElementById('modal-referencia').value = "";
+                document.getElementById('modal-select-cuenta').value = "";
+                document.getElementById('txt-upload-status').innerText = "Cargar captura del comprobante";
+                document.getElementById('upload-status-box').className = "flex items-center gap-2 text-stone-400";
+                
+                mostrarDatosCuenta();
+                cerrarModalModalidad();
+                toggleCarrito();
+                actualizarInterfazCarrito();
+                regresarAlMenu();
+
+            } catch (err) {
+                console.error("Error transmitiendo a Supabase:", err);
+                alert("Error de enlace al transmitir el comprobante a la base de datos cloud. Verifique su conexión.");
+            }
         }
 
         // CARGA Y CONFIGURACIÓN INICIAL DEL ENTORNO DOM
