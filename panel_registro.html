@@ -111,7 +111,7 @@
             <div class="flex items-center gap-4">
                 <div id="plan-actual-badge" class="text-[9px] font-futurista uppercase tracking-widest bg-amber-500/5 border border-gold/20 px-4 py-2 rounded-xl text-stone-400 backdrop-blur-md flex items-center gap-2">
                     <i data-lucide="crown" class="w-3 h-3 text-amber-400"></i>
-                    Nodo Activo: <span id="nombre-plan-activo" class="text-amber-400 font-bold uppercase tracking-widest">Desconectado</span>
+                    Nodo Activo: <span id="nombre-plan-activo" class="text-amber-400 font-bold uppercase tracking-widest">Gratuito</span>
                 </div>
                 <button onclick="window.location.href='index.html'" class="p-3 rounded-xl border border-stone-800 text-stone-400 hover:text-white hover:border-stone-600 transition-all duration-300 cursor-pointer bg-stone-900/30 flex items-center gap-2 text-xs font-bold uppercase tracking-wider font-futurista">
                     <i data-lucide="terminal" class="w-4 h-4 text-amber-500"></i> Vitrina
@@ -134,40 +134,7 @@
         </div>
     </div>
 
-    <section id="seccion-login-supabase" class="max-w-xl w-full mx-auto px-4 py-12 relative z-10">
-        <div class="glass-panel p-8 rounded-3xl border border-amber-500/10 space-y-6 shadow-2xl relative overflow-hidden">
-            <div class="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent"></div>
-            
-            <div class="text-center space-y-2">
-                <div class="inline-flex badge-instagram p-2.5 rounded-xl shadow-lg text-white mb-2">
-                    <i data-lucide="instagram" class="w-6 h-6"></i>
-                </div>
-                <h2 class="font-futurista font-black text-sm uppercase tracking-[0.25em] text-white">Escáner de Identidad Bot</h2>
-                <p class="text-[10px] text-stone-400 max-w-xs mx-auto">Coloca tu cuenta de Instagram y el código cifrado enviado por nuestro Asistente Inteligente.</p>
-            </div>
-
-            <div class="space-y-4">
-                <div class="space-y-1.5">
-                    <label class="text-[9px] uppercase tracking-wider font-futurista text-amber-500 font-bold">Identidad Instagram</label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-3.5 text-stone-600 font-bold text-xs">@</span>
-                        <input type="text" id="verify-instagram" placeholder="tu_usuario" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 pl-8 rounded-xl focus:outline-none border-neon font-medium placeholder-stone-700">
-                    </div>
-                </div>
-
-                <div class="space-y-1.5">
-                    <label class="text-[9px] uppercase tracking-wider font-futurista text-amber-500 font-bold">Código Cuántico Privado</label>
-                    <input type="password" id="verify-password" placeholder="••••••••" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none border-neon font-medium placeholder-stone-700 tracking-widest">
-                </div>
-
-                <button onclick="verificarAccesoUsuarioSupabase()" class="w-full mt-4 bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-futurista font-black p-4 rounded-xl text-xs uppercase tracking-[0.15em] hover:brightness-110 shadow-lg shadow-amber-500/10 active:scale-[0.98] transition-all cursor-pointer">
-                    Establecer Enlace Seguro
-                </button>
-            </div>
-        </div>
-    </section>
-
-    <main id="seccion-catalogo" class="hidden max-w-7xl w-full mx-auto px-4 py-8 flex-grow grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
+    <main id="seccion-catalogo" class="max-w-7xl w-full mx-auto px-4 py-8 flex-grow grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
         <div class="space-y-6">
             <div class="glass-panel p-6 rounded-2xl space-y-4 shadow-2xl relative overflow-hidden">
                 <div class="flex items-center gap-2 text-amber-400 border-b border-stone-800/60 pb-3">
@@ -189,12 +156,12 @@
                         <i data-lucide="package-plus" class="w-5 h-5"></i>
                         <div>
                             <h3 class="font-futurista font-black text-xs uppercase tracking-[0.2em] text-white">Materializador de Productos</h3>
-                            <p class="text-[9px] text-stone-500 mt-0.5">Asignado a: @<span id="txt-owner-ig" class="text-stone-300 font-bold">ninguno</span></p>
+                            <p class="text-[9px] text-stone-500 mt-0.5">Asignado a: @<span id="txt-owner-ig" class="text-stone-300 font-bold">anonimo</span></p>
                         </div>
                     </div>
                     <div>
                         <div class="text-[9px] uppercase tracking-wider font-futurista text-stone-500 font-bold">Capacidad</div>
-                        <div class="text-xs font-black text-white font-futurista mt-0.5"><span id="txt-limite-actual" class="text-amber-400">0</span> / <span id="txt-limite-total">0</span> ITEMS</div>
+                        <div class="text-xs font-black text-white font-futurista mt-0.5"><span id="txt-limite-actual" class="text-amber-400">0</span> / <span id="txt-limite-total">3</span> ITEMS</div>
                     </div>
                 </div>
 
@@ -264,13 +231,15 @@
 
         let categoriasDB = ["General", "Calzado Premium", "Alta Costura"];
         let productosDB = [];
-        let sesionVIP = null;
+        
+        // Sesión automática por defecto en plan Gratuito con límite de 3 productos
+        let sesionVIP = {
+            plan: 'Gratuito',
+            limite: 3,
+            usuarioIG: 'anonimo'
+        };
 
         function cambiarPestana(target) {
-            if (!sesionVIP) {
-                alert("🔒 ACCESO RESTRINGIDO: Por favor pase el escáner de identidad primero.");
-                return;
-            }
             document.getElementById('seccion-catalogo').classList.add('hidden');
             document.getElementById('seccion-usuarios').classList.add('hidden');
             document.getElementById('seccion-suscripciones').classList.add('hidden');
@@ -278,84 +247,11 @@
             document.getElementById(`seccion-${target}`).classList.remove('hidden');
         }
 
-        // CONTROLADOR DE ACCESO GLOBAL
-        async function verificarAccesoUsuarioSupabase() {
-            const inputUser = document.getElementById('verify-instagram');
-            const inputPass = document.getElementById('verify-password');
-
-            let cuenta = inputUser.value.trim().toLowerCase();
-            const clavePlana = inputPass.value.trim();
-
-            if (!cuenta || !clavePlana) {
-                alert("Por favor ingrese su cuenta de Instagram y Clave Secreta.");
-                return;
-            }
-
-            if (cuenta.startsWith('@')) cuenta = cuenta.substring(1);
-
-            try {
-                // 1. Buscar si ya existe el usuario registrado por ManyChat
-                let { data: usuario, error } = await supabaseClient
-                    .from('usuarios_vip')
-                    .select('*')
-                    .eq('instagram', cuenta)
-                    .maybeSingle();
-
-                if (error) throw error;
-
-                // 2. Si NO existe, lo registramos automáticamente en caliente con la fecha de hoy
-                if (!usuario) {
-                    const { data: nuevoUser, error: insertError } = await supabaseClient
-                        .from('usuarios_vip')
-                        .insert([
-                            {
-                                instagram: cuenta,
-                                password_hash: clavePlana,
-                                fecha_registro: new Date().toISOString(),
-                                plan: 'Bronce',
-                                limite_productos: 3
-                            }
-                        ])
-                        .select()
-                        .single();
-
-                    if (insertError) throw insertError;
-                    usuario = nuevoUser;
-                }
-
-                // 3. Validar credenciales
-                if (usuario.password_hash === clavePlana) {
-                    alert(`🔓 ENLACE ESTABLECIDO\nBienvenido @${cuenta}`);
-                    
-                    sesionVIP = {
-                        plan: usuario.plan || 'Bronce',
-                        limite: usuario.limite_productos !== null ? usuario.limite_productos : 3,
-                        usuarioIG: cuenta
-                    };
-
-                    document.getElementById('seccion-login-supabase').classList.add('hidden');
-                    document.getElementById('seccion-catalogo').classList.remove('hidden');
-                    
-                    document.getElementById('nombre-plan-activo').innerText = sesionVIP.plan;
-                    document.getElementById('txt-owner-ig').innerText = cuenta;
-                    
-                    await descargarProductosDeSupabase();
-                } else {
-                    alert("🔒 ERROR DE SEGURIDAD: La clave digital no coincide.");
-                }
-
-            } catch (err) {
-                console.error("Fallo detallado:", err);
-                alert("Fallo crítico en el enlace cuántico con Supabase. Revisa las llaves.");
-            }
-        }
-
         async function descargarProductosDeSupabase() {
-            if(!sesionVIP) return;
+            // Se le quita el filtro selectivo para que cargue toda la matriz global directamente
             const { data, error } = await supabaseClient
                 .from('productos')
-                .select('*')
-                .eq('instagram_dueno', sesionVIP.usuarioIG);
+                .select('*');
 
             if (!error && data) {
                 productosDB = data;
@@ -365,10 +261,8 @@
         }
 
         async function inyectarProductoASupabase() {
-            if(!sesionVIP) return;
-
             if (productosDB.length >= sesionVIP.limite) {
-                alert(`⚠️ LÍMITE ALCANZADO: Tu plan solo te permite ${sesionVIP.limite} piezas.`);
+                alert(`⚠️ LÍMITE ALCANZADO: Tu plan actual solo te permite ${sesionVIP.limite} piezas. Envía tu comprobante para actualizar el límite.`);
                 return;
             }
 
@@ -467,7 +361,6 @@
         }
 
         function actualizarBadgesLimites() {
-            if(!sesionVIP) return;
             document.getElementById('txt-limite-actual').innerText = productosDB.length;
             document.getElementById('txt-limite-total').innerText = sesionVIP.limite;
         }
@@ -475,6 +368,13 @@
         window.addEventListener('DOMContentLoaded', () => {
             renderizarCategorias(); 
             lucide.createIcons();
+            
+            // Forzar actualización visual con la sesión abierta por defecto
+            document.getElementById('nombre-plan-activo').innerText = sesionVIP.plan;
+            document.getElementById('txt-owner-ig').innerText = sesionVIP.usuarioIG;
+            
+            // Descarga automática inmediata
+            descargarProductosDeSupabase();
         });
     </script>
 </body>
