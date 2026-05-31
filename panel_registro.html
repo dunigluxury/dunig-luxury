@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D'UNIG LUXURY - Panel de Control & Suscripciones Quantum-7000</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;700&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: radial-gradient(circle at 50% 0%, #1c1917 0%, #0c0a09 100%);
+            background-color: #030202;
+        }
+        .font-futurista, .font-future {
+            font-family: 'Orbitron', sans-serif;
+        }
+        .glow-gold {
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.15);
+        }
+        .glow-gold-intense {
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
+        }
+        .border-neon {
+            border-color: rgba(212, 175, 55, 0.2);
+        }
+        .border-neon:focus {
+            border-color: rgba(212, 175, 55, 1);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+        }
+        .text-gold { color: #e5c158; text-shadow: 0 0 12px rgba(229, 193, 88, 0.2); }
+        .bg-gold { background-color: #e5c158; }
+        .border-gold { border-color: rgba(229, 193, 88, 0.4); }
+
+        /* Glassmorphism avanzado */
+        .glass-panel, .quantum-card {
+            background: linear-gradient(135deg, rgba(28, 25, 23, 0.45) 0%, rgba(12, 10, 9, 0.6) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .quantum-card {
+            position: relative;
+        }
+        .quantum-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(to bottom, rgba(229, 193, 88, 0.1), rgba(255,255,255,0.01));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            transition: all 0.6s ease;
+        }
+        .quantum-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            box-shadow: 0 40px 80px -20px rgba(229, 193, 88, 0.08);
+        }
+        
+        .badge-instagram {
+            background: linear-gradient(135deg, #bc1888 0%, #dc2743 50%, #e5c158 100%);
+        }
+        .grid-bg {
+            background-image: linear-gradient(rgba(229, 193, 88, 0.01) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(229, 193, 88, 0.01) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #0c0a09; }
+        ::-webkit-scrollbar-thumb { background: #e5c158; border-radius: 10px; }
+
+        #quantum-avatar {
+            position: absolute;
+            width: 36px;
+            height: 36px;
+            z-index: 50;
+            pointer-events: none;
+            display: none;
+            transform: translate(-50%, -50%);
+            filter: drop-shadow(0 0 8px #e5c158) drop-shadow(0 0 20px rgba(229, 193, 88, 0.6));
+        }
+    </style>
+</head>
+<body class="text-stone-200 antialiased min-h-screen flex flex-col justify-between overflow-x-hidden grid-bg relative">
+
+    <div class="absolute top-0 left-1/4 w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-[160px] pointer-events-none"></div>
+
+    <header class="bg-black/40 backdrop-blur-xl border-b border-stone-900/80 sticky top-0 z-40 px-4">
+        <div class="max-w-7xl mx-auto h-24 flex items-center justify-between relative z-10">
+            <div class="flex items-center space-x-4">
+                <div class="border border-amber-500/30 p-3 rounded-xl bg-stone-950/80 glow-gold relative overflow-hidden group">
+                    <i data-lucide="cpu" class="w-7 h-7 text-amber-400 animate-pulse"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black tracking-[0.2em] text-white font-futurista">D'UNIG <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-500">LUXURY</span></h1>
+                    <p class="text-[9px] text-amber-500/70 uppercase tracking-[0.3em] font-bold font-futurista">SISTEMA OPERATIVO v7000</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div id="plan-actual-badge" class="text-[9px] font-futurista uppercase tracking-widest bg-amber-500/5 border border-gold/20 px-4 py-2 rounded-xl text-stone-400 backdrop-blur-md flex items-center gap-2">
+                    <i data-lucide="crown" class="w-3 h-3 text-amber-400"></i>
+                    Nodo Activo: <span id="nombre-plan-activo" class="text-amber-400 font-bold uppercase tracking-widest">Desconectado</span>
+                </div>
+                <button onclick="window.location.href='index.html'" class="p-3 rounded-xl border border-stone-800 text-stone-400 hover:text-white hover:border-stone-600 transition-all duration-300 cursor-pointer bg-stone-900/30 flex items-center gap-2 text-xs font-bold uppercase tracking-wider font-futurista">
+                    <i data-lucide="terminal" class="w-4 h-4 text-amber-500"></i> Vitrina
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl w-full mx-auto px-4 mt-8 relative z-10">
+        <div class="grid grid-cols-3 gap-3 bg-stone-950/80 p-1.5 rounded-xl border border-stone-900 max-w-xl backdrop-blur-md">
+            <button id="tab-btn-catalogo" onclick="cambiarPestana('catalogo')" class="py-3 text-center text-[11px] uppercase tracking-widest font-futurista font-black rounded-lg transition-all duration-300 cursor-pointer bg-gradient-to-r from-amber-500 to-amber-400 text-black shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2">
+                <i data-lucide="layers" class="w-4 h-4"></i> Catálogo
+            </button>
+            <button id="tab-btn-usuarios" onclick="cambiarPestana('usuarios')" class="py-3 text-center text-[11px] uppercase tracking-widest font-futurista font-bold text-stone-500 rounded-lg transition-all duration-300 cursor-pointer hover:text-stone-200 flex items-center justify-center gap-2">
+                <i data-lucide="shield-check" class="w-4 h-4"></i> Cripto-VIP
+            </button>
+            <button id="tab-btn-suscripciones" onclick="cambiarPestana('suscripciones')" class="py-3 text-center text-[11px] uppercase tracking-widest font-futurista font-bold text-stone-500 rounded-lg transition-all duration-300 cursor-pointer hover:text-stone-200 flex items-center justify-center gap-2">
+                <i data-lucide="orbit" class="w-4 h-4"></i> Suscripciones
+            </button>
+        </div>
+    </div>
+
+    <section id="seccion-login-supabase" class="max-w-xl w-full mx-auto px-4 py-12 relative z-10">
+        <div class="glass-panel p-8 rounded-3xl border border-amber-500/10 space-y-6 shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent"></div>
+            
+            <div class="text-center space-y-2">
+                <div class="inline-flex badge-instagram p-2.5 rounded-xl shadow-lg text-white mb-2">
+                    <i data-lucide="instagram" class="w-6 h-6"></i>
+                </div>
+                <h2 class="font-futurista font-black text-sm uppercase tracking-[0.25em] text-white">Escáner de Identidad Bot</h2>
+                <p class="text-[10px] text-stone-400 max-w-xs mx-auto">Coloca tu cuenta de Instagram y el código cifrado enviado por nuestro Asistente Inteligente.</p>
+            </div>
+
+            <div class="space-y-4">
+                <div class="space-y-1.5">
+                    <label class="text-[9px] uppercase tracking-wider font-futurista text-amber-500 font-bold">Identidad Instagram</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-3.5 text-stone-600 font-bold text-xs">@</span>
+                        <input type="text" id="verify-instagram" placeholder="tu_usuario" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 pl-8 rounded-xl focus:outline-none border-neon font-medium placeholder-stone-700">
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-[9px] uppercase tracking-wider font-futurista text-amber-500 font-bold">Código Cuántico Privado</label>
+                    <input type="password" id="verify-password" placeholder="••••••••" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none border-neon font-medium placeholder-stone-700 tracking-widest">
+                </div>
+
+                <button onclick="verificarAccesoUsuarioSupabase()" class="w-full mt-4 bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-futurista font-black p-4 rounded-xl text-xs uppercase tracking-[0.15em] hover:brightness-110 shadow-lg shadow-amber-500/10 active:scale-[0.98] transition-all cursor-pointer">
+                    Establecer Enlace Seguro
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <main id="seccion-catalogo" class="hidden max-w-7xl w-full mx-auto px-4 py-8 flex-grow grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
+        <div class="space-y-6">
+            <div class="glass-panel p-6 rounded-2xl space-y-4 shadow-2xl relative overflow-hidden">
+                <div class="flex items-center gap-2 text-amber-400 border-b border-stone-800/60 pb-3">
+                    <i data-lucide="tag" class="w-4 h-4"></i>
+                    <h3 class="font-futurista font-black text-xs uppercase tracking-[0.2em] text-white">Categorías Indexadas</h3>
+                </div>
+                <div class="space-y-2">
+                    <input type="text" id="cat-nombre" placeholder="Descriptor de categoría..." class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none border-neon font-medium">
+                    <button onclick="agregarCategoria()" class="w-full bg-stone-900 border border-stone-800 text-amber-400 font-futurista font-bold p-3 rounded-xl text-xs uppercase tracking-widest cursor-pointer">Inyectar Nodo</button>
+                </div>
+                <div id="lista-categorias" class="space-y-1.5 max-h-40 overflow-y-auto"></div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 space-y-6">
+            <div class="glass-panel p-6 lg:p-8 rounded-3xl space-y-6 shadow-2xl relative overflow-hidden">
+                <div class="flex justify-between items-center border-b border-stone-800/80 pb-4">
+                    <div class="flex items-center gap-2.5 text-amber-400">
+                        <i data-lucide="package-plus" class="w-5 h-5"></i>
+                        <div>
+                            <h3 class="font-futurista font-black text-xs uppercase tracking-[0.2em] text-white">Materializador de Productos</h3>
+                            <p class="text-[9px] text-stone-500 mt-0.5">Asignado a: @<span id="txt-owner-ig" class="text-stone-300 font-bold">ninguno</span></p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-[9px] uppercase tracking-wider font-futurista text-stone-500 font-bold">Capacidad</div>
+                        <div class="text-xs font-black text-white font-futurista mt-0.5"><span id="txt-limite-actual" class="text-amber-400">0</span> / <span id="txt-limite-total">0</span> ITEMS</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="text" id="prod-titulo" placeholder="Nombre de la pieza..." class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
+                    <select id="prod-categoria" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-stone-400 p-3.5 rounded-xl focus:outline-none"></select>
+                    <input type="number" id="prod-precio" step="0.01" placeholder="Precio ($)" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
+                    <input type="number" id="prod-stock" placeholder="Stock" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
+                    <div class="md:col-span-2">
+                        <textarea id="prod-descripcion" placeholder="Descripción..." rows="3" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none resize-none"></textarea>
+                    </div>
+                </div>
+                <button onclick="inyectarProductoASupabase()" class="w-full bg-amber-500 text-black font-futurista font-black p-4 rounded-xl text-xs uppercase tracking-[0.2em] cursor-pointer">Materializar Estructura</button>
+            </div>
+
+            <div class="glass-panel p-6 rounded-3xl space-y-4 shadow-2xl relative overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="border-b border-stone-900 text-stone-500 uppercase tracking-widest text-[9px] font-futurista">
+                                <th class="p-3">Objeto</th>
+                                <th class="p-3">Categoría</th>
+                                <th class="p-3">Precio</th>
+                                <th class="p-3 text-center">Stock</th>
+                                <th class="p-3 text-right">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-productos-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <main id="seccion-usuarios" class="hidden max-w-4xl w-full mx-auto px-4 py-8 flex-grow relative z-10">
+        <div class="glass-panel p-8 rounded-3xl border border-amber-500/10 space-y-6 shadow-2xl text-center relative overflow-hidden">
+            <h2 class="text-xl font-futurista font-black uppercase tracking-wider text-white">Consola de Control de Cuentas</h2>
+            <p class="text-xs text-stone-400">Database en vivo conectada bajo protocolo PostgreSQL.</p>
+        </div>
+    </main>
+
+    <main id="seccion-suscripciones" class="hidden max-w-5xl w-full mx-auto px-4 py-8 flex-grow relative z-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="quantum-card p-6 rounded-3xl space-y-2 bg-stone-900/40">
+            <h3 class="text-xl font-futurista font-black text-white">IMPULSO BRONCE</h3>
+            <div class="text-2xl font-black text-white font-futurista">$19.99</div>
+        </div>
+        <div class="quantum-card p-6 rounded-3xl space-y-2 bg-stone-900/40">
+            <h3 class="text-xl font-futurista font-black text-white">IMPULSO PLATA</h3>
+            <div class="text-2xl font-black text-white font-futurista">$39.99</div>
+        </div>
+        <div class="quantum-card p-6 rounded-3xl space-y-2 bg-stone-900/40">
+            <h3 class="text-xl font-futurista font-black text-white">IMPULSO ORO</h3>
+            <div class="text-2xl font-black text-white font-futurista">$79.99</div>
+        </div>
+    </main>
+
+    <footer class="border-t border-stone-950 bg-black/60 p-4 text-center text-[10px] text-stone-600 font-mono tracking-widest mt-12">
+        CORE DATA MATRIX CONTROL // 2026
+    </footer>
+
+    <script>
+        // CONFIGURACIÓN SUPABASE UNIFICADA
+        const SUPABASE_URL = "https://dtjwvllldxpblhisblhq.supabase.co"; 
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0and2bGxsZHhwYmxoaXNibGhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzU4OTAsImV4cCI6MjA5NTY1MTg5MH0.SqzQXSmh1nAnlKpD39khgSQSokFeY_1Hp37PWX2RVsw"; 
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let categoriasDB = ["General", "Calzado Premium", "Alta Costura"];
+        let productosDB = [];
+        let sesionVIP = null;
+
+        function cambiarPestana(target) {
+            if (!sesionVIP) {
+                alert("🔒 ACCESO RESTRINGIDO: Por favor pase el escáner de identidad primero.");
+                return;
+            }
+            document.getElementById('seccion-catalogo').classList.add('hidden');
+            document.getElementById('seccion-usuarios').classList.add('hidden');
+            document.getElementById('seccion-suscripciones').classList.add('hidden');
+            
+            document.getElementById(`seccion-${target}`).classList.remove('hidden');
+        }
+
+        // CONTROLADOR DE ACCESO GLOBAL
+        async function verificarAccesoUsuarioSupabase() {
+            const inputUser = document.getElementById('verify-instagram');
+            const inputPass = document.getElementById('verify-password');
+
+            let cuenta = inputUser.value.trim().toLowerCase();
+            const clavePlana = inputPass.value.trim();
+
+            if (!cuenta || !clavePlana) {
+                alert("Por favor ingrese su cuenta de Instagram y Clave Secreta.");
+                return;
+            }
+
+            if (cuenta.startsWith('@')) cuenta = cuenta.substring(1);
+
+            try {
+                // 1. Buscar si ya existe el usuario registrado por ManyChat
+                let { data: usuario, error } = await supabaseClient
+                    .from('usuarios_vip')
+                    .select('*')
+                    .eq('instagram', cuenta)
+                    .maybeSingle();
+
+                if (error) throw error;
+
+                // 2. Si NO existe, lo registramos automáticamente en caliente con la fecha de hoy
+                if (!usuario) {
+                    const { data: nuevoUser, error: insertError } = await supabaseClient
+                        .from('usuarios_vip')
+                        .insert([
+                            {
+                                instagram: cuenta,
+                                password_hash: clavePlana,
+                                fecha_registro: new Date().toISOString(),
+                                plan: 'Bronce',
+                                limite_productos: 3
+                            }
+                        ])
+                        .select()
+                        .single();
+
+                    if (insertError) throw insertError;
+                    usuario = nuevoUser;
+                }
+
+                // 3. Validar credenciales
+                if (usuario.password_hash === clavePlana) {
+                    alert(`🔓 ENLACE ESTABLECIDO\nBienvenido @${cuenta}`);
+                    
+                    sesionVIP = {
+                        plan: usuario.plan || 'Bronce',
+                        limite: usuario.limite_productos !== null ? usuario.limite_productos : 3,
+                        usuarioIG: cuenta
+                    };
+
+                    document.getElementById('seccion-login-supabase').classList.add('hidden');
+                    document.getElementById('seccion-catalogo').classList.remove('hidden');
+                    
+                    document.getElementById('nombre-plan-activo').innerText = sesionVIP.plan;
+                    document.getElementById('txt-owner-ig').innerText = cuenta;
+                    
+                    await descargarProductosDeSupabase();
+                } else {
+                    alert("🔒 ERROR DE SEGURIDAD: La clave digital no coincide.");
+                }
+
+            } catch (err) {
+                console.error("Fallo detallado:", err);
+                alert("Fallo crítico en el enlace cuántico con Supabase. Revisa las llaves.");
+            }
+        }
+
+        async function descargarProductosDeSupabase() {
+            if(!sesionVIP) return;
+            const { data, error } = await supabaseClient
+                .from('productos')
+                .select('*')
+                .eq('instagram_dueno', sesionVIP.usuarioIG);
+
+            if (!error && data) {
+                productosDB = data;
+                renderizarTablaProductos();
+                actualizarBadgesLimites();
+            }
+        }
+
+        async function inyectarProductoASupabase() {
+            if(!sesionVIP) return;
+
+            if (productosDB.length >= sesionVIP.limite) {
+                alert(`⚠️ LÍMITE ALCANZADO: Tu plan solo te permite ${sesionVIP.limite} piezas.`);
+                return;
+            }
+
+            const t = document.getElementById('prod-titulo').value.trim();
+            const c = document.getElementById('prod-categoria').value;
+            const p = parseFloat(document.getElementById('prod-precio').value);
+            const s = parseInt(document.getElementById('prod-stock').value);
+            const d = document.getElementById('prod-descripcion').value.trim();
+
+            if (!t || !p || isNaN(s)) {
+                alert("Por favor rellene los campos obligatorios.");
+                return;
+            }
+
+            try {
+                const { error } = await supabaseClient
+                    .from('productos')
+                    .insert([{
+                        titulo: t,
+                        categoria: c || "General",
+                        descripcion: d,
+                        precio: p,
+                        stock: s,
+                        instagram_dueno: sesionVIP.usuarioIG
+                    }]);
+
+                if (error) throw error;
+
+                alert("✨ ¡Objeto guardado en la nube!");
+                document.getElementById('prod-titulo').value = "";
+                document.getElementById('prod-precio').value = "";
+                document.getElementById('prod-stock').value = "";
+                document.getElementById('prod-descripcion').value = "";
+
+                await descargarProductosDeSupabase();
+            } catch (err) {
+                alert("Error al inyectar producto.");
+            }
+        }
+
+        async function eliminarProductoDeSupabase(idCloud) {
+            if(!confirm("¿Eliminar objeto?")) return;
+            try {
+                await supabaseClient.from('productos').delete().eq('id', idCloud);
+                await descargarProductosDeSupabase();
+            } catch(err) {
+                alert("Error al eliminar.");
+            }
+        }
+
+        function renderizarCategorias() {
+            const select = document.getElementById('prod-categoria');
+            const lista = document.getElementById('lista-categorias');
+            if(!select || !lista) return;
+            select.innerHTML = ""; lista.innerHTML = "";
+            categoriasDB.forEach(c => {
+                select.innerHTML += `<option value="${c}">${c}</option>`;
+                lista.innerHTML += `<div class="bg-stone-950/60 p-3 rounded-xl text-xs border border-stone-900 text-stone-400 font-medium">${c}</div>`;
+            });
+        }
+
+        function agregarCategoria() {
+            const inp = document.getElementById('cat-nombre');
+            const nom = inp.value.trim();
+            if(!nom) return;
+            if(!categoriasDB.includes(nom)) {
+                categoriasDB.push(nom);
+                inp.value = "";
+                renderizarCategorias();
+            }
+        }
+
+        function renderizarTablaProductos() {
+            const tbody = document.getElementById('tabla-productos-body');
+            if(!tbody) return;
+            tbody.innerHTML = "";
+
+            if(productosDB.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-stone-600 font-mono">No hay elementos en la nube.</td></tr>`;
+                return;
+            }
+
+            productosDB.forEach(p => {
+                tbody.innerHTML += `
+                    <tr class="border-b border-stone-900/40 font-medium">
+                        <td class="p-3 text-white font-bold">${p.titulo}</td>
+                        <td class="p-3 text-stone-400">${p.categoria}</td>
+                        <td class="p-3 text-amber-400 font-mono">$${parseFloat(p.precio).toFixed(2)}</td>
+                        <td class="p-3 text-center font-mono">${p.stock}</td>
+                        <td class="p-3 text-right">
+                            <button onclick="eliminarProductoDeSupabase(${p.id})" class="p-2 text-red-400 cursor-pointer">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function actualizarBadgesLimites() {
+            if(!sesionVIP) return;
+            document.getElementById('txt-limite-actual').innerText = productosDB.length;
+            document.getElementById('txt-limite-total').innerText = sesionVIP.limite;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderizarCategorias(); 
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
