@@ -275,28 +275,76 @@
         }
 
 
-        let baseProductos = [];
-let categoriasDB = []; // Empezamos vacío, Supabase lo llenará
-let filtroInstagram = "luxury_store";
+       let baseProductos = [];
+let categoriasDB = []; 
+let currentTenantId = null; // Nueva variable dinámica
 let fotosSliderArray = Array(5).fill("");
 let listaCuentas = [];
 
-        // VERIFICACIÓN DE SESIÓN AL CARGAR
+// VERIFICACIÓN DE SESIÓN Y CARGA DINÁMICA DE TENANT
 window.addEventListener('DOMContentLoaded', async () => { 
     const { data: { session } } = await supabaseClient.auth.getSession();
+    
     if (session) {
         document.getElementById('auth-modal').classList.add('hidden');
+        
+        // 1. Obtener el tenant_id del usuario desde la tabla profiles
+        const { data: profile, error: profileError } = await supabaseClient
+            .from('profiles')
+            .select('tenant_id')
+            .eq('id', session.user.id)
+            .single();
+            
+        if (profile && profile.tenant_id) {
+            currentTenantId = profile.tenant_id;
+            
+            // 2. Cargar datos específicos de este tenant
+            await descargarCategoriasDesdeSupabase(); 
+            await descargarAdicionales();
+            descargarCatalogoDeSupabase(); 
+            alternarCamposPago(); 
+            descargarCuentasPago(); 
+            renderizerInputsMatrizFotos(); 
+            lucide.createIcons();
+        } else {
+            console.error("Usuario sin tenant asignado:", profileError);
+            alert("Tu cuenta no tiene una empresa asignada. Contacta al administrador.");
+        }
     }
-    
-    // Carga de datos inicial
-    await descargarCategoriasDesdeSupabase(); 
-    await descargarAdicionales(); // Integrado
-    descargarCatalogoDeSupabase(); 
-    alternarCamposPago(); 
-    descargarCuentasPago(); 
-    renderizerInputsMatrizFotos(); 
-    lucide.createIcons(); 
 });
+
+// Ejemplo de cómo deben actualizarse tus funciones de carga (Aplica este patrón a todas)
+async function descargarCategoriasDesdeSupabase() {
+    if (!currentTenantId) return;
+
+    const { data, error } = await supabaseClient
+        .from('categorias')
+        .select('nombre')
+        .eq('tenant_id', currentTenantId); // Filtro Multi-tenant
+
+    if (data) {
+        categoriasDB = data.map(c => c.nombre);
+        renderizarCategorias(); 
+    }
+}
+
+// Ejemplo de cómo deben actualizarse tus funciones de inserción
+async function guardarCategoriaEnSupabase(nombreCategoria) {
+    if (!currentTenantId) return;
+
+    const { error } = await supabaseClient
+        .from('categorias')
+        .insert([{ 
+            nombre: nombreCategoria, 
+            tenant_id: currentTenantId // Guardamos el ID del tenant
+        }]);
+
+    if (!error) {
+        await descargarCategoriasDesdeSupabase();
+    } else {
+        alert("Error al guardar: " + error.message);
+    }
+}
 
 // AUTENTICACIÓN
 async function ejecutarLogin() {
@@ -320,7 +368,6 @@ async function ejecutarLogout() {
     location.reload();
 }
 
-// GESTIÓN DE ADICIONALES
 async function guardarAdicional() {
     const nombre = document.getElementById('add-nombre').value.trim();
     const precio = parseFloat(document.getElementById('add-precio').value);
@@ -335,7 +382,7 @@ async function guardarAdicional() {
         .insert([{ 
             nombre: nombre, 
             precio: precio, 
-            instagram_dueno: filtroInstagram 
+            tenant_id: currentTenantId // <-- CORRECTO
         }]);
 
     if (error) {
@@ -344,7 +391,7 @@ async function guardarAdicional() {
         alert("Adicional registrado con éxito.");
         document.getElementById('add-nombre').value = "";
         document.getElementById('add-precio').value = "";
-        descargarAdicionales(); // Recarga la tabla
+        descargarAdicionales(); // Recarga la lista
     }
 }
 
@@ -352,7 +399,7 @@ async function descargarAdicionales() {
     const { data, error } = await supabaseClient
         .from('adicionales')
         .select('*')
-        .eq('instagram_dueno', filtroInstagram);
+        .eq('tenant_id', currentTenantId);
 
     if (!error && data) {
         const lista = document.getElementById('lista-adicionales');
@@ -396,7 +443,7 @@ async function eliminarAdicional(id) {
         }
 
         async function descargarCatalogoDeSupabase() {
-            const { data, error } = await supabaseClient.from('productos').select('*').eq('instagram_dueno', filtroInstagram);
+            const { data, error } = await supabaseClient.from('productos').select('*').eq('tenant_id', currentTenantId)
             if (!error && data) { 
                 baseProductos = data; 
                 renderizarTablaProductosBackend(); 
@@ -406,7 +453,7 @@ async function eliminarAdicional(id) {
 
         function cambiarDuenoDeCanal() {
             const val = document.getElementById('owner-instagram-input').value.trim().toLowerCase();
-            if(val) { filtroInstagram = val; descargarCatalogoDeSupabase(); }
+            if(val) { currentTenantId = val; descargarCatalogoDeSupabase(); }
         }
 
         function renderizarTablaProductosBackend() {
@@ -439,10 +486,15 @@ async function eliminarAdicional(id) {
             const sliderValidos = fotosSliderArray.filter(f => f !== "");
 
             const payload = {
-                titulo: t, categoria: c || "General", descripcion: d, precio: p, stock: s,
-                instagram_dueno: filtroInstagram, imagen_url: sliderValidos[0] || "",
-                imagenes_slider: JSON.stringify(sliderValidos)
-            };
+    titulo: t, 
+    categoria: c || "General", 
+    descripcion: d, 
+    precio: p, 
+    stock: s,
+    tenant_id: currentTenantId, // <-- CORRECCIÓN: Usamos la nueva clave de tu tabla
+    imagen_url: sliderValidos[0] || "",
+    imagenes_slider: JSON.stringify(sliderValidos)
+};
 
             let error;
             if (idEdicion) { 
@@ -562,10 +614,14 @@ async function agregarCategoria() {
     const inp = document.getElementById('cat-nombre'); 
     const nom = inp.value.trim(); 
     
-    if(nom && !categoriasDB.includes(nom)) { 
+    // Aseguramos que currentTenantId esté presente antes de intentar insertar
+    if(nom && !categoriasDB.includes(nom) && currentTenantId) { 
         const { error } = await supabaseClient
             .from('categorias')
-            .insert([{ nombre: nom, instagram_dueno: filtroInstagram }]);
+            .insert([{ 
+                nombre: nom, 
+                tenant_id: currentTenantId // <-- CORRECCIÓN: Usamos la clave correcta
+            }]);
             
         if (!error) {
             inp.value = ""; 
@@ -573,16 +629,17 @@ async function agregarCategoria() {
         } else {
             alert("Error al guardar: " + error.message);
         }
+    } else if (!currentTenantId) {
+        alert("Error de sesión: No se pudo identificar la empresa.");
     }
 }
-
-// 3. Nueva función para eliminar
+// 3. Función corregida para eliminar
 async function eliminarCategoria(nombre) {
     const { error } = await supabaseClient
         .from('categorias')
         .delete()
         .eq('nombre', nombre)
-        .eq('instagram_dueno', filtroInstagram);
+        .eq('tenant_id', currentTenantId); // <--- CAMBIO AQUÍ: de instagram_dueno a tenant_id
 
     if (!error) {
         await descargarCategoriasDesdeSupabase(); // Recarga y renderiza
@@ -831,36 +888,48 @@ async function descargarAjusteWhatsApp() {
 }
 
         async function guardarAjusteWhatsAppEnSupabase() {
-            const num = document.getElementById('config-whatsapp-num').value.trim().replace(/[^0-9]/g, "");
-            if(!num || num.length < 10) { alert("Ingrese un número válido con código de país."); return; }
+    const num = document.getElementById('config-whatsapp-num').value.trim().replace(/[^0-9]/g, "");
+    if(!num || num.length < 10) { alert("Ingrese un número válido."); return; }
 
-            const { error } = await supabaseClient
-                .from('ajustes_sistema')
-                .upsert({ id: 'whatsapp_notificaciones', valor: num, updated_at: new Date().toISOString() });
+    const { error } = await supabaseClient
+        .from('ajustes_sistema')
+        .upsert({ 
+            id: 'whatsapp_notificaciones', 
+            valor: num, 
+            tenant_id: currentTenantId, // VINCULADO AL TENANT
+            updated_at: new Date().toISOString() 
+        });
 
-            if(!error) { alert("¡Canal WhatsApp guardado con éxito!"); } else { alert("Error al guardar: " + error.message); }
-        }
+    if(!error) { alert("¡Guardado con éxito!"); } else { alert("Error: " + error.message); }
+}
 // Cargar categorías reales desde Supabase
 async function descargarCategoriasDesdeSupabase() {
+    if (!currentTenantId) return;
+
     const { data, error } = await supabaseClient
         .from('categorias')
         .select('nombre')
-        .eq('instagram_dueno', filtroInstagram);
+        .eq('tenant_id', currentTenantId);
 
     if (data) {
         categoriasDB = data.map(c => c.nombre);
-        renderizarCategorias(); // Ahora renderiza lo que viene de la BD
+        renderizarCategorias(); 
     }
 }
 
 // Guardar nueva categoría en Supabase
 async function guardarCategoriaEnSupabase(nombreCategoria) {
+    if (!currentTenantId) return;
+
     const { error } = await supabaseClient
         .from('categorias')
-        .insert([{ nombre: nombreCategoria, instagram_dueno: filtroInstagram }]);
+        .insert([{ 
+            nombre: nombreCategoria, 
+            tenant_id: currentTenantId 
+        }]);
 
     if (!error) {
-        await descargarCategoriasDesdeSupabase(); // Recarga todo al terminar
+        await descargarCategoriasDesdeSupabase();
     } else {
         alert("Error al guardar: " + error.message);
     }
@@ -879,10 +948,10 @@ async function guardarAdicional() {
     const { error } = await supabaseClient
         .from('adicionales')
         .insert([{ 
-            nombre: nombre, 
-            precio: precio, 
-            instagram_dueno: filtroInstagram 
-        }]);
+    nombre: ..., 
+    precio: ..., 
+    tenant_id: currentTenantId // <-- ESTO ES LO MÁS IMPORTANTE
+}])
 
     if (error) {
         alert("Error al guardar adicional: " + error.message);
@@ -897,7 +966,7 @@ async function descargarAdicionales() {
     const { data, error } = await supabaseClient
         .from('adicionales')
         .select('*')
-        .eq('instagram_dueno', filtroInstagram);
+        .eq('tenant_id', currentTenantId); // <--- CORRECCIÓN AQUÍ
 
     if (!error && data) {
         const lista = document.getElementById('lista-adicionales');
@@ -912,9 +981,13 @@ async function descargarAdicionales() {
     }
 }
 
-// Eliminar adicional
 async function eliminarAdicional(id) {
-    const { error } = await supabaseClient.from('adicionales').delete().eq('id', id);
+    const { error } = await supabaseClient
+        .from('adicionales')
+        .delete()
+        .eq('id', id)
+        .eq('tenant_id', currentTenantId); // <--- CORRECCIÓN AQUÍ
+
     if (!error) {
         descargarAdicionales();
     } else {
