@@ -81,6 +81,23 @@
                 </div>
                 <div id="lista-categorias" class="space-y-1.5 max-h-40 overflow-y-auto"></div>
             </div>
+<!-- Formulario de Adicionales -->
+<div class="glass-panel p-6 rounded-2xl space-y-4 shadow-2xl mt-6">
+    <div class="flex items-center gap-2 text-amber-400 border-b border-stone-800/60 pb-3">
+        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+        <h3 class="font-futurista font-black text-xs uppercase tracking-[0.2em] text-white">Adicionales</h3>
+    </div>
+    <div class="space-y-2">
+        <input type="text" id="add-nombre" placeholder="Nombre (Ej: Extra Salsa)" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
+        <input type="number" id="add-precio" placeholder="Precio ($)" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
+        <button onclick="guardarAdicional()" class="w-full bg-stone-900 border border-stone-800 text-amber-400 font-futurista font-bold p-3 rounded-xl text-xs uppercase tracking-widest cursor-pointer hover:bg-stone-800">Inyectar Adicional</button>
+    </div>
+
+</div>
+<div class="border-t border-stone-900 pt-4 mt-4">
+    <h4 class="font-futurista font-bold text-[10px] uppercase text-amber-400/80 tracking-wider mb-2">Adicionales Registrados</h4>
+    <div id="lista-adicionales" class="space-y-1.5 max-h-40 overflow-y-auto"></div>
+</div>
 
             <div class="glass-panel p-6 rounded-2xl space-y-4 shadow-2xl">
                 <div class="flex items-center gap-2 text-amber-400 border-b border-stone-800/60 pb-3">
@@ -265,44 +282,101 @@ let fotosSliderArray = Array(5).fill("");
 let listaCuentas = [];
 
         // VERIFICACIÓN DE SESIÓN AL CARGAR
-        window.addEventListener('DOMContentLoaded', async () => { 
+window.addEventListener('DOMContentLoaded', async () => { 
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (session) {
         document.getElementById('auth-modal').classList.add('hidden');
     }
     
-    // Nueva función que crearemos abajo
+    // Carga de datos inicial
     await descargarCategoriasDesdeSupabase(); 
-    
+    await descargarAdicionales(); // Integrado
     descargarCatalogoDeSupabase(); 
     alternarCamposPago(); 
     descargarCuentasPago(); 
-    // renderizarCategorias(); // Ya no la llamas aquí, la llamaremos al descargar los datos
     renderizerInputsMatrizFotos(); 
     lucide.createIcons(); 
 });
 
-        // AUTENTICACIÓN
-        async function ejecutarLogin() {
-            const email = document.getElementById('auth-email').value;
-            const password = document.getElementById('auth-pass').value;
+// AUTENTICACIÓN
+async function ejecutarLogin() {
+    const email = document.getElementById('auth-email').value;
+    const password = document.getElementById('auth-pass').value;
 
-            const { data, error } = await supabaseClient.auth.signInWithPassword({
-                email: email,
-                password: password,
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password,
+    });
+
+    if (error) {
+        alert("Acceso denegado: " + error.message);
+    } else {
+        document.getElementById('auth-modal').classList.add('hidden');
+    }
+}
+
+async function ejecutarLogout() {
+    await supabaseClient.auth.signOut();
+    location.reload();
+}
+
+// GESTIÓN DE ADICIONALES
+async function guardarAdicional() {
+    const nombre = document.getElementById('add-nombre').value.trim();
+    const precio = parseFloat(document.getElementById('add-precio').value);
+
+    if (!nombre || isNaN(precio)) {
+        alert("Por favor, ingresa un nombre y un precio válido.");
+        return;
+    }
+
+    const { error } = await supabaseClient
+        .from('adicionales')
+        .insert([{ 
+            nombre: nombre, 
+            precio: precio, 
+            instagram_dueno: filtroInstagram 
+        }]);
+
+    if (error) {
+        alert("Error al guardar adicional: " + error.message);
+    } else {
+        alert("Adicional registrado con éxito.");
+        document.getElementById('add-nombre').value = "";
+        document.getElementById('add-precio').value = "";
+        descargarAdicionales(); // Recarga la tabla
+    }
+}
+
+async function descargarAdicionales() {
+    const { data, error } = await supabaseClient
+        .from('adicionales')
+        .select('*')
+        .eq('instagram_dueno', filtroInstagram);
+
+    if (!error && data) {
+        const lista = document.getElementById('lista-adicionales');
+        if (lista) {
+            lista.innerHTML = "";
+            data.forEach(a => {
+                lista.innerHTML += `
+                    <div class="bg-stone-950/60 p-3 rounded-xl text-xs border border-stone-900 text-stone-400 flex justify-between items-center">
+                        <span>${a.nombre} - <span class="text-amber-400">$${a.precio}</span></span>
+                        <button onclick="eliminarAdicional(${a.id})" class="text-red-500 hover:text-red-300 ml-2 font-bold">✕</button>
+                    </div>`;
             });
-
-            if (error) {
-                alert("Acceso denegado: " + error.message);
-            } else {
-                document.getElementById('auth-modal').classList.add('hidden');
-            }
         }
+    }
+}
 
-        async function ejecutarLogout() {
-            await supabaseClient.auth.signOut();
-            location.reload();
-        }
+async function eliminarAdicional(id) {
+    const { error } = await supabaseClient.from('adicionales').delete().eq('id', id);
+    if (!error) {
+        descargarAdicionales();
+    } else {
+        alert("Error al eliminar: " + error.message);
+    }
+}
 
         // CONTROL NAV DEL PANEL
         function cambiarSeccionPanel(target) {
@@ -789,6 +863,62 @@ async function guardarCategoriaEnSupabase(nombreCategoria) {
         await descargarCategoriasDesdeSupabase(); // Recarga todo al terminar
     } else {
         alert("Error al guardar: " + error.message);
+    }
+}
+
+// Función para guardar adicionales
+async function guardarAdicional() {
+    const nombre = document.getElementById('add-nombre').value.trim();
+    const precio = parseFloat(document.getElementById('add-precio').value);
+
+    if (!nombre || isNaN(precio)) {
+        alert("Por favor, ingresa un nombre y un precio válido.");
+        return;
+    }
+
+    const { error } = await supabaseClient
+        .from('adicionales')
+        .insert([{ 
+            nombre: nombre, 
+            precio: precio, 
+            instagram_dueno: filtroInstagram 
+        }]);
+
+    if (error) {
+        alert("Error al guardar adicional: " + error.message);
+    } else {
+        alert("Adicional registrado con éxito.");
+        document.getElementById('add-nombre').value = "";
+        document.getElementById('add-precio').value = "";
+    }
+}
+// Descargar y mostrar adicionales
+async function descargarAdicionales() {
+    const { data, error } = await supabaseClient
+        .from('adicionales')
+        .select('*')
+        .eq('instagram_dueno', filtroInstagram);
+
+    if (!error && data) {
+        const lista = document.getElementById('lista-adicionales');
+        lista.innerHTML = "";
+        data.forEach(a => {
+            lista.innerHTML += `
+                <div class="bg-stone-950/60 p-3 rounded-xl text-xs border border-stone-900 text-stone-400 flex justify-between items-center">
+                    <span>${a.nombre} - <span class="text-amber-400">$${a.precio}</span></span>
+                    <button onclick="eliminarAdicional(${a.id})" class="text-red-500 hover:text-red-300 ml-2 font-bold">✕</button>
+                </div>`;
+        });
+    }
+}
+
+// Eliminar adicional
+async function eliminarAdicional(id) {
+    const { error } = await supabaseClient.from('adicionales').delete().eq('id', id);
+    if (!error) {
+        descargarAdicionales();
+    } else {
+        alert("Error al eliminar: " + error.message);
     }
 }
 
