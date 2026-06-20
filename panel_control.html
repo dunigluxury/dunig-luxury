@@ -276,8 +276,8 @@
 
 
        let baseProductos = [];
-let categoriasDB = []; 
-let currentTenantId = null; // Nueva variable dinámica
+let categoriasDB = [];
+let currentTenantId = null; // Reemplazo de filtroInstagram
 let fotosSliderArray = Array(5).fill("");
 let listaCuentas = [];
 
@@ -367,10 +367,10 @@ async function ejecutarLogout() {
     await supabaseClient.auth.signOut();
     location.reload();
 }
-
-async function guardarAdicional() {
+    async function guardarAdicional() {
     const nombre = document.getElementById('add-nombre').value.trim();
-    const precio = parseFloat(document.getElementById('add-precio').value);
+    cons
+t precio = parseFloat(document.getElementById('add-precio').value);
 
     if (!nombre || isNaN(precio)) {
         alert("Por favor, ingresa un nombre y un precio válido.");
