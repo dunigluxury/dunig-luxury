@@ -346,11 +346,11 @@ async function guardarCategoriaEnSupabase(nombreCategoria) {
     }
 }
 
-// AUTENTICACIÓN
 async function ejecutarLogin() {
     const email = document.getElementById('auth-email').value;
     const password = document.getElementById('auth-pass').value;
 
+    // 1. Intentar hacer login
     const { data, error } = await supabaseClient.auth.signInWithPassword({
         email: email,
         password: password,
@@ -358,40 +358,30 @@ async function ejecutarLogin() {
 
     if (error) {
         alert("Acceso denegado: " + error.message);
-    } else {
-        document.getElementById('auth-modal').classList.add('hidden');
-    }
-}
-
-async function ejecutarLogout() {
-    await supabaseClient.auth.signOut();
-    location.reload();
-}
-    async function guardarAdicional() {
-    const nombre = document.getElementById('add-nombre').value.trim();
-    cons
-t precio = parseFloat(document.getElementById('add-precio').value);
-
-    if (!nombre || isNaN(precio)) {
-        alert("Por favor, ingresa un nombre y un precio válido.");
         return;
     }
 
-    const { error } = await supabaseClient
-        .from('adicionales')
-        .insert([{ 
-            nombre: nombre, 
-            precio: precio, 
-            tenant_id: currentTenantId // <-- CORRECTO
-        }]);
+    // 2. Si el login es exitoso, buscamos su tenant_id
+    const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('tenant_id')
+        .eq('id', data.user.id)
+        .single();
 
-    if (error) {
-        alert("Error al guardar adicional: " + error.message);
+    if (profile) {
+        currentTenantId = profile.tenant_id;
+        document.getElementById('auth-modal').classList.add('hidden');
+        
+        // 3. Cargamos los datos del tenant apenas entra
+        await descargarCategoriasDesdeSupabase();
+        descargarCatalogoDeSupabase();
+        await descargarAdicionales();
+        descargarCuentasPago();
+        
+        console.log("Tenant cargado:", currentTenantId);
     } else {
-        alert("Adicional registrado con éxito.");
-        document.getElementById('add-nombre').value = "";
-        document.getElementById('add-precio').value = "";
-        descargarAdicionales(); // Recarga la lista
+        alert("Tu usuario no tiene una empresa (tenant) asignada. Contacta a soporte.");
+        await supabaseClient.auth.signOut(); // Por seguridad, si no tiene perfil, lo sacamos
     }
 }
 
