@@ -21,92 +21,107 @@
 </head>
 <body class="text-stone-200 antialiased min-h-screen flex flex-col justify-between grid-bg relative">
 
-    <header class="bg-black/40 backdrop-blur-xl border-b border-stone-900/80 sticky top-0 z-40 px-4">
-        <div class="max-w-7xl mx-auto h-24 flex items-center justify-between relative z-10">
-            <div class="flex items-center space-x-4 cursor-pointer" onclick="irAPantallaVitrina()">
-                <div class="border border-amber-500/30 p-3 rounded-xl bg-stone-950/80 glow-gold"><i data-lucide="cpu" class="w-7 h-7 text-amber-400"></i></div>
-                <div>
-                    <h1 class="text-2xl font-black tracking-[0.2em] text-white font-futurista">D'UNIG <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-500">LUXURY</span></h1>
-                    <p class="text-[9px] text-amber-500/70 uppercase tracking-[0.3em] font-bold font-futurista">SISTEMA INTEGRADO v7000</p>
-                </div>
+    <header class="bg-black/40 backdrop-blur-xl border-b border-stone-900/80 sticky top-0 z-40 px-2">
+    <div class="max-w-7xl mx-auto h-20 flex items-center justify-center relative">
+        
+        <div class="flex items-center gap-3 cursor-pointer shrink-0" onclick="irAPantallaVitrina()">
+            <div class="border border-amber-500/30 p-2 rounded-xl bg-stone-950/80 glow-gold">
+                <i data-lucide="cpu" class="w-6 h-6 text-amber-400"></i>
             </div>
             
-            <div class="flex items-center gap-3">
-                <button onclick="irAPantallaCarrito()" class="relative bg-stone-900 hover:bg-stone-800 border border-amber-500/20 p-3 rounded-xl flex items-center gap-2 cursor-pointer transition-all">
-                    <i data-lucide="shopping-cart" class="w-4 h-4 text-amber-400"></i>
-                    <span class="text-xs font-futurista font-bold text-white">CARRITO VIP</span>
-                    <span id="contador-carrito-global" class="bg-amber-500 text-black font-mono text-[10px] font-black px-2 py-0.5 rounded-md">0</span>
-                </button>
-                <button onclick="irAPantallaVitrina()" class="p-3 rounded-xl border border-stone-800 text-stone-400 hover:text-white transition-all text-xs font-bold uppercase tracking-wider font-futurista bg-stone-900/30 flex items-center gap-2 cursor-pointer">
-                    <i data-lucide="terminal" class="w-4 h-4 text-amber-500"></i> Vitrina
-                </button>
-                
+            <div class="text-center">
+                <h1 class="text-lg sm:text-xl font-black tracking-[0.15em] text-white font-futurista">
+                    D'UNIG <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-500">LUXURY</span>
+                </h1>
+                <p class="hidden sm:block text-[8px] text-amber-500/70 uppercase tracking-[0.25em] font-bold font-futurista">
+                    SISTEMA INTEGRADO v7000
+                </p>
             </div>
         </div>
-    </header>
+
+        <div class="absolute right-2 flex items-center gap-2">
+            <button onclick="irAPantallaCarrito()" class="bg-stone-900 border border-amber-500/20 p-2 rounded-lg flex items-center gap-1">
+                <i data-lucide="shopping-cart" class="w-4 h-4 text-amber-400"></i>
+                <span id="contador-carrito-global" class="bg-amber-500 text-black font-mono text-[10px] font-black px-1.5 rounded">0</span>
+            </button>
+        </div>
+    </div>
+</header>
 
     <main id="pantalla-vitrina" class="max-w-7xl w-full mx-auto px-4 py-8 flex-grow space-y-8 relative z-10">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-stone-950/60 p-4 rounded-2xl border border-stone-900">
-            <div>
-                <h2 class="text-xs uppercase font-futurista font-black tracking-widest text-amber-400">Colecciones Activas</h2>
-                <p class="text-xs text-stone-400">Explora piezas exclusivas indexadas en tiempo real</p>
-            </div>
-            <div class="flex items-center gap-2 bg-stone-900/50 px-3 py-1.5 rounded-xl border border-stone-800">
-                <span class="text-xs text-stone-500">Canal:</span>
-                <input type="text" id="vitrina-owner-input" value="luxury_store" oninput="actualizarFiltroVitrina()" class="bg-transparent border-none text-xs font-bold text-white focus:outline-none w-32">
-            </div>
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-stone-950/60 p-6 rounded-2xl border border-stone-900">
+        
+        <div>
+            <h2 class="text-xl sm:text-2xl font-black text-white font-futurista tracking-widest uppercase">
+                MENÚ DIGITAL
+            </h2>
+            <p class="text-[10px] sm:text-xs text-amber-500/70 font-bold uppercase tracking-[0.2em] mt-1">
+                
+            </p>
         </div>
-        <div id="grid-productos-vitrina" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-    </main>
+
+        <div class="bg-stone-900/50 px-4 py-2 rounded-xl border border-stone-800 flex items-center gap-2">
+            <span class="text-[10px] text-stone-500 font-bold uppercase tracking-widest">Canal:</span>
+            <span class="text-xs font-black text-amber-400 tracking-wider font-futurista uppercase">LUXURY_STORE</span>
+        </div>
+        
+    </div>
+
+    <div id="grid-productos-vitrina" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+</main>
 
     <main id="pantalla-detalle" class="hidden max-w-7xl w-full mx-auto px-4 py-8 flex-grow relative z-10">
-        <button onclick="irAPantallaVitrina()" class="mb-6 flex items-center gap-2 text-xs font-futurista uppercase tracking-widest text-stone-400 hover:text-amber-400 font-bold cursor-pointer transition-colors">
-            <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Catálogo
-        </button>
+    <button onclick="irAPantallaVitrina()" class="mb-6 flex items-center gap-2 text-xs font-futurista uppercase tracking-widest text-stone-400 hover:text-amber-400 font-bold cursor-pointer transition-colors">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Catálogo
+    </button>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            <div class="lg:col-span-6 space-y-4">
-                <div class="relative group rounded-3xl overflow-hidden bg-stone-950 border border-stone-900 shadow-2xl aspect-video flex items-center justify-center">
-                    <div id="contenedor-media-principal" class="w-full h-full flex items-center justify-center bg-black cursor-zoom-in" onclick="amplificarFotoActual()">
-                        <img id="detalle-visor-principal" src="" alt="Visor Principal" class="w-full h-full object-cover transition-transform duration-300">
-                    </div>
-                    <div class="absolute top-4 right-4 z-20">
-                        <button onclick="amplificarFotoActual()" class="bg-black/80 backdrop-blur-md hover:bg-amber-500 hover:text-black border border-amber-500/40 text-amber-400 px-4 py-2.5 rounded-xl text-[10px] font-futurista font-black tracking-widest uppercase flex items-center gap-2 shadow-2xl transition-all cursor-pointer">
-                            <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Amplificar Foto
-                        </button>
-                    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div class="lg:col-span-6 space-y-4">
+            <div class="relative group rounded-3xl overflow-hidden bg-stone-950 border border-stone-900 shadow-2xl aspect-video flex items-center justify-center">
+                <div id="contenedor-media-principal" class="w-full h-full flex items-center justify-center bg-black cursor-zoom-in" onclick="amplificarFotoActual()">
+                    <img id="detalle-visor-principal" src="" alt="Visor Principal" class="w-full h-full object-cover transition-transform duration-300">
                 </div>
-                <div id="detalle-contenedor-miniaturas" class="grid grid-cols-5 gap-2"></div>
-            </div>
-
-            <div class="lg:col-span-6 glass-panel p-6 lg:p-8 rounded-3xl space-y-6 shadow-2xl">
-                <div>
-                    <span id="detalle-categoria" class="text-[10px] uppercase tracking-[0.2em] font-futurista font-black text-amber-400 bg-amber-500/5 px-2.5 py-1 rounded-md border border-amber-500/10">CATEGORÍA</span>
-                    <h2 id="detalle-titulo" class="text-2xl lg:text-3xl font-black font-futurista text-white mt-3 tracking-wide">Título del Producto</h2>
-                    <p id="detalle-precio" class="text-xl font-mono text-amber-400 font-bold mt-1">$0.00</p>
-                </div>
-                <div class="border-t border-stone-900 pt-4 space-y-2">
-                    <h4 class="text-[9px] uppercase tracking-widest text-stone-500 font-bold font-futurista">Características & Detalles:</h4>
-                    <p id="detalle-descripcion" class="text-xs text-stone-400 leading-relaxed min-h-12">Procesando descripción...</p>
-                </div>
-                <div class="grid grid-cols-2 gap-4 border-t border-stone-900 pt-4">
-                    <div>
-                        <span class="text-[9px] uppercase text-stone-500 font-bold block">Disponibilidad:</span>
-                        <span id="detalle-stock" class="text-xs text-white font-bold">0 unidades</span>
-                    </div>
-                    <div>
-                        <span class="text-[9px] uppercase text-stone-500 font-bold block">Autenticidad VIP:</span>
-                        <span class="text-xs text-green-400 font-bold flex items-center gap-1"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Certificada</span>
-                    </div>
-                </div>
-                <div class="pt-2">
-                    <button onclick="agregarAlCarritoYVolver()" class="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-futurista font-black py-4 px-6 rounded-xl text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-2 cursor-pointer shadow-lg transition-all duration-300">
-                        <i data-lucide="shopping-bag" class="w-4 h-4"></i> AÑADIR A LA BOLSA VIP
+                <div class="absolute top-4 right-4 z-20">
+                    <button onclick="amplificarFotoActual()" class="bg-black/80 backdrop-blur-md hover:bg-amber-500 hover:text-black border border-amber-500/40 text-amber-400 px-4 py-2.5 rounded-xl text-[10px] font-futurista font-black tracking-widest uppercase flex items-center gap-2 shadow-2xl transition-all cursor-pointer">
+                        <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Amplificar Foto
                     </button>
                 </div>
             </div>
+            <div id="detalle-contenedor-miniaturas" class="grid grid-cols-5 gap-2"></div>
         </div>
-    </main>
+
+        <div class="lg:col-span-6 glass-panel p-6 lg:p-8 rounded-3xl space-y-6 shadow-2xl">
+            <div>
+                <span id="detalle-categoria" class="text-[10px] uppercase tracking-[0.2em] font-futurista font-black text-amber-400 bg-amber-500/5 px-2.5 py-1 rounded-md border border-amber-500/10">CATEGORÍA</span>
+                <h2 id="detalle-titulo" class="text-2xl lg:text-3xl font-black font-futurista text-white mt-3 tracking-wide">Título del Producto</h2>
+                <p id="detalle-precio" class="text-xl font-mono text-amber-400 font-bold mt-1">$0.00</p>
+            </div>
+            
+            <div class="border-t border-stone-900 pt-4 space-y-2">
+                <h4 class="text-[9px] uppercase tracking-widest text-stone-500 font-bold font-futurista">Características & Detalles:</h4>
+                <p id="detalle-descripcion" class="text-xs text-stone-400 leading-relaxed min-h-12">Procesando descripción...</p>
+            </div>
+
+            <div id="contenedor-adicionales" class="w-full"></div>
+
+            <div class="grid grid-cols-2 gap-4 border-t border-stone-900 pt-4">
+                <div>
+                    <span class="text-[9px] uppercase text-stone-500 font-bold block">Disponibilidad:</span>
+                    <span id="detalle-stock" class="text-xs text-white font-bold">0 unidades</span>
+                </div>
+                <div>
+                    <span class="text-[9px] uppercase text-stone-500 font-bold block">Autenticidad VIP:</span>
+                    <span class="text-xs text-green-400 font-bold flex items-center gap-1"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Certificada</span>
+                </div>
+            </div>
+            <div class="pt-2">
+                <button onclick="agregarAlCarritoYVolver()" class="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-futurista font-black py-4 px-6 rounded-xl text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-2 cursor-pointer shadow-lg transition-all duration-300">
+                    <i data-lucide="shopping-bag" class="w-4 h-4"></i> AÑADIR A LA BOLSA VIP
+                </button>
+            </div>
+        </div>
+    </div>
+</main>
 
     <main id="pantalla-carrito" class="hidden max-w-7xl w-full mx-auto px-4 py-8 flex-grow relative z-10 grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
         <section class="lg:col-span-3 glass-panel p-5 rounded-2xl shadow-2xl border border-stone-900/60">
@@ -152,34 +167,6 @@
                     <input type="text" id="carrito-input-referencia" placeholder="Ej: REF-77001" class="w-full bg-stone-900 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none focus:border-amber-400/40 font-mono tracking-wider">
                 </div>
 
-                <div class="space-y-1.5">
-                    <label class="text-[9px] uppercase text-stone-400 font-bold tracking-widest block font-futurista">3. Adjuntar Capture de Pantalla</label>
-                    <div id="container-capture-pago" class="relative group border border-dashed border-stone-800 hover:border-amber-500/40 bg-stone-900/40 rounded-xl transition-all overflow-hidden h-20 flex items-center justify-center">
-                        
-                        <label id="label-upload-capture" class="w-full h-full flex flex-col items-center justify-center cursor-pointer text-[9px] text-stone-500 font-mono gap-1 group-hover:text-stone-300">
-                            <i data-lucide="image-plus" class="w-4 h-4 text-stone-600 group-hover:text-amber-400 transition-colors"></i>
-                            <span>SUBIR CAPTURE DE PAGO</span>
-                            <input type="file" id="carrito-capture-file" accept="image/*" onchange="procesarCapturePagoEnCarrito(event)" class="hidden">
-                        </label>
-
-                        <div id="preview-capture-box" class="hidden absolute inset-0 w-full h-full bg-stone-950 flex items-center justify-between px-3">
-                            <div class="flex items-center gap-2.5 min-w-0">
-                                <div class="w-10 h-10 rounded-lg border border-stone-800 overflow-hidden bg-stone-900 shrink-0">
-                                    <img id="img-preview-capture" class="w-full h-full object-cover">
-                                </div>
-                                <div class="min-w-0">
-                                    <p class="text-[9px] text-stone-300 font-bold truncate">comprobante.jpg</p>
-                                    <p class="text-[8px] text-emerald-400 font-mono uppercase tracking-widest">Listo para verificar</p>
-                                </div>
-                            </div>
-                            <button onclick="removerCapturePagoDelCarrito()" class="p-2 text-red-400 hover:bg-stone-900 rounded-lg cursor-pointer transition-colors">
-                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                            </button>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
             <button onclick="finalizarOrdenCompraVIP()" class="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-futurista font-black py-3 px-4 rounded-xl text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-2 cursor-pointer shadow-lg transition-all duration-300">
                 <i data-lucide="shield-check" class="w-4 h-4"></i> PROCEED TO CHECKOUT
             </button>
@@ -196,16 +183,14 @@
     <footer class="border-t border-stone-950 bg-black/60 p-4 text-center text-[10px] text-stone-600 font-mono tracking-widest mt-12">© 2026 D'UNIG LUXURY ECOSISTEMA. TODOS LOS DERECHOS RESERVADOS.</footer>
 
     <script>
-        const SUPABASE_URL = "https://dtjwvllldxpblhisblhq.supabase.co"; 
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0and2bGxsZHhwYmxoaXNibGhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzU4OTAsImV4cCI6MjA5NTY1MTg5MH0.SqzQXSmh1nAnlKpD39khgSQSokFeY_1Hp37PWX2RVsw"; 
+        const SUPABASE_URL = "https://yogxxziysjtxbexljxqb.supabase.co"; 
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvZ3h4eml5c2p0eGJleGxqeHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1NjA3NDYsImV4cCI6MjA5NzEzNjc0Nn0.ULjhf1bkvGr7O19QPIwjzHINDy1FKUoWVbQss1Goeoc"; 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let baseProductos = [], cuentasDB = [], carritoVIP = [];
         let productoSeleccionado = null, filtroInstagram = "luxury_store";
-        let fotoSeleccionadaParaLightbox = "";
-        
-        // Variable global para almacenar el Base64 de la referencia cargada
-        let captureBase64Global = "";
+        let fotoSeleccionadaParaLightbox = ""
+    
 
         function irAPantallaVitrina() {
             document.getElementById('pantalla-detalle').classList.add('hidden');
@@ -275,17 +260,23 @@
             if (fotosSlider.length === 0 && productoSeleccionado.imagen_url) { fotosSlider.push(productoSeleccionado.imagen_url); }
 
             const containerMiniaturas = document.getElementById('detalle-contenedor-miniaturas'); containerMiniaturas.innerHTML = "";
-            fotosSlider.forEach((img) => {
+     fotosSlider.forEach((img) => {
                 if(img) {
                     containerMiniaturas.innerHTML += `<div onclick="actualizarVisorFoto('${img}')" class="aspect-square rounded-xl bg-stone-950 border border-stone-800 overflow-hidden cursor-pointer hover:border-amber-500/40 transition-all"><img src="${img}" class="w-full h-full object-cover"></div>`;
                 }
             });
 
+            // 1. Aquí llamamos a la función que pinta los adicionales en pantalla
+            renderizarAdicionales();
+
+            // 2. Cambiamos de pantalla
             document.getElementById('pantalla-vitrina').classList.add('hidden');
             document.getElementById('pantalla-detalle').classList.remove('hidden');
+            
+            // 3. Inicializamos iconos y scroll
             lucide.createIcons();
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+        } // Esta es la llave que cierra la función verDetalleDeProducto
 
         function actualizarVisorFoto(url) {
             fotoSeleccionadaParaLightbox = url;
@@ -307,12 +298,34 @@
         }
 
         function agregarAlCarritoYVolver() {
-            if (!productoSeleccionado) return;
-            carritoVIP.push(productoSeleccionado);
-            document.getElementById('contador-carrito-global').innerText = carritoVIP.length;
-            alert(`¡"${productoSeleccionado.titulo}" agregado al carrito VIP!`);
-            irAPantallaVitrina();
-        }
+    if (!productoSeleccionado) return;
+
+    // 1. Buscar todos los checkboxes seleccionados
+    const checkboxes = document.querySelectorAll('.check-adicional:checked');
+    let adicionalesSeleccionados = [];
+    let extraTotal = 0;
+
+    checkboxes.forEach(cb => {
+        const nombre = cb.getAttribute('data-nombre');
+        const precio = parseFloat(cb.getAttribute('data-precio'));
+        adicionalesSeleccionados.push(nombre);
+        extraTotal += precio;
+    });
+
+    // 2. Crear un objeto de producto "híbrido" (Producto base + precio extra)
+    const productoParaCarrito = {
+        ...productoSeleccionado,
+        titulo: `${productoSeleccionado.titulo} ${adicionalesSeleccionados.length > 0 ? '(+ ' + adicionalesSeleccionados.join(', ') + ')' : ''}`,
+        precio: parseFloat(productoSeleccionado.precio) + extraTotal
+    };
+
+    // 3. Añadir al carrito
+    carritoVIP.push(productoParaCarrito);
+    document.getElementById('contador-carrito-global').innerText = carritoVIP.length;
+    
+    alert(`¡"${productoParaCarrito.titulo}" agregado al carrito!`);
+    irAPantallaVitrina();
+}
 
         function renderizarContenidoCarrito() {
             const container = document.getElementById('carrito-lista-items'); if(!container) return;
@@ -399,35 +412,6 @@
             lucide.createIcons();
         }
 
-        // FUNCIONES DE PROCESAMIENTO DEL CAPTURE DE TRANSFERENCIA
-        function procesarCapturePagoEnCarrito(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.src = e.target.result;
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    
-                    // Comprimir y escalar proporcionalmente para optimizar almacenamiento
-                    canvas.width = Math.min(600, img.width);
-                    canvas.height = Math.min(600, img.height);
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    
-                    captureBase64Global = canvas.toDataURL('image/jpeg', 0.6);
-
-                    // Alternar la visualización del contenedor
-                    document.getElementById('img-preview-capture').src = captureBase64Global;
-                    document.getElementById('label-upload-capture').classList.add('hidden');
-                    document.getElementById('preview-capture-box').classList.remove('hidden');
-                };
-            };
-            reader.readAsDataURL(file);
-        }
-
         function removerCapturePagoDelCarrito() {
             captureBase64Global = "";
             document.getElementById('carrito-capture-file').value = "";
@@ -441,87 +425,107 @@
             renderizarContenidoCarrito();
         }
 
-        // REDIRECCIÓN INTELIGENTE DE CHECKOUT CON WHATSAPP AUTOMÁTICO
         async function finalizarOrdenCompraVIP() {
-            if (carritoVIP.length === 0) { alert("Tu bolsa de compras está vacía."); return; }
-            const transaccionRef = document.getElementById('carrito-input-referencia').value.trim();
-            const indexSelector = document.getElementById('carrito-selector-pago').value;
+    if (carritoVIP.length === 0) { alert("Tu bolsa de compras está vacía."); return; }
+    
+    const transaccionRef = document.getElementById('carrito-input-referencia').value.trim();
+    const indexSelector = document.getElementById('carrito-selector-pago').value;
 
-            if(indexSelector === "" || !cuentasDB[indexSelector]) { alert("Por favor seleccione un método de pago."); return; }
-            if(!transaccionRef) { alert("Por favor inserte el código de referencia de su transacción."); return; }
-            if(!captureBase64Global) { alert("Por favor adjunte el capture de pantalla del pago efectuado."); return; }
+    if(indexSelector === "" || !cuentasDB[indexSelector]) { 
+        alert("Por favor seleccione un método de pago."); 
+        return; 
+    }
+    if(!transaccionRef) { 
+        alert("Por favor inserte el código de referencia."); 
+        return; 
+    }
 
-            const cuentaSel = cuentasDB[indexSelector];
-            
-            // Descargar el número de WhatsApp desde ajustes_sistema
-            let numeroWhatsApp = "584120000000"; // Fallback por si acaso
-            const { data: configData, error: configError } = await supabaseClient
-                .from('ajustes_sistema')
-                .select('valor')
-                .eq('id', 'whatsapp_notificaciones')
-                .single();
-            
-            if(!configError && configData) {
-                numeroWhatsApp = configData.valor.replace(/[^0-9]/g, ""); // Limpiar espacios o caracteres
-            }
+    // 1. Obtener número de WhatsApp desde Supabase
+    let numeroWhatsApp = "584120000000"; // Número por defecto
+    const { data: configData, error: configError } = await supabaseClient
+        .from('ajustes_sistema')
+        .select('valor')
+        .eq('id', 'whatsapp_notificaciones')
+        .single();
+    
+    if(!configError && configData) {
+        numeroWhatsApp = configData.valor.replace(/[^0-9]/g, "");
+    }
 
-            // Construir resumen de productos
-            let listaProductosTexto = "";
-            let subtotalGlobal = 0;
-            carritoVIP.forEach((item, idx) => {
-                listaProductosTexto += `• ${item.titulo} ($${parseFloat(item.precio).toFixed(2)})\n`;
-                subtotalGlobal += parseFloat(item.precio);
-            });
+    // 2. Construir mensaje
+    let listaProductosTexto = "";
+    let subtotalGlobal = 0;
+    carritoVIP.forEach((item) => {
+        listaProductosTexto += `• ${item.titulo} ($${parseFloat(item.precio).toFixed(2)})\n`;
+        subtotalGlobal += parseFloat(item.precio) || 0;
+    });
 
-            // Armar el mensaje estético para enviar por WhatsApp
-            const textoMensaje = 
-`💎 *NUEVO PEDIDO - D'UNIG LUXURY* 💎
---------------------------------------------
-🛍️ *PRODUCTOS SOLICITADOS:*
-${listaProductosTexto}
-💵 *TOTAL A PAGAR:* $${subtotalGlobal.toFixed(2)}
---------------------------------------------
-🏦 *MÉTODO DE PAGO UTILIZADO:*
-• *Plataforma:* ${cuentaSel.plataforma ? cuentaSel.plataforma.toUpperCase() : 'N/A'}
-• *Banco:* ${cuentaSel.banco || 'N/A'}
-• *Titular:* ${cuentaSel.titular || 'N/A'}
+    const cuentaSel = cuentasDB[indexSelector];
+    const textoMensaje = `💎 *NUEVO PEDIDO - D'UNIG LUXURY* 💎\n\n🛍️ *PRODUCTOS:*\n${listaProductosTexto}\n💵 *TOTAL:* $${subtotalGlobal.toFixed(2)}\n\n🏦 *PAGO:* ${cuentaSel.plataforma} - ${cuentaSel.banco}\n🔢 *REF:* ${transaccionRef}`;
 
-🔢 *NÚMERO DE REFERENCIA:*
-👉 \`${transaccionRef}\`
-📸 _(Capture de referencia cargado e indexado correctamente en el sistema)_
---------------------------------------------
-_El pago está listo para ser validado en el Panel del Administrador._`;
+    // ... (todo tu código anterior hasta finalizarOrdenCompraVIP) ...
+        await supabaseClient.from('ordenes_vip').insert([{
+            productos: carritoVIP.map(item => item.titulo).join(', '),
+            total: subtotalGlobal,
+            referencia: transaccionRef,
+            estado: "Pendiente"
+        }]);
 
-            // Enviar los datos a la tabla ordenes_vip incluyendo el Base64 listo para tu visualización
-            const payloadOrden = {
-                fecha: new Date().toISOString(),
-                productos: carritoVIP.map(item => item.titulo).join(', '),
-                total: subtotalGlobal,
-                referencia: `${transaccionRef} (Enviado a WhatsApp)`,
-                estado: "Pendiente"
-            };
+        const urlWhatsApp = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${encodeURIComponent(textoMensaje)}`;
+        
+        carritoVIP = [];
+        document.getElementById('contador-carrito-global').innerText = "0";
+        document.getElementById('carrito-input-referencia').value = "";
+        document.getElementById('caja-detalles-pago-extendida').classList.add('hidden');
+        document.getElementById('carrito-selector-pago').value = "";
+        
+        irAPantallaVitrina();
+        window.open(urlWhatsApp, '_blank');
+    } // <-- Esta es la llave que cierra finalizarOrdenCompraVIP
 
-            await supabaseClient.from('ordenes_vip').insert([payloadOrden]);
+    // --- CARGA Y RENDERIZADO ---
+    window.addEventListener('DOMContentLoaded', () => { 
+        descargarCatalogoDeSupabase(); 
+        descargarAdicionalesDeSupabase(); 
+        lucide.createIcons(); 
+    });
 
-            // Crear el enlace URL y abrir la API de WhatsApp
-            const urlWhatsApp = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${encodeURIComponent(textoMensaje)}`;
-            
-            // Limpiar carrito e interfaz antes de salir
-            carritoVIP = [];
-            document.getElementById('contador-carrito-global').innerText = "0";
-            document.getElementById('carrito-input-referencia').value = "";
-            removerCapturePagoDelCarrito();
-            document.getElementById('caja-detalles-pago-extendida').classList.add('hidden');
-            irAPantallaVitrina();
-
-            // Abrir WhatsApp en pestaña nueva
-            window.open(urlWhatsApp, '_blank');
+    async function descargarAdicionalesDeSupabase() {
+        const { data, error } = await supabaseClient.from('adicionales').select('*');
+        if (!error && data) {
+            window.listaAdicionales = data;
+            console.log("Adicionales cargados:", window.listaAdicionales);
+        } else {
+            console.error("Error al cargar adicionales:", error);
         }
+    }
 
-        window.addEventListener('DOMContentLoaded', () => { 
-            descargarCatalogoDeSupabase(); 
-            lucide.createIcons(); 
-        });
+    function renderizarAdicionales() {
+        const contenedor = document.getElementById('contenedor-adicionales');
+        if (!contenedor || !window.listaAdicionales || window.listaAdicionales.length === 0) return;
+
+        contenedor.innerHTML = `
+            <details class="group bg-stone-900 border border-stone-800 rounded-xl overflow-hidden my-4">
+                <summary class="list-none p-4 text-[10px] font-bold text-stone-400 cursor-pointer flex justify-between items-center hover:text-amber-400">
+                    <span>SELECCIONAR ADICIONALES</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4 group-open:rotate-180 transition-transform"></i>
+                </summary>
+                <div class="p-3 border-t border-stone-800 space-y-2">
+                    ${window.listaAdicionales.map(ad => `
+                        <label class="flex items-center gap-3 cursor-pointer p-2 hover:bg-stone-800 rounded-lg">
+                            <input type="checkbox" class="check-adicional w-4 h-4 accent-amber-500" data-nombre="${ad.nombre}" data-precio="${ad.precio}">
+                            <div class="flex justify-between w-full">
+                                <span class="text-xs text-stone-300">${ad.nombre}</span>
+                                <span class="text-xs text-amber-400 font-mono">+$${parseFloat(ad.precio).toFixed(2)}</span>
+                            </div>
+                        </label>
+                    `).join('')}
+                </div>
+            </details>
+        `;
+        lucide.createIcons();
+    }
+    // Fin del script
     </script>
 </body>
 </html>
