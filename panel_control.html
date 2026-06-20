@@ -925,7 +925,7 @@ async function guardarCategoriaEnSupabase(nombreCategoria) {
     }
 }
 
-// Función para guardar adicionales
+// CORRECCIÓN: Elimina los puntos suspensivos que causan el error
 async function guardarAdicional() {
     const nombre = document.getElementById('add-nombre').value.trim();
     const precio = parseFloat(document.getElementById('add-precio').value);
@@ -938,10 +938,10 @@ async function guardarAdicional() {
     const { error } = await supabaseClient
         .from('adicionales')
         .insert([{ 
-    nombre: ..., 
-    precio: ..., 
-    tenant_id: currentTenantId // <-- ESTO ES LO MÁS IMPORTANTE
-}])
+            nombre: nombre, 
+            precio: precio, 
+            tenant_id: currentTenantId 
+        }]);
 
     if (error) {
         alert("Error al guardar adicional: " + error.message);
@@ -949,8 +949,10 @@ async function guardarAdicional() {
         alert("Adicional registrado con éxito.");
         document.getElementById('add-nombre').value = "";
         document.getElementById('add-precio').value = "";
+        descargarAdicionales();
     }
 }
+
 // Descargar y mostrar adicionales
 async function descargarAdicionales() {
     const { data, error } = await supabaseClient
