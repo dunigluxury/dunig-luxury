@@ -1,4 +1,467 @@
-async function descargarCatalogoDeSupabase() {
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D'UNIG LUXURY - Panel de Control Interno</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght=400;700;900&family=Plus+Jakarta+Sans:wght=200;300;400;500;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: radial-gradient(circle at 50% 0%, #1a1216 0%, #0a0507 100%); background-color: #050204; line-height: 1.25; }
+        .font-futurista { font-family: 'Orbitron', sans-serif; }
+        .glow-gold { box-shadow: 0 0 25px rgba(229, 193, 88, 0.15); }
+        .text-gold { color: #e5c158; text-shadow: 0 0 12px rgba(229, 193, 88, 0.2); }
+        .glass-panel { background: linear-gradient(135deg, rgba(28, 20, 24, 0.45) 0%, rgba(12, 8, 10, 0.6) 100%); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.02); }
+        .grid-bg { background-image: linear-gradient(rgba(229, 193, 88, 0.01) 1px, transparent 1px), linear-gradient(90deg, rgba(229, 193, 88, 0.01) 1px, transparent 1px); background-size: 32px 32px; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #e5c158; border-radius: 10px; }
+    </style>
+</head>
+<body class="text-stone-200 antialiased min-h-screen flex flex-col justify-between grid-bg relative">
+
+    <!-- Modal de Autenticación -->
+    <div id="auth-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md">
+        <div class="glass-panel w-full max-w-sm p-8 rounded-3xl border border-stone-800 shadow-2xl">
+            <h2 class="text-xl font-futurista font-black text-white mb-6 uppercase tracking-widest text-center">Acceso VIP</h2>
+            <div class="space-y-4">
+                <input type="email" id="auth-email" placeholder="Correo electrónico" class="w-full bg-stone-950 border border-stone-800 p-3 rounded-xl text-white text-xs">
+                <input type="password" id="auth-pass" placeholder="Contraseña" class="w-full bg-stone-950 border border-stone-800 p-3 rounded-xl text-white text-xs">
+                <button onclick="ejecutarLogin()" class="w-full bg-amber-500 text-black font-black p-3 rounded-xl text-xs uppercase tracking-widest hover:bg-amber-400 transition-colors cursor-pointer">
+                    Ingresar al Panel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <header class="bg-black/40 backdrop-blur-xl border-b border-stone-900/80 sticky top-0 z-40 px-4">
+        <div class="max-w-7xl mx-auto h-24 flex items-center justify-between relative z-10">
+            <div class="flex items-center space-x-4">
+                <div class="border border-amber-500/30 p-3 rounded-xl bg-stone-950/80 glow-gold"><i data-lucide="terminal" class="w-7 h-7 text-amber-400"></i></div>
+                <div>
+                    <h1 class="text-2xl font-black tracking-[0.2em] text-white font-futurista">D'UNIG <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-500">LUXURY</span></h1>
+                    <p class="text-[9px] text-amber-500/70 uppercase tracking-[0.3em] font-bold font-futurista">PANEL DE CONTROL</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="p-3 rounded-xl border border-stone-800 text-stone-400 hover:text-white transition-all text-xs font-bold uppercase tracking-wider font-futurista bg-stone-900/30 flex items-center gap-2 cursor-pointer">
+                    <i data-lucide="eye" class="w-4 h-4 text-amber-500"></i> Ver Vitrina
+                </a>
+                <button onclick="ejecutarLogout()" class="p-3 rounded-xl border border-red-900/30 text-red-400 hover:text-red-300 transition-all text-xs font-bold uppercase tracking-wider font-futurista bg-stone-900/30 flex items-center gap-2 cursor-pointer">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> Salir
+                </button>
+                <div id="contenedor-instagram" class="hidden flex items-center justify-center bg-stone-950/90 border border-stone-800 p-2 rounded-xl w-40 h-10">
+    <span class="text-xs text-amber-400 font-bold">@</span>
+    <span id="owner-instagram-display" class="text-xs font-bold text-white ml-2">luxury_store</span>
+</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl w-full mx-auto px-4 mt-8 relative z-10">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 bg-stone-950/80 p-1.5 rounded-xl border border-stone-900 w-full">
+            <button id="tab-btn-principal" onclick="cambiarSeccionPanel('principal')" class="py-3 text-center text-[11px] uppercase tracking-widest font-futurista font-black rounded-lg bg-gradient-to-r from-amber-500 to-amber-400 text-black shadow-lg cursor-pointer transition-all">Gestión General</button>
+            <button id="tab-btn-ordenes" onclick="cambiarSeccionPanel('ordenes')" class="py-3 text-center text-[11px] uppercase tracking-widest font-futurista font-bold text-stone-500 rounded-lg hover:text-stone-200 cursor-pointer transition-all">Órdenes VIP</button>
+            <button id="tab-btn-extras" onclick="cambiarSeccionPanel('extras')" class="py-3 text-center text-[11px] uppercase tracking-widest font-futurista font-bold text-stone-500 rounded-lg hover:text-stone-200 cursor-pointer transition-all">Configurar Extras</button>
+        </div>
+    </div>
+
+    <main id="panel-seccion-principal" class="max-w-7xl w-full mx-auto px-4 py-8 flex-grow grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
+        <div class="space-y-6">
+            <div class="glass-panel p-6 rounded-2xl space-y-4 shadow-2xl">
+                <div class="flex items-center gap-2 text-amber-400 border-b border-stone-800/60 pb-3">
+                    <i data-lucide="tag" class="w-4 h-4"></i>
+                    <h3 class="font-futurista font-black text-xs uppercase tracking-[0.2em] text-white">Categorías Indexadas</h3>
+                </div>
+                <div class="space-y-2">
+                    <input type="text" id="cat-nombre" placeholder="Nueva categoría..." class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
+                    <button onclick="agregarCategoria()" class="w-full bg-stone-900 border border-stone-800 text-amber-400 font-futurista font-bold p-3 rounded-xl text-xs uppercase tracking-widest cursor-pointer hover:bg-stone-800">Inyectar Categoría</button>
+                </div>
+                <div id="lista-categorias" class="space-y-1.5 max-h-40 overflow-y-auto"></div>
+            </div>
+<!-- Formulario de Adicionales -->
+<div class="glass-panel p-6 rounded-2xl space-y-4 shadow-2xl mt-6">
+    <div class="flex items-center gap-2 text-amber-400 border-b border-stone-800/60 pb-3">
+        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+        <h3 class="font-futurista font-black text-xs uppercase tracking-[0.2em] text-white">Adicionales</h3>
+    </div>
+    <div class="space-y-2">
+        <input type="text" id="add-nombre" placeholder="Nombre (Ej: Extra Salsa)" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
+        <input type="number" id="add-precio" placeholder="Precio ($)" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
+        <button onclick="guardarAdicional()" class="w-full bg-stone-900 border border-stone-800 text-amber-400 font-futurista font-bold p-3 rounded-xl text-xs uppercase tracking-widest cursor-pointer hover:bg-stone-800">Inyectar Adicional</button>
+    </div>
+
+</div>
+<div class="border-t border-stone-900 pt-4 mt-4">
+    <h4 class="font-futurista font-bold text-[10px] uppercase text-amber-400/80 tracking-wider mb-2">Adicionales Registrados</h4>
+    <div id="lista-adicionales" class="space-y-1.5 max-h-40 overflow-y-auto"></div>
+</div>
+
+            <div class="glass-panel p-6 rounded-2xl space-y-4 shadow-2xl">
+                <div class="flex items-center gap-2 text-amber-400 border-b border-stone-800/60 pb-3">
+                    <i data-lucide="credit-card" class="w-4 h-4"></i>
+                    <h3 id="pago-form-titulo" class="font-futurista font-black text-xs uppercase tracking-[0.2em] text-white">Registrar Método de Pago</h3>
+                </div>
+                
+                <input type="hidden" id="pago-id-edicion" value="">
+                
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Banco o Plataforma</label>
+                        <select id="pago-plataforma" onchange="alternarCamposPago()" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none focus:border-amber-500/30">
+                            <option value="pago_movil">Pago Móvil</option>
+                            <option value="zelle">Zelle</option>
+                            <option value="nequi">Nequi</option>
+                            <option value="efectivo">Efectivo</option>
+                        </select>
+                    </div>
+
+                    <div id="wrapper-campos-dinamicos" class="space-y-3"></div>
+                    
+                    <div class="flex gap-2 pt-2">
+                        <button id="btn-cancelar-pago" onclick="limpiarFormularioPago()" class="hidden bg-stone-900 text-stone-400 font-futurista font-bold px-4 rounded-xl text-xs uppercase cursor-pointer hover:bg-stone-800">X</button>
+                        <button onclick="guardarCuentaPagoSupabase()" id="btn-guardar-pago" class="flex-1 bg-amber-500 text-black font-futurista font-black p-3 rounded-xl text-xs uppercase tracking-[0.2em] cursor-pointer shadow-md hover:bg-amber-600 transition-colors">Sincronizar Cuenta</button>
+                    </div>
+                </div>
+
+                <div class="border-t border-stone-900 pt-4">
+                    <h4 class="font-futurista font-bold text-[10px] uppercase text-amber-400/80 tracking-wider mb-2">Cuentas Habilitadas</h4>
+                    <div class="overflow-x-auto max-h-48 overflow-y-auto">
+                        <table class="w-full text-left text-[11px]">
+                            <thead>
+                                <tr class="border-b border-stone-900 text-stone-500 uppercase tracking-widest text-[8px] font-futurista">
+                                    <th class="pb-2">Método</th>
+                                    <th class="pb-2">Detalles del Colector</th>
+                                    <th class="pb-2 text-right">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-pagos-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 space-y-6">
+            <div class="glass-panel p-6 lg:p-8 rounded-3xl space-y-6 shadow-2xl">
+                <div class="flex justify-between items-center border-b border-stone-800/40 pb-4">
+                    <div class="flex items-center gap-2.5 text-amber-400">
+                        <i data-lucide="package-plus" class="w-5 h-5"></i>
+                        <h3 id="form-titulo-accion" class="font-futurista font-black text-xs uppercase tracking-[0.2em] text-white">Materializador de Productos</h3>
+                    </div>
+                    <div class="text-xs font-black text-white font-futurista"><span id="txt-limite-actual" class="text-amber-400">0</span> ITEMS</div>
+                </div>
+                
+                <input type="hidden" id="prod-id-edicion" value="">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-[9px] uppercase text-stone-400 font-bold">Título de la Pieza</label>
+                        <input type="text" id="prod-titulo" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[9px] uppercase text-stone-400 font-bold">Categoría</label>
+                        <select id="prod-categoria" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-stone-400 p-3.5 rounded-xl focus:outline-none"></select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[9px] uppercase text-stone-400 font-bold">Precio ($)</label>
+                        <input type="number" id="prod-precio" step="0.01" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[9px] uppercase text-stone-400 font-bold">Stock Activo</label>
+                        <input type="number" id="prod-stock" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
+                    </div>
+                    <div class="md:col-span-2 space-y-1">
+                        <label class="text-[9px] uppercase text-stone-400 font-bold">Descripción Exclusiva</label>
+                        <textarea id="prod-descripcion" rows="3" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none resize-none"></textarea>
+                    </div>
+                </div>
+                
+                <div class="space-y-2 border-t border-stone-900 pt-4">
+                    <div class="flex justify-between items-center">
+                        <label class="text-[10px] uppercase tracking-widest font-futurista font-black text-amber-400">Imágenes del Slider (Alta Calidad)</label>
+                        <span id="contador-fotos-cargadas" class="text-[9px] font-mono text-stone-400 font-bold">0 / 5</span>
+                    </div>
+                    <div class="grid grid-cols-5 gap-2" id="grid-inputs-fotos"></div>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button id="btn-cancelar-edicion" onclick="limpiarFormularioCompleto()" class="hidden bg-stone-900 text-stone-400 font-futurista font-bold px-6 py-4 rounded-xl text-xs uppercase tracking-widest cursor-pointer hover:bg-stone-850">Cancelar</button>
+                    <button id="btn-guardar-producto" onclick="inyectarProductoASupabase()" class="flex-1 bg-amber-500 text-black font-futurista font-black p-4 rounded-xl text-xs uppercase tracking-[0.2em] cursor-pointer shadow-lg hover:bg-amber-600 transition-colors">Sincronizar Producto</button>
+                </div>
+            </div>
+            
+            <div class="glass-panel p-6 rounded-3xl overflow-hidden shadow-2xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="border-b border-stone-900 text-stone-500 uppercase tracking-widest text-[9px] font-futurista">
+                                <th class="p-3">ID</th>
+                                <th class="p-3">Objeto</th>
+                                <th class="p-3">Categoría</th>
+                                <th class="p-3">Precio</th>
+                                <th class="p-3 text-center">Stock</th>
+                                <th class="p-3 text-right">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-productos-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <main id="panel-seccion-ordenes" class="hidden max-w-7xl w-full mx-auto px-4 py-8 flex-grow relative z-10">
+        <div class="glass-panel p-6 rounded-3xl border border-stone-900 shadow-2xl">
+            <div class="flex items-center gap-2 text-amber-400 border-b border-stone-800 pb-4 mb-4">
+                <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                <h2 class="text-sm font-futurista font-black uppercase tracking-widest text-white">Registro de Órdenes Recibidas</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="border-b border-stone-900 text-stone-500 uppercase tracking-widest text-[9px] font-futurista">
+                            <th class="p-3">ID Order</th>
+                            <th class="p-3">Fecha</th>
+                            <th class="p-3">Productos Solicitados</th>
+                            <th class="p-3">Total ($)</th>
+                            <th class="p-3">Referencia Registrada</th>
+                            <th class="p-3 text-right">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-ordenes-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <main id="panel-seccion-extras" class="hidden max-w-7xl w-full mx-auto px-4 py-8 flex-grow relative z-10">
+        <div class="max-w-md mx-auto glass-panel p-6 rounded-2xl shadow-2xl border border-stone-900/60 space-y-4">
+            <div class="flex items-center gap-2 text-amber-400 border-b border-stone-800 pb-3">
+                <i data-lucide="phone-call" class="w-4 h-4"></i>
+                <h3 class="font-futurista font-black text-xs uppercase tracking-[0.2em] text-white">Configurar Extras: Canal WhatsApp</h3>
+            </div>
+            <p class="text-[11px] text-stone-400 leading-relaxed font-mono">
+                Introduce el número de teléfono encargado de recibir los pedidos directos (con código de país sin el símbolo '+').
+            </p>
+            <div class="space-y-1.5">
+                <label class="text-[9px] uppercase text-stone-400 font-bold tracking-widest block font-futurista">Número Destinatario Colector</label>
+                <input type="text" id="config-whatsapp-num" placeholder="Ej: 584121234567" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white font-mono p-3.5 rounded-xl focus:outline-none focus:border-amber-400/40">
+            </div>
+            <button onclick="guardarAjusteWhatsAppEnSupabase()" class="w-full bg-gradient-to-r from-amber-400 to-amber-500 text-black font-futurista font-black p-3 rounded-xl text-xs uppercase tracking-widest cursor-pointer shadow-lg transition-transform hover:scale-[1.01]">
+                Sincronizar Canal VIP
+            </button>
+        </div>
+    </main>
+
+    <footer class="border-t border-stone-950 bg-black/60 p-4 text-center text-[10px] text-stone-600 font-mono tracking-widest mt-12">© 2026 D'UNIG LUXURY PANEL. TODOS LOS DERECHOS RESERVADOS.</footer>
+
+    <script>
+        const SUPABASE_URL = "https://yogxxziysjtxbexljxqb.supabase.co"; 
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvZ3h4eml5c2p0eGJleGxqeHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1NjA3NDYsImV4cCI6MjA5NzEzNjc0Nn0.ULjhf1bkvGr7O19QPIwjzHINDy1FKUoWVbQss1Goeoc"; 
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Lógica de seguridad integrada
+async function verificarAcceso() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    
+    if (!session) {
+        window.location.href = "login.html"; 
+        return null;
+    }
+
+    // BUSCAR EL TENANT_ID DEL USUARIO
+    const { data: profile, error } = await supabaseClient
+        .from('profiles')
+        .select('tenant_id')
+        .eq('id', session.user.id)
+        .single();
+
+    if (error || !profile || !profile.tenant_id) {
+        console.error("Error al obtener tenant_id:", error);
+        alert("Acceso denegado: No tienes una tienda configurada.");
+        return null;
+    }
+
+    // SI TODO ESTÁ BIEN, GUARDAMOS EL TENANT_ID
+    currentTenantId = profile.tenant_id;
+    console.log("Tienda cargada con éxito:", currentTenantId);
+    
+    return session.user.email;
+}
+
+// VERIFICACIÓN DE SESIÓN Y CARGA DINÁMICA DE TENANT
+window.addEventListener('DOMContentLoaded', async () => { 
+    // 0. Obtener sesión
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    
+    if (session) {
+        // Ocultar modal si el usuario ya está logueado
+        const authModal = document.getElementById('auth-modal');
+        if (authModal) authModal.classList.add('hidden');
+        
+        console.log("Sesión activa para:", session.user.email);
+        
+        // 1. Obtener el tenant_id del usuario desde la tabla profiles
+        const { data: profile, error: profileError } = await supabaseClient
+            .from('profiles')
+            .select('tenant_id')
+            .eq('id', session.user.id)
+            .single();
+            
+        if (profile && profile.tenant_id) {
+            currentTenantId = profile.tenant_id;
+            console.log("Tenant ID cargado con éxito:", currentTenantId);
+            
+            // 2. Cargar datos específicos de este tenant en orden
+            try {
+                await descargarCategoriasDesdeSupabase(); 
+                await descargarAdicionales();
+                await descargarCatalogoDeSupabase(); 
+                await descargarCuentasPago();
+                
+                // Funciones de UI
+                alternarCamposPago(); 
+                renderizerInputsMatrizFotos(); 
+                lucide.createIcons();
+                
+                console.log("Carga de datos de tienda finalizada.");
+            } catch (err) {
+                console.error("Error al cargar los datos de la tienda:", err);
+                alert("Ocurrió un error al cargar la información de tu tienda.");
+            }
+        } else {
+            console.error("Usuario sin tenant asignado o error de perfil:", profileError);
+            alert("Tu cuenta no tiene una empresa asignada. Contacta al soporte.");
+        }
+    } else {
+        console.warn("No hay sesión activa. Redirigiendo a login...");
+        // Opcional: window.location.href = "login.html";
+    }
+});
+
+// Ejemplo de cómo deben actualizarse tus funciones de carga (Aplica este patrón a todas)
+async function descargarCategoriasDesdeSupabase() {
+    if (!currentTenantId) return;
+
+    const { data, error } = await supabaseClient
+        .from('categorias')
+        .select('nombre')
+        .eq('tenant_id', currentTenantId); // Filtro Multi-tenant
+
+    if (data) {
+        categoriasDB = data.map(c => c.nombre);
+        renderizarCategorias(); 
+    }
+}
+
+// Ejemplo de cómo deben actualizarse tus funciones de inserción
+async function guardarCategoriaEnSupabase(nombreCategoria) {
+    if (!currentTenantId) return;
+
+    const { error } = await supabaseClient
+        .from('categorias')
+        .insert([{ 
+            nombre: nombreCategoria, 
+            tenant_id: currentTenantId // Guardamos el ID del tenant
+        }]);
+
+    if (!error) {
+        await descargarCategoriasDesdeSupabase();
+    } else {
+        alert("Error al guardar: " + error.message);
+    }
+}
+
+async function ejecutarLogin() {
+    const email = document.getElementById('auth-email').value;
+    const password = document.getElementById('auth-pass').value;
+
+    // 1. Intentar hacer login
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password,
+    });
+
+    if (error) {
+        alert("Acceso denegado: " + error.message);
+        return;
+    }
+
+    // 2. Si el login es exitoso, buscamos su tenant_id
+    const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('tenant_id')
+        .eq('id', data.user.id)
+        .single();
+
+    if (profile) {
+        currentTenantId = profile.tenant_id;
+        document.getElementById('auth-modal').classList.add('hidden');
+        
+        // 3. Cargamos los datos del tenant apenas entra
+        await descargarCategoriasDesdeSupabase();
+        descargarCatalogoDeSupabase();
+        await descargarAdicionales();
+        descargarCuentasPago();
+        
+        console.log("Tenant cargado:", currentTenantId);
+    } else {
+        alert("Tu usuario no tiene una empresa (tenant) asignada. Contacta a soporte.");
+        await supabaseClient.auth.signOut(); // Por seguridad, si no tiene perfil, lo sacamos
+    }
+}
+
+async function descargarAdicionales() {
+    const { data, error } = await supabaseClient
+        .from('adicionales')
+        .select('*')
+        .eq('tenant_id', currentTenantId);
+
+    if (!error && data) {
+        const lista = document.getElementById('lista-adicionales');
+        if (lista) {
+            lista.innerHTML = "";
+            data.forEach(a => {
+                lista.innerHTML += `
+                    <div class="bg-stone-950/60 p-3 rounded-xl text-xs border border-stone-900 text-stone-400 flex justify-between items-center">
+                        <span>${a.nombre} - <span class="text-amber-400">$${a.precio}</span></span>
+                        <button onclick="eliminarAdicional(${a.id})" class="text-red-500 hover:text-red-300 ml-2 font-bold">✕</button>
+                    </div>`;
+            });
+        }
+    }
+}
+
+async function eliminarAdicional(id) {
+    const { error } = await supabaseClient.from('adicionales').delete().eq('id', id);
+    if (!error) {
+        descargarAdicionales();
+    } else {
+        alert("Error al eliminar: " + error.message);
+    }
+}
+
+        // CONTROL NAV DEL PANEL
+        function cambiarSeccionPanel(target) {
+            document.getElementById('panel-seccion-principal').classList.add('hidden');
+            document.getElementById('panel-seccion-ordenes').classList.add('hidden');
+            document.getElementById('panel-seccion-extras').classList.add('hidden');
+
+            document.querySelectorAll('[id^="tab-btn-"]').forEach(btn => {
+                btn.className = "py-3 text-center text-[11px] uppercase tracking-widest font-futurista font-bold text-stone-500 rounded-lg cursor-pointer hover:text-stone-200 transition-all";
+            });
+
+            document.getElementById(`panel-seccion-${target}`).classList.remove('hidden');
+            document.getElementById(`tab-btn-${target}`).className = "py-3 text-center text-[11px] uppercase tracking-widest font-futurista font-black rounded-lg bg-gradient-to-r from-amber-500 to-amber-400 text-black shadow-lg cursor-pointer transition-all";
+
+            if (target === 'ordenes') descargarHistorialDeOrdenes();
+            if (target === 'extras') descargarAjusteWhatsApp();
+        }
+
+        async function descargarCatalogoDeSupabase() {
     console.log("Intentando cargar con Tenant ID:", currentTenantId); // Para ver qué ID está usando
 
     // QUITAMOS EL FILTRO .eq PARA VER SI APARECE ALGO
@@ -18,3 +481,554 @@ async function descargarCatalogoDeSupabase() {
         document.getElementById('txt-limite-actual').innerText = baseProductos.length; 
     }
 }
+
+        function cambiarDuenoDeCanal() {
+            const val = document.getElementById('owner-instagram-input').value.trim().toLowerCase();
+            if(val) { currentTenantId = val; descargarCatalogoDeSupabase(); }
+        }
+
+        function renderizarTablaProductosBackend() {
+            const tbody = document.getElementById('tabla-productos-body'); if(!tbody) return; tbody.innerHTML = "";
+            if(baseProductos.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-stone-600 font-mono">No hay elementos registrados para este canal.</td></tr>`; return; }
+            
+            baseProductos.forEach(p => {
+                tbody.innerHTML += `<tr class="border-b border-stone-900/40 hover:bg-stone-900/20 transition-colors">
+                    <td class="p-3 font-mono text-stone-500">#${p.id}</td>
+                    <td class="p-3 text-white font-bold">${p.titulo}</td>
+                    <td class="p-3 text-stone-400">${p.categoria}</td>
+                    <td class="p-3 text-amber-400 font-mono font-bold">$${parseFloat(p.precio).toFixed(2)}</td>
+                    <td class="p-3 text-center font-mono">${p.stock}</td>
+                    <td class="p-3 text-right flex justify-end gap-2">
+                        <button onclick="prepararEdicionProducto(${p.id})" class="p-2 text-amber-400 bg-stone-900 border border-stone-800 rounded-lg cursor-pointer hover:bg-stone-850">✏️</button>
+                        <button onclick="eliminarProductoDeSupabase(${p.id})" class="p-2 text-red-400 bg-stone-900 border border-stone-800 rounded-lg cursor-pointer hover:bg-stone-850">🗑️</button>
+                    </td></tr>`;
+            });
+        }
+
+        async function inyectarProductoASupabase() {
+            const idEdicion = document.getElementById('prod-id-edicion').value;
+            const t = document.getElementById('prod-titulo').value.trim();
+            const c = document.getElementById('prod-categoria').value;
+            const p = parseFloat(document.getElementById('prod-precio').value);
+            const s = parseInt(document.getElementById('prod-stock').value);
+            const d = document.getElementById('prod-descripcion').value.trim();
+
+            if (!t || isNaN(p) || isNaN(s)) { alert("Complete todos los campos requeridos."); return; }
+            const sliderValidos = fotosSliderArray.filter(f => f !== "");
+
+            const payload = {
+    titulo: t, 
+    categoria: c || "General", 
+    descripcion: d, 
+    precio: p, 
+    stock: s,
+    tenant_id: currentTenantId, // <-- CORRECCIÓN: Usamos la nueva clave de tu tabla
+    imagen_url: sliderValidos[0] || "",
+    imagenes_slider: JSON.stringify(sliderValidos)
+};
+
+            let error;
+            if (idEdicion) { 
+                const res = await supabaseClient.from('productos').update(payload).eq('id', idEdicion); 
+                error = res.error;
+            } else { 
+                const res = await supabaseClient.from('productos').insert([payload]); 
+                error = res.error;
+            }
+
+            if (error) {
+                alert("Error de sincronización: " + error.message);
+            } else {
+                alert("Sincronizado con éxito."); 
+                limpiarFormularioCompleto(); 
+                descargarCatalogoDeSupabase();
+            }
+        }
+
+        function prepararEdicionProducto(idProducto) {
+            const prod = baseProductos.find(p => p.id === idProducto); if(!prod) return;
+            document.getElementById('prod-id-edicion').value = prod.id;
+            document.getElementById('prod-titulo').value = prod.titulo;
+            document.getElementById('prod-categoria').value = prod.categoria;
+            document.getElementById('prod-precio').value = prod.precio;
+            document.getElementById('prod-stock').value = prod.stock;
+            document.getElementById('prod-descripcion').value = prod.descripcion || "";
+            
+            fotosSliderArray = Array(5).fill("");
+            try { if(prod.imagenes_slider) JSON.parse(prod.imagenes_slider).forEach((img, i) => { if(i<5) fotosSliderArray[i] = img; }); } catch(e){}
+
+            document.getElementById('form-titulo-accion').innerText = "Editor Experto de Producto";
+            document.getElementById('btn-guardar-producto').innerText = "Confirmar Cambios";
+            document.getElementById('btn-cancelar-edicion').classList.remove('hidden');
+            renderizerInputsMatrizFotos(); 
+            actualizarContadoresMedia();
+        }
+
+        async function eliminarProductoDeSupabase(idCloud) {
+            if(confirm("¿Estás completamente seguro de remover esta pieza del inventario?")) { 
+                await supabaseClient.from('productos').delete().eq('id', idCloud); 
+                descargarCatalogoDeSupabase(); 
+            }
+        }
+
+        function limpiarFormularioCompleto() {
+            document.getElementById('prod-id-edicion').value = ""; 
+            document.getElementById('prod-titulo').value = "";
+            document.getElementById('prod-precio').value = ""; 
+            document.getElementById('prod-stock').value = ""; 
+            document.getElementById('prod-descripcion').value = "";
+            fotosSliderArray = Array(5).fill("");
+            document.getElementById('form-titulo-accion').innerText = "Materializador de Productos";
+            document.getElementById('btn-guardar-producto').innerText = "Sincronizar Producto";
+            document.getElementById('btn-cancelar-edicion').classList.add('hidden');
+            renderizerInputsMatrizFotos(); 
+            actualizarContadoresMedia();
+        }
+
+        function renderizerInputsMatrizFotos() {
+            const container = document.getElementById('grid-inputs-fotos'); if(!container) return; container.innerHTML = "";
+            for(let i=0; i<5; i++) {
+                const img = fotosSliderArray[i];
+                container.innerHTML += `<div class="relative aspect-square bg-stone-950 border ${img ? 'border-amber-500/60' : 'border-stone-800'} rounded-xl flex items-center justify-center overflow-hidden">
+                    ${img ? `<img src="${img}" class="w-full h-full object-cover"><button onclick="removerFoto(${i})" class="absolute top-1 right-1 bg-black text-red-400 p-0.5 rounded text-[9px] cursor-pointer">✕</button>` : 
+                    `<label class="w-full h-full flex flex-col items-center justify-center cursor-pointer text-[8px] text-stone-600 font-mono"><i data-lucide="plus" class="w-3 h-3 mb-1"></i>IMG ${i+1}<input type="file" accept="image/*" onchange="procesarFoto(event, ${i})" class="hidden"></label> `}</div>`;
+            }
+            lucide.createIcons();
+        }
+
+        function procesarFoto(event, index) {
+            const file = event.target.files[0]; if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image(); img.src = e.target.result;
+                img.onload = function() {
+                    const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
+                    canvas.width = Math.min(600, img.width); canvas.height = Math.min(600, img.height);
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    const base64 = canvas.toDataURL('image/jpeg', 0.6);
+                    fotosSliderArray[index] = base64; renderizerInputsMatrizFotos();
+                    actualizarContadoresMedia();
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removerFoto(index) {
+            fotosSliderArray[index] = ""; renderizerInputsMatrizFotos();
+            actualizarContadoresMedia();
+        }
+
+        function actualizarContadoresMedia() {
+            document.getElementById('contador-fotos-cargadas').innerText = `${fotosSliderArray.filter(f=>f!=="").length} / 5`;
+        }
+ // 1. Renderizar con botón de eliminar
+function renderizarCategorias() {
+    const select = document.getElementById('prod-categoria'), 
+          lista = document.getElementById('lista-categorias');
+    if(!select || !lista) return; 
+    
+    select.innerHTML = ""; 
+    lista.innerHTML = "";
+    
+    categoriasDB.forEach(c => {
+        select.innerHTML += `<option value="${c}">${c}</option>`;
+        lista.innerHTML += `
+            <div class="bg-stone-950/60 p-3 rounded-xl text-xs border border-stone-900 text-stone-400 flex justify-between items-center">
+                <span>${c}</span>
+                <button onclick="eliminarCategoria('${c}')" class="text-red-500 hover:text-red-300 ml-2 font-bold">✕</button>
+            </div>`;
+    });
+}
+
+// 2. Agregar nueva categoría persistente
+async function agregarCategoria() { 
+    const inp = document.getElementById('cat-nombre'); 
+    const nom = inp.value.trim(); 
+    
+    // Aseguramos que currentTenantId esté presente antes de intentar insertar
+    if(nom && !categoriasDB.includes(nom) && currentTenantId) { 
+        const { error } = await supabaseClient
+            .from('categorias')
+            .insert([{ 
+                nombre: nom, 
+                tenant_id: currentTenantId // <-- CORRECCIÓN: Usamos la clave correcta
+            }]);
+            
+        if (!error) {
+            inp.value = ""; 
+            await descargarCategoriasDesdeSupabase(); // Recarga y renderiza
+        } else {
+            alert("Error al guardar: " + error.message);
+        }
+    } else if (!currentTenantId) {
+        alert("Error de sesión: No se pudo identificar la empresa.");
+    }
+}
+// 3. Función corregida para eliminar
+async function eliminarCategoria(nombre) {
+    const { error } = await supabaseClient
+        .from('categorias')
+        .delete()
+        .eq('nombre', nombre)
+        .eq('tenant_id', currentTenantId); // <--- CAMBIO AQUÍ: de instagram_dueno a tenant_id
+
+    if (!error) {
+        await descargarCategoriasDesdeSupabase(); // Recarga y renderiza
+    } else {
+        alert("Error al eliminar: " + error.message);
+    }
+}
+
+        function alternarCamposPago() {
+            const plataforma = document.getElementById('pago-plataforma').value;
+            const wrapper = document.getElementById('wrapper-campos-dinamicos');
+            wrapper.innerHTML = ""; 
+
+            if (plataforma === "pago_movil") {
+                wrapper.innerHTML = `
+                    <div>
+                        <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Banco:</label>
+                        <input type="text" id="pago-banco" placeholder="Ej: Banesco, Mercantil..." class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Cédula:</label>
+                        <input type="text" id="pago-ci" placeholder="Ej: V-12345678" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none font-mono">
+                    </div>
+                    <div>
+                        <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Teléfono:</label>
+                        <input type="text" id="pago-telefono" placeholder="Ej: 04121234567" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none font-mono">
+                    </div>`;
+            } else if (plataforma === "zelle") {
+                wrapper.innerHTML = `
+                    <div>
+                        <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Correo Electrónico:</label>
+                        <input type="email" id="pago-email" placeholder="ejemplo@zelle.com" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none font-mono">
+                    </div>
+                    <div>
+                        <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Titular de la Cuenta:</label>
+                        <input type="text" id="pago-titular" placeholder="Nombre completo..." class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none">
+                    </div>`;
+            } else if (plataforma === "nequi") {
+                wrapper.innerHTML = `
+                    <div>
+                        <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Número de Cuenta / Teléfono:</label>
+                        <input type="text" id="pago-telefono" placeholder="Ej: 3001234567" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none font-mono">
+                    </div>
+                    <div>
+                        <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Nombre del Titular:</label>
+                        <input type="text" id="pago-titular" placeholder="Nombre en Nequi..." class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none">
+                    </div>`;
+            } else if (plataforma === "efectivo") {
+                wrapper.innerHTML = `
+                    <div>
+                        <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Detalles de Entrega o Retiro:</label>
+                        <input type="text" id="pago-detalles" placeholder="Ej: Retiro en tienda física / Acuerdo previo" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none">
+                    </div>`;
+            }
+        }
+
+        async function descargarCuentasPago() {
+            const { data, error } = await supabaseClient.from('cuentas_pago').select('*').order('id', { ascending: true });
+            if (!error && data) {
+                listaCuentas = data;
+                const tbody = document.getElementById('tabla-pagos-body'); if(!tbody) return;
+                tbody.innerHTML = "";
+                
+                if(listaCuentas.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-center text-stone-600 font-mono text-[10px]">Sin cuentas registradas.</td></tr>`;
+                    return;
+                }
+                
+                listaCuentas.forEach(c => {
+                    let infoRender = "";
+                    if (c.plataforma === "pago_movil") {
+                        infoRender = `<span class="text-stone-300 font-mono">${c.banco || ''} | CI: ${c.ci || ''} | Tlf: ${c.telefono || ''}</span>`;
+                    } else if (c.plataforma === "zelle") {
+                        infoRender = `<span class="text-stone-300 font-mono">${c.email || ''} | ${c.titular || ''}</span>`;
+                    } else if (c.plataforma === "nequi") {
+                        infoRender = `<span class="text-stone-300 font-mono">Nequi: ${c.telefono || ''} | ${c.titular || ''}</span>`;
+                    } else {
+                        infoRender = `<span class="text-stone-300">${c.detalles || 'Pago en efectivo contra entrega'}</span>`;
+                    }
+
+                    const nombrePlataforma = c.plataforma.replace('_', ' ').toUpperCase();
+
+                    tbody.innerHTML += `<tr class="border-b border-stone-900/40 hover:bg-stone-900/20 transition-colors">
+                        <td class="py-2 text-amber-400 font-bold uppercase text-[10px]">${nombrePlataforma}</td>
+                        <td class="py-2 text-stone-300 text-[10px]">${infoRender}</td>
+                        <td class="py-2 text-right flex justify-end gap-1">
+                            <button onclick="cargarEdicionPago(${c.id})" class="p-1 text-amber-400 bg-stone-900 border border-stone-800 rounded cursor-pointer hover:bg-stone-850">✏️</button>
+                            <button onclick="eliminarCuentaPago(${c.id})" class="p-1 text-red-500 bg-stone-900 border border-stone-800 rounded cursor-pointer hover:bg-stone-850">🗑️</button>
+                        </td>
+                    </tr>`;
+                });
+            }
+        }
+
+        async function guardarCuentaPagoSupabase() {
+            const id = document.getElementById('pago-id-edicion').value;
+            const plataforma = document.getElementById('pago-plataforma').value;
+
+            let payload = { plataforma: plataforma };
+
+            if (plataforma === "pago_movil") {
+                payload.banco = document.getElementById('pago-banco').value.trim();
+                payload.ci = document.getElementById('pago-ci').value.trim();
+                payload.telefono = document.getElementById('pago-telefono').value.trim();
+                if(!payload.banco || !payload.ci || !payload.telefono) { alert("Por favor complete todos los datos de Pago Móvil."); return; }
+            } else if (plataforma === "zelle") {
+                payload.email = document.getElementById('pago-email').value.trim();
+                payload.titular = document.getElementById('pago-titular').value.trim();
+                if(!payload.email || !payload.titular) { alert("Complete el correo y el titular de Zelle."); return; }
+            } else if (plataforma === "nequi") {
+                payload.telefono = document.getElementById('pago-telefono').value.trim();
+                payload.titular = document.getElementById('pago-titular').value.trim();
+                if(!payload.telefono || !payload.titular) { alert("Complete el número y titular de Nequi."); return; }
+            } else if (plataforma === "efectivo") {
+                payload.detalles = document.getElementById('pago-detalles').value.trim();
+                if(!payload.detalles) { alert("Escriba los detalles de entrega en efectivo."); return; }
+            }
+
+            let res;
+            if (id) {
+                res = await supabaseClient.from('cuentas_pago').update(payload).eq('id', id);
+            } else {
+                res = await supabaseClient.from('cuentas_pago').insert([payload]);
+            }
+
+            if (!res.error) {
+                alert("¡Cuenta de cobro sincronizada con éxito!");
+                limpiarFormularioPago();
+                descargarCuentasPago();
+            } else {
+                alert("Error al guardar en base de datos: " + res.error.message);
+            }
+        }
+
+        function cargarEdicionPago(id) {
+            const cuenta = listaCuentas.find(c => c.id === id);
+            if (!cuenta) return;
+
+            document.getElementById('pago-id-edicion').value = cuenta.id;
+            document.getElementById('pago-plataforma').value = cuenta.plataforma;
+            
+            alternarCamposPago();
+
+            if (cuenta.plataforma === "pago_movil") {
+                document.getElementById('pago-banco').value = cuenta.banco || '';
+                document.getElementById('pago-ci').value = cuenta.ci || '';
+                document.getElementById('pago-telefono').value = cuenta.telefono || '';
+            } else if (cuenta.plataforma === "zelle") {
+                document.getElementById('pago-email').value = cuenta.email || '';
+                document.getElementById('pago-titular').value = cuenta.titular || '';
+            } else if (cuenta.plataforma === "nequi") {
+                document.getElementById('pago-telefono').value = cuenta.telefono || '';
+                document.getElementById('pago-titular').value = cuenta.titular || '';
+            } else if (cuenta.plataforma === "efectivo") {
+                document.getElementById('pago-detalles').value = cuenta.detalles || '';
+            }
+
+            document.getElementById('pago-form-titulo').innerText = "Modificar Cuenta";
+            document.getElementById('btn-guardar-pago').innerText = "Actualizar Cuenta";
+            document.getElementById('btn-cancelar-pago').classList.remove('hidden');
+        }
+
+        function limpiarFormularioPago() {
+            document.getElementById('pago-id-edicion').value = "";
+            document.getElementById('pago-plataforma').value = "pago_movil";
+            alternarCamposPago();
+            document.getElementById('pago-form-titulo').innerText = "Registrar Método de Pago";
+            document.getElementById('btn-guardar-pago').innerText = "Sincronizar Cuenta";
+            document.getElementById('btn-cancelar-pago').classList.add('hidden');
+        }
+
+        async function eliminarCuentaPago(id) {
+            if (confirm("¿Estás seguro de remover este método de cobro?")) {
+                await supabaseClient.from('cuentas_pago').delete().eq('id', id);
+                descargarCuentasPago();
+            }
+        }
+
+        // A. CORRECCIÓN: Función completa y bien cerrada
+async function descargarHistorialDeOrdenes() {
+    // FILTRADO POR TENANT (Para que cada tienda vea solo sus órdenes)
+    const { data, error } = await supabaseClient
+        .from('ordenes_vip')
+        .select('*')
+        .eq('tenant_id', currentTenantId) 
+        .order('created_at', { ascending: false });
+
+    if (!error && data) {
+        const tbody = document.getElementById('tabla-ordenes-body'); 
+        if (!tbody) return;
+        
+        tbody.innerHTML = "";
+        data.forEach(o => {
+            const fechaFormateada = new Date(o.created_at).toLocaleDateString();
+            
+            tbody.innerHTML += `<tr class="border-b border-stone-900/40 hover:bg-stone-900/10 transition-colors">
+                <td class="p-3 font-mono text-amber-400 font-bold">#${o.id}</td>
+                <td class="p-3 text-stone-400">${fechaFormateada}</td>
+                <td class="p-3 text-white truncate max-w-xs">${o.productos}</td>
+                <td class="p-3 font-mono font-bold text-stone-200">$${parseFloat(o.total || 0).toFixed(2)}</td>
+                <td class="p-3 font-mono text-stone-500">${o.referencia || 'N/A'}</td>
+                <td class="p-3 text-right">
+                    <select 
+                        onchange="actualizarEstadoOrden(${o.id}, this.value)" 
+                        class="bg-stone-950 border border-stone-700 text-[10px] px-2 py-1 rounded-md font-bold uppercase cursor-pointer outline-none transition-colors 
+                        ${o.estado === 'verificado' ? 'text-green-500 border-green-900/50' : 
+                          o.estado === 'cancelado' ? 'text-red-500 border-red-900/50' : 
+                          'text-amber-400 border-stone-700'}"
+                    >
+                        <option value="pendiente" ${o.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
+                        <option value="verificado" ${o.estado === 'verificado' ? 'selected' : ''}>Verificado</option>
+                        <option value="cancelado" ${o.estado === 'cancelado' ? 'selected' : ''}>Cancelado</option>
+                    </select>
+                </td>
+            </tr>`;
+        });
+    } else if (error) {
+        console.error("Error al descargar órdenes:", error.message);
+    }
+}
+
+async function actualizarEstadoOrden(idOrden, nuevoEstado) {
+    const { error } = await supabaseClient
+        .from('ordenes_vip')
+        .update({ estado: nuevoEstado })
+        .eq('id', idOrden)
+        .eq('tenant_id', currentTenantId); // <--- ESTO ES LO QUE FALTA
+
+    if (!error) {
+        await descargarHistorialDeOrdenes();
+    } else {
+        alert("Error al actualizar estado: " + error.message);
+    }
+}
+
+// C. Función para el WhatsApp (Esta ya la tenías bien)
+async function descargarAjusteWhatsApp() {
+    const { data, error } = await supabaseClient
+        .from('ajustes_sistema')
+        .select('valor')
+        .eq('id', 'whatsapp_notificaciones')
+        .single();
+    
+    if(!error && data) {
+        document.getElementById('config-whatsapp-num').value = data.valor;
+    }
+}
+
+        async function guardarAjusteWhatsAppEnSupabase() {
+    const num = document.getElementById('config-whatsapp-num').value.trim().replace(/[^0-9]/g, "");
+    if(!num || num.length < 10) { alert("Ingrese un número válido."); return; }
+
+    const { error } = await supabaseClient
+        .from('ajustes_sistema')
+        .upsert({ 
+            id: 'whatsapp_notificaciones', 
+            valor: num, 
+            tenant_id: currentTenantId, // VINCULADO AL TENANT
+            updated_at: new Date().toISOString() 
+        });
+
+    if(!error) { alert("¡Guardado con éxito!"); } else { alert("Error: " + error.message); }
+}
+// Cargar categorías reales desde Supabase
+async function descargarCategoriasDesdeSupabase() {
+    if (!currentTenantId) return;
+
+    const { data, error } = await supabaseClient
+        .from('categorias')
+        .select('nombre')
+        .eq('tenant_id', currentTenantId);
+
+    if (data) {
+        categoriasDB = data.map(c => c.nombre);
+        renderizarCategorias(); 
+    }
+}
+
+// Guardar nueva categoría en Supabase
+async function guardarCategoriaEnSupabase(nombreCategoria) {
+    if (!currentTenantId) return;
+
+    const { error } = await supabaseClient
+        .from('categorias')
+        .insert([{ 
+            nombre: nombreCategoria, 
+            tenant_id: currentTenantId 
+        }]);
+
+    if (!error) {
+        await descargarCategoriasDesdeSupabase();
+    } else {
+        alert("Error al guardar: " + error.message);
+    }
+}
+
+// CORRECCIÓN: Elimina los puntos suspensivos que causan el error
+async function guardarAdicional() {
+    const nombre = document.getElementById('add-nombre').value.trim();
+    const precio = parseFloat(document.getElementById('add-precio').value);
+
+    if (!nombre || isNaN(precio)) {
+        alert("Por favor, ingresa un nombre y un precio válido.");
+        return;
+    }
+
+    const { error } = await supabaseClient
+        .from('adicionales')
+        .insert([{ 
+            nombre: nombre, 
+            precio: precio, 
+            tenant_id: currentTenantId 
+        }]);
+
+    if (error) {
+        alert("Error al guardar adicional: " + error.message);
+    } else {
+        alert("Adicional registrado con éxito.");
+        document.getElementById('add-nombre').value = "";
+        document.getElementById('add-precio').value = "";
+        descargarAdicionales();
+    }
+}
+
+// Descargar y mostrar adicionales
+async function descargarAdicionales() {
+    const { data, error } = await supabaseClient
+        .from('adicionales')
+        .select('*')
+        .eq('tenant_id', currentTenantId); // <--- CORRECCIÓN AQUÍ
+
+    if (!error && data) {
+        const lista = document.getElementById('lista-adicionales');
+        lista.innerHTML = "";
+        data.forEach(a => {
+            lista.innerHTML += `
+                <div class="bg-stone-950/60 p-3 rounded-xl text-xs border border-stone-900 text-stone-400 flex justify-between items-center">
+                    <span>${a.nombre} - <span class="text-amber-400">$${a.precio}</span></span>
+                    <button onclick="eliminarAdicional(${a.id})" class="text-red-500 hover:text-red-300 ml-2 font-bold">✕</button>
+                </div>`;
+        });
+    }
+}
+
+async function eliminarAdicional(id) {
+    const { error } = await supabaseClient
+        .from('adicionales')
+        .delete()
+        .eq('id', id)
+        .eq('tenant_id', currentTenantId); // <--- CORRECCIÓN AQUÍ
+
+    if (!error) {
+        descargarAdicionales();
+    } else {
+        alert("Error al eliminar: " + error.message);
+    }
+}
+
+    </script>
+</body>
+</html>
