@@ -264,29 +264,45 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Lógica de seguridad integrada
-        async function verificarAcceso() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) {
-                // Si no hay sesión, redirigir a login
-                window.location.href = "login.html"; 
-                return null;
-            }
-            return session.user.email;
-        }
+async function verificarAcceso() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    
+    if (!session) {
+        window.location.href = "login.html"; 
+        return null;
+    }
 
+    // BUSCAR EL TENANT_ID DEL USUARIO
+    const { data: profile, error } = await supabaseClient
+        .from('profiles')
+        .select('tenant_id')
+        .eq('id', session.user.id)
+        .single();
 
-       let baseProductos = [];
-let categoriasDB = [];
-let currentTenantId = null; // Reemplazo de filtroInstagram
-let fotosSliderArray = Array(5).fill("");
-let listaCuentas = [];
+    if (error || !profile || !profile.tenant_id) {
+        console.error("Error al obtener tenant_id:", error);
+        alert("Acceso denegado: No tienes una tienda configurada.");
+        return null;
+    }
+
+    // SI TODO ESTÁ BIEN, GUARDAMOS EL TENANT_ID
+    currentTenantId = profile.tenant_id;
+    console.log("Tienda cargada con éxito:", currentTenantId);
+    
+    return session.user.email;
+}
 
 // VERIFICACIÓN DE SESIÓN Y CARGA DINÁMICA DE TENANT
 window.addEventListener('DOMContentLoaded', async () => { 
+    // 0. Obtener sesión
     const { data: { session } } = await supabaseClient.auth.getSession();
     
     if (session) {
-        document.getElementById('auth-modal').classList.add('hidden');
+        // Ocultar modal si el usuario ya está logueado
+        const authModal = document.getElementById('auth-modal');
+        if (authModal) authModal.classList.add('hidden');
+        
+        console.log("Sesión activa para:", session.user.email);
         
         // 1. Obtener el tenant_id del usuario desde la tabla profiles
         const { data: profile, error: profileError } = await supabaseClient
@@ -297,19 +313,32 @@ window.addEventListener('DOMContentLoaded', async () => {
             
         if (profile && profile.tenant_id) {
             currentTenantId = profile.tenant_id;
+            console.log("Tenant ID cargado con éxito:", currentTenantId);
             
-            // 2. Cargar datos específicos de este tenant
-            await descargarCategoriasDesdeSupabase(); 
-            await descargarAdicionales();
-            descargarCatalogoDeSupabase(); 
-            alternarCamposPago(); 
-            descargarCuentasPago(); 
-            renderizerInputsMatrizFotos(); 
-            lucide.createIcons();
+            // 2. Cargar datos específicos de este tenant en orden
+            try {
+                await descargarCategoriasDesdeSupabase(); 
+                await descargarAdicionales();
+                await descargarCatalogoDeSupabase(); 
+                await descargarCuentasPago();
+                
+                // Funciones de UI
+                alternarCamposPago(); 
+                renderizerInputsMatrizFotos(); 
+                lucide.createIcons();
+                
+                console.log("Carga de datos de tienda finalizada.");
+            } catch (err) {
+                console.error("Error al cargar los datos de la tienda:", err);
+                alert("Ocurrió un error al cargar la información de tu tienda.");
+            }
         } else {
-            console.error("Usuario sin tenant asignado:", profileError);
-            alert("Tu cuenta no tiene una empresa asignada. Contacta al administrador.");
+            console.error("Usuario sin tenant asignado o error de perfil:", profileError);
+            alert("Tu cuenta no tiene una empresa asignada. Contacta al soporte.");
         }
+    } else {
+        console.warn("No hay sesión activa. Redirigiendo a login...");
+        // Opcional: window.location.href = "login.html";
     }
 });
 
@@ -810,9 +839,11 @@ async function eliminarCategoria(nombre) {
 
         // A. CORRECCIÓN: Función completa y bien cerrada
 async function descargarHistorialDeOrdenes() {
+    // FILTRADO POR TENANT (Para que cada tienda vea solo sus órdenes)
     const { data, error } = await supabaseClient
         .from('ordenes_vip')
         .select('*')
+        .eq('tenant_id', currentTenantId) 
         .order('created_at', { ascending: false });
 
     if (!error && data) {
@@ -829,20 +860,19 @@ async function descargarHistorialDeOrdenes() {
                 <td class="p-3 text-white truncate max-w-xs">${o.productos}</td>
                 <td class="p-3 font-mono font-bold text-stone-200">$${parseFloat(o.total || 0).toFixed(2)}</td>
                 <td class="p-3 font-mono text-stone-500">${o.referencia || 'N/A'}</td>
-                // ... dentro del forEach de descargarHistorialDeOrdenes ...
-<td class="p-3 text-right">
-    <select 
-        onchange="actualizarEstadoOrden(${o.id}, this.value)" 
-        class="bg-stone-950 border border-stone-700 text-[10px] px-2 py-1 rounded-md font-bold uppercase cursor-pointer outline-none transition-colors 
-        ${o.estado === 'verificado' ? 'text-green-500 border-green-900/50' : 
-          o.estado === 'cancelado' ? 'text-red-500 border-red-900/50' : 
-          'text-amber-400 border-stone-700'}"
-    >
-        <option value="pendiente" ${o.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
-        <option value="verificado" ${o.estado === 'verificado' ? 'selected' : ''}>Verificado</option>
-        <option value="cancelado" ${o.estado === 'cancelado' ? 'selected' : ''}>Cancelado</option>
-    </select>
-</td>
+                <td class="p-3 text-right">
+                    <select 
+                        onchange="actualizarEstadoOrden(${o.id}, this.value)" 
+                        class="bg-stone-950 border border-stone-700 text-[10px] px-2 py-1 rounded-md font-bold uppercase cursor-pointer outline-none transition-colors 
+                        ${o.estado === 'verificado' ? 'text-green-500 border-green-900/50' : 
+                          o.estado === 'cancelado' ? 'text-red-500 border-red-900/50' : 
+                          'text-amber-400 border-stone-700'}"
+                    >
+                        <option value="pendiente" ${o.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
+                        <option value="verificado" ${o.estado === 'verificado' ? 'selected' : ''}>Verificado</option>
+                        <option value="cancelado" ${o.estado === 'cancelado' ? 'selected' : ''}>Cancelado</option>
+                    </select>
+                </td>
             </tr>`;
         });
     } else if (error) {
@@ -850,12 +880,12 @@ async function descargarHistorialDeOrdenes() {
     }
 }
 
-// B. Función para actualizar (Esta es la que hace el cambio en la BD)
 async function actualizarEstadoOrden(idOrden, nuevoEstado) {
     const { error } = await supabaseClient
         .from('ordenes_vip')
         .update({ estado: nuevoEstado })
-        .eq('id', idOrden);
+        .eq('id', idOrden)
+        .eq('tenant_id', currentTenantId); // <--- ESTO ES LO QUE FALTA
 
     if (!error) {
         await descargarHistorialDeOrdenes();
