@@ -267,28 +267,31 @@
 let currentTenantId = localStorage.getItem('user_tenant_id') || null;
 
 async function verificarAcceso() {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    
-    if (!session) {
-        window.location.href = "login.html";
-        return;
-    }
+    try {
+        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+        
+        if (sessionError) throw sessionError;
+        if (!session) {
+            window.location.href = "login.html";
+            return;
+        }
 
-    // Buscamos el tenant_id si no lo tenemos guardado
-    if (!currentTenantId) {
-        const { data: profile, error } = await supabaseClient
-            .from('profiles')
-            .select('tenant_id')
-            .eq('id', session.user.id)
-            .single();
+        if (!currentTenantId) {
+            console.log("Buscando tenant para el usuario:", session.user.id);
+            const { data: profile, error: profileError } = await supabaseClient
+                .from('profiles')
+                .select('tenant_id')
+                .eq('id', session.user.id)
+                .single();
 
-        if (profile && profile.tenant_id) {
+            if (profileError) throw profileError; // <--- ESTO NOS DARÁ EL ERROR EN LA CONSOLA
+
             currentTenantId = profile.tenant_id;
             localStorage.setItem('user_tenant_id', currentTenantId);
-        } else {
-            console.error("Error al obtener perfil:", error);
-            alert("No se pudo cargar la configuración de tu tienda.");
         }
+    } catch (err) {
+        console.error("DETALLE DEL ERROR:", err);
+        alert("Error crítico: " + err.message); // Esto te dirá el mensaje real del error
     }
 }
 
