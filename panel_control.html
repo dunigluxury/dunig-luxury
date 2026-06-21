@@ -263,6 +263,48 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvZ3h4eml5c2p0eGJleGxqeHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1NjA3NDYsImV4cCI6MjA5NzEzNjc0Nn0.ULjhf1bkvGr7O19QPIwjzHINDy1FKUoWVbQss1Goeoc"; 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// Variable global para persistir el tenant
+let currentTenantId = localStorage.getItem('user_tenant_id') || null;
+
+async function verificarAcceso() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    
+    if (!session) {
+        window.location.href = "login.html";
+        return;
+    }
+
+    // Buscamos el tenant_id si no lo tenemos guardado
+    if (!currentTenantId) {
+        const { data: profile, error } = await supabaseClient
+            .from('profiles')
+            .select('tenant_id')
+            .eq('id', session.user.id)
+            .single();
+
+        if (profile && profile.tenant_id) {
+            currentTenantId = profile.tenant_id;
+            localStorage.setItem('user_tenant_id', currentTenantId);
+        } else {
+            console.error("Error al obtener perfil:", error);
+            alert("No se pudo cargar la configuración de tu tienda.");
+        }
+    }
+}
+
+// Ahora asegúrate de que el DOMContentLoaded llame a esta función
+window.addEventListener('DOMContentLoaded', async () => {
+    await verificarAcceso();
+    
+    if (currentTenantId) {
+        // Solo cargamos los datos si logramos verificar el tenant
+        await descargarCategoriasDesdeSupabase();
+        await descargarCatalogoDeSupabase();
+        // ... el resto de tus cargas
+    }
+});
+
+
         // Lógica de seguridad integrada
 async function verificarAcceso() {
     const { data: { session } } = await supabaseClient.auth.getSession();
