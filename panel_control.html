@@ -263,7 +263,7 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvZ3h4eml5c2p0eGJleGxqeHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1NjA3NDYsImV4cCI6MjA5NzEzNjc0Nn0.ULjhf1bkvGr7O19QPIwjzHINDy1FKUoWVbQss1Goeoc"; 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Variable global para persistir el tenant
+// Variable global
 let currentTenantId = localStorage.getItem('user_tenant_id') || null;
 
 async function verificarAcceso() {
@@ -273,35 +273,38 @@ async function verificarAcceso() {
         if (sessionError) throw sessionError;
         if (!session) {
             window.location.href = "login.html";
-            return;
+            return null; // Retornamos null si no hay sesión
         }
 
         if (!currentTenantId) {
-            console.log("Buscando tenant para el usuario:", session.user.id);
             const { data: profile, error: profileError } = await supabaseClient
                 .from('profiles')
                 .select('tenant_id')
                 .eq('id', session.user.id)
                 .single();
 
-            if (profileError) throw profileError; // <--- ESTO NOS DARÁ EL ERROR EN LA CONSOLA
+            if (profileError) throw profileError;
 
             currentTenantId = profile.tenant_id;
             localStorage.setItem('user_tenant_id', currentTenantId);
         }
+
+        // DEBEMOS RETORNAR ALGO para que el DOMContentLoaded sepa que todo salió bien
+        return session.user.email; 
     } catch (err) {
         console.error("DETALLE DEL ERROR:", err);
-        alert("Error crítico: " + err.message); // Esto te dirá el mensaje real del error
+        alert("Error crítico: " + err.message);
+        return null;
     }
 }
 
 window.addEventListener('DOMContentLoaded', async () => {
-    // 1. Verificamos el usuario y cargamos su tienda
-    const email = await verificarAcceso();
+    // Ahora 'userEmail' recibirá el email si la función tuvo éxito, o null si falló
+    const userEmail = await verificarAcceso();
     
-    // 2. Si verificarAcceso devolvió algo, significa que el usuario es válido
-    if (email) {
-        // Ejecutamos todas las cargas en paralelo (es más rápido)
+    if (userEmail) {
+        console.log("Usuario autenticado:", userEmail);
+        
         await Promise.all([
             descargarCategoriasDesdeSupabase(),
             descargarAdicionales(),
@@ -309,10 +312,9 @@ window.addEventListener('DOMContentLoaded', async () => {
             descargarCuentasPago()
         ]);
         
-        console.log("Panel cargado exitosamente para:", email);
+        console.log("Panel cargado exitosamente.");
     }
 });
-
 // VERIFICACIÓN DE SESIÓN Y CARGA DINÁMICA DE TENANT
 window.addEventListener('DOMContentLoaded', async () => { 
     // 0. Obtener sesión
@@ -334,6 +336,8 @@ window.addEventListener('DOMContentLoaded', async () => {
             
         if (profile && profile.tenant_id) {
             currentTenantId = profile.tenant_id;
+            // Persistir para otras funciones
+            localStorage.setItem('user_tenant_id', currentTenantId);
             console.log("Tenant ID cargado con éxito:", currentTenantId);
             
             // 2. Cargar datos específicos de este tenant en orden
@@ -359,40 +363,72 @@ window.addEventListener('DOMContentLoaded', async () => {
         }
     } else {
         console.warn("No hay sesión activa. Redirigiendo a login...");
-        // Opcional: window.location.href = "login.html";
+        // Redirección forzosa al login si no hay sesión
+        window.location.href = "login.html"; 
     }
 });
 
-// Ejemplo de cómo deben actualizarse tus funciones de carga (Aplica este patrón a todas)
+// --- GESTIÓN DE CATEGORÍAS (CORREGIDO Y SEGURO) ---
+
 async function descargarCategoriasDesdeSupabase() {
-    if (!currentTenantId) return;
+    // Si no tenemos el ID de la tienda, no intentamos consultar para evitar errores
+    if (!currentTenantId) {
+        console.warn("Intento de descarga sin tenant_id");
+        return;
+    }
 
     const { data, error } = await supabaseClient
         .from('categorias')
-        .select('nombre')
-        .eq('tenant_id', currentTenantId); // Filtro Multi-tenant
+        .select('id, nombre') // Incluimos el id por si necesitas borrar después
+        .eq('tenant_id', currentTenantId); // Filtro obligatorio
+
+    if (error) {
+        console.error("Error al descargar categorías:", error.message);
+        return;
+    }
 
     if (data) {
-        categoriasDB = data.map(c => c.nombre);
+        categoriasDB = data; // Guardamos todo el objeto (id y nombre)
         renderizarCategorias(); 
     }
 }
 
-// Ejemplo de cómo deben actualizarse tus funciones de inserción
 async function guardarCategoriaEnSupabase(nombreCategoria) {
-    if (!currentTenantId) return;
+    if (!currentTenantId) {
+        alert("Error: Sesión de tienda no válida.");
+        return;
+    }
 
     const { error } = await supabaseClient
         .from('categorias')
         .insert([{ 
             nombre: nombreCategoria, 
-            tenant_id: currentTenantId // Guardamos el ID del tenant
+            tenant_id: currentTenantId // Registro con el ID de la tienda
         }]);
 
-    if (!error) {
-        await descargarCategoriasDesdeSupabase();
-    } else {
+    if (error) {
+        console.error("Error al guardar:", error);
         alert("Error al guardar: " + error.message);
+    } else {
+        // Limpiamos o refrescamos la UI
+        console.log("Categoría guardada exitosamente");
+        await descargarCategoriasDesdeSupabase();
+    }
+}
+
+async function eliminarCategoria(categoriaId) {
+    if (!currentTenantId) return;
+
+    const { error } = await supabaseClient
+        .from('categorias')
+        .delete()
+        .eq('id', categoriaId)
+        .eq('tenant_id', currentTenantId); // Filtro de seguridad al borrar
+
+    if (error) {
+        alert("Error al eliminar: " + error.message);
+    } else {
+        await descargarCategoriasDesdeSupabase();
     }
 }
 
@@ -412,29 +448,42 @@ async function ejecutarLogin() {
     }
 
     // 2. Si el login es exitoso, buscamos su tenant_id
-    const { data: profile } = await supabaseClient
+    const { data: profile, error: profileError } = await supabaseClient
         .from('profiles')
         .select('tenant_id')
         .eq('id', data.user.id)
         .single();
 
-    if (profile) {
+    if (profile && profile.tenant_id) {
+        // Guardamos el tenant en la variable global Y en localStorage
         currentTenantId = profile.tenant_id;
+        localStorage.setItem('user_tenant_id', currentTenantId);
+        
+        console.log("Login exitoso. Tenant cargado:", currentTenantId);
         document.getElementById('auth-modal').classList.add('hidden');
         
-        // 3. Cargamos los datos del tenant apenas entra
-        await descargarCategoriasDesdeSupabase();
-        descargarCatalogoDeSupabase();
-        await descargarAdicionales();
-        descargarCuentasPago();
-        
-        console.log("Tenant cargado:", currentTenantId);
+        // 3. Cargamos los datos del tenant inmediatamente
+        try {
+            await Promise.all([
+                descargarCategoriasDesdeSupabase(),
+                descargarCatalogoDeSupabase(),
+                descargarAdicionales(),
+                descargarCuentasPago()
+            ]);
+            
+            // UI Final
+            lucide.createIcons();
+            alert("¡Bienvenido! Datos cargados correctamente.");
+        } catch (err) {
+            console.error("Error en carga inicial:", err);
+            alert("Error al sincronizar datos de tu tienda.");
+        }
     } else {
+        console.error("Error de perfil:", profileError);
         alert("Tu usuario no tiene una empresa (tenant) asignada. Contacta a soporte.");
-        await supabaseClient.auth.signOut(); // Por seguridad, si no tiene perfil, lo sacamos
+        await supabaseClient.auth.signOut(); // Por seguridad, cerramos sesión
     }
 }
-
 async function descargarAdicionales() {
     // 1. Ya NO necesitamos el .eq('tenant_id', currentTenantId)
     // porque la política RLS de Supabase filtra automáticamente 
@@ -1000,33 +1049,27 @@ async function guardarCategoriaEnSupabase(nombreCategoria) {
 }
 
 // CORRECCIÓN: Elimina los puntos suspensivos que causan el error
-async function guardarAdicional() {
-    const nombre = document.getElementById('add-nombre').value.trim();
-    const precio = parseFloat(document.getElementById('add-precio').value);
-
-    if (!nombre || isNaN(precio)) {
-        alert("Por favor, ingresa un nombre y un precio válido.");
-        return;
-    }
-
+async function guardarAdicional(nombre, precio) {
+    // Ya no es obligatorio el tenant_id aquí si el RLS lo gestiona
     const { error } = await supabaseClient
         .from('adicionales')
         .insert([{ 
             nombre: nombre, 
-            precio: precio, 
-            tenant_id: currentTenantId 
+            precio: precio 
+            // Opcional: Si tu RLS no es automático, mantén: tenant_id: currentTenantId
         }]);
 
     if (error) {
-        alert("Error al guardar adicional: " + error.message);
+        console.error("Error al guardar adicional:", error.message);
+        alert("No se pudo guardar: " + error.message);
     } else {
         alert("Adicional registrado con éxito.");
+        // Limpiamos y refrescamos
         document.getElementById('add-nombre').value = "";
         document.getElementById('add-precio').value = "";
         descargarAdicionales();
     }
 }
-
 // Descargar y mostrar adicionales
 async function descargarAdicionales() {
     const { data, error } = await supabaseClient
@@ -1051,16 +1094,17 @@ async function eliminarAdicional(id) {
     const { error } = await supabaseClient
         .from('adicionales')
         .delete()
-        .eq('id', id)
-        .eq('tenant_id', currentTenantId); // <--- CORRECCIÓN AQUÍ
+        .eq('id', id); 
+        // Supabase solo borrará si el usuario logueado es el dueño de ese ID,
+        // gracias a la política de seguridad RLS.
 
-    if (!error) {
-        descargarAdicionales();
+    if (error) {
+        console.error("Error al eliminar:", error.message);
+        alert("Error al intentar eliminar.");
     } else {
-        alert("Error al eliminar: " + error.message);
+        descargarAdicionales();
     }
 }
-
     </script>
 </body>
 </html>
