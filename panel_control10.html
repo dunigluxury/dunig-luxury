@@ -295,47 +295,23 @@ async function verificarAcceso() {
     }
 }
 
-// Ahora asegúrate de que el DOMContentLoaded llame a esta función
 window.addEventListener('DOMContentLoaded', async () => {
-    await verificarAcceso();
+    // 1. Verificamos el usuario y cargamos su tienda
+    const email = await verificarAcceso();
     
-    if (currentTenantId) {
-        // Solo cargamos los datos si logramos verificar el tenant
-        await descargarCategoriasDesdeSupabase();
-        await descargarCatalogoDeSupabase();
-        // ... el resto de tus cargas
+    // 2. Si verificarAcceso devolvió algo, significa que el usuario es válido
+    if (email) {
+        // Ejecutamos todas las cargas en paralelo (es más rápido)
+        await Promise.all([
+            descargarCategoriasDesdeSupabase(),
+            descargarAdicionales(),
+            descargarCatalogoDeSupabase(),
+            descargarCuentasPago()
+        ]);
+        
+        console.log("Panel cargado exitosamente para:", email);
     }
 });
-
-
-        // Lógica de seguridad integrada
-async function verificarAcceso() {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    
-    if (!session) {
-        window.location.href = "login.html"; 
-        return null;
-    }
-
-    // BUSCAR EL TENANT_ID DEL USUARIO
-    const { data: profile, error } = await supabaseClient
-        .from('profiles')
-        .select('tenant_id')
-        .eq('id', session.user.id)
-        .single();
-
-    if (error || !profile || !profile.tenant_id) {
-        console.error("Error al obtener tenant_id:", error);
-        alert("Acceso denegado: No tienes una tienda configurada.");
-        return null;
-    }
-
-    // SI TODO ESTÁ BIEN, GUARDAMOS EL TENANT_ID
-    currentTenantId = profile.tenant_id;
-    console.log("Tienda cargada con éxito:", currentTenantId);
-    
-    return session.user.email;
-}
 
 // VERIFICACIÓN DE SESIÓN Y CARGA DINÁMICA DE TENANT
 window.addEventListener('DOMContentLoaded', async () => { 
@@ -460,15 +436,25 @@ async function ejecutarLogin() {
 }
 
 async function descargarAdicionales() {
+    // 1. Ya NO necesitamos el .eq('tenant_id', currentTenantId)
+    // porque la política RLS de Supabase filtra automáticamente 
+    // según el usuario que está logueado.
     const { data, error } = await supabaseClient
         .from('adicionales')
-        .select('*')
-        .eq('tenant_id', currentTenantId);
+        .select('*'); 
 
-    if (!error && data) {
-        const lista = document.getElementById('lista-adicionales');
-        if (lista) {
-            lista.innerHTML = "";
+    // 2. Manejo de errores profesional
+    if (error) {
+        console.error("Error al cargar adicionales:", error.message);
+        // Opcional: mostrar un mensaje visual al usuario
+        return;
+    }
+
+    // 3. Renderizado
+    const lista = document.getElementById('lista-adicionales');
+    if (lista) {
+        lista.innerHTML = "";
+        if (data && data.length > 0) {
             data.forEach(a => {
                 lista.innerHTML += `
                     <div class="bg-stone-950/60 p-3 rounded-xl text-xs border border-stone-900 text-stone-400 flex justify-between items-center">
@@ -476,10 +462,11 @@ async function descargarAdicionales() {
                         <button onclick="eliminarAdicional(${a.id})" class="text-red-500 hover:text-red-300 ml-2 font-bold">✕</button>
                     </div>`;
             });
+        } else {
+            lista.innerHTML = '<p class="text-stone-600 text-center">No hay adicionales registrados.</p>';
         }
     }
 }
-
 async function eliminarAdicional(id) {
     const { error } = await supabaseClient.from('adicionales').delete().eq('id', id);
     if (!error) {
