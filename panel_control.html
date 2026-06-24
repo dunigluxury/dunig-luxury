@@ -1105,6 +1105,17 @@ async function eliminarAdicional(id) {
         descargarAdicionales();
     }
 }
+ async function ejecutarLogout() {
+    // 1. Cerrar sesión en Supabase y limpiar token
+    await supabaseClient.auth.signOut();
+    
+    // 2. Limpiar todos los datos locales para eliminar el tenant_id antiguo
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // 3. Forzar recarga total de la página para que vuelva al estado de login
+    window.location.reload();
+}       
     </script>
 </body>
 </html>
