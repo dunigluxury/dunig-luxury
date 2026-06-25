@@ -1067,23 +1067,20 @@ async function guardarAdicional(nombre, precio) {
         descargarAdicionales();
     }
 }
-// Descargar y mostrar adicionales
-async function descargarAdicionales() {
-    const { data, error } = await supabaseClient
+async function eliminarAdicional(id) {
+    const { error } = await supabaseClient
         .from('adicionales')
-        .select('*')
-        .eq('tenant_id', currentTenantId); // <--- CORRECCIÓN AQUÍ
+        .delete()
+        .eq('id', id)
+        .eq('tenant_id', currentTenantId); // <--- AGREGA ESTA LÍNEA
 
-    if (!error && data) {
-        const lista = document.getElementById('lista-adicionales');
-        lista.innerHTML = "";
-        data.forEach(a => {
-            lista.innerHTML += `
-                <div class="bg-stone-950/60 p-3 rounded-xl text-xs border border-stone-900 text-stone-400 flex justify-between items-center">
-                    <span>${a.nombre} - <span class="text-amber-400">$${a.precio}</span></span>
-                    <button onclick="eliminarAdicional(${a.id})" class="text-red-500 hover:text-red-300 ml-2 font-bold">✕</button>
-                </div>`;
-        });
+    if (error) {
+        console.error("Error al eliminar:", error.message);
+        alert("Error al intentar eliminar.");
+    } else {
+        // Al recargar, la función de descarga (que ya filtra por tenant) 
+        // actualizará la lista correctamente.
+        descargarAdicionales();
     }
 }
 
@@ -1106,11 +1103,11 @@ async function eliminarAdicional(id) {
     // 1. Cerrar sesión en Supabase y limpiar token
     await supabaseClient.auth.signOut();
     
-    // 2. Limpiar todos los datos locales para eliminar el tenant_id antiguo
+    // 2. Limpiar local y session storage para evitar contaminación de datos
     localStorage.clear();
     sessionStorage.clear();
     
-    // 3. Forzar recarga total de la página para que vuelva al estado de login
+    // 3. Forzar recarga total para asegurar que no queden datos en memoria
     window.location.reload();
 }       
     </script>
