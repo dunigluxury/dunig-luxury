@@ -296,76 +296,59 @@ async function verificarAcceso() {
 }
 
 window.addEventListener('DOMContentLoaded', async () => {
-    // Ahora 'userEmail' recibirá el email si la función tuvo éxito, o null si falló
-    const userEmail = await verificarAcceso();
-    
-    if (userEmail) {
-        console.log("Usuario autenticado:", userEmail);
-        
-        await Promise.all([
-            descargarCategoriasDesdeSupabase(),
-            descargarAdicionales(),
-            descargarCatalogoDeSupabase(),
-            descargarCuentasPago()
-        ]);
-        
-        console.log("Panel cargado exitosamente.");
-    }
-});
-// VERIFICACIÓN DE SESIÓN Y CARGA DINÁMICA DE TENANT
-window.addEventListener('DOMContentLoaded', async () => { 
-    // 0. Obtener sesión
+    console.log("Iniciando carga de aplicación...");
+
+    // 1. Obtener sesión actual
     const { data: { session } } = await supabaseClient.auth.getSession();
-    
-    if (session) {
-        // Ocultar modal si el usuario ya está logueado
-        const authModal = document.getElementById('auth-modal');
-        if (authModal) authModal.classList.add('hidden');
-        
-        console.log("Sesión activa para:", session.user.email);
-        
-        // 1. Obtener el tenant_id del usuario desde la tabla profiles
-        const { data: profile, error: profileError } = await supabaseClient
-            .from('profiles')
-            .select('tenant_id')
-            .eq('id', session.user.id)
-            .single();
-            
-        if (profile && profile.tenant_id) {
-            currentTenantId = profile.tenant_id;
-            // Persistir para otras funciones
-            localStorage.setItem('user_tenant_id', currentTenantId);
-            console.log("Tenant ID cargado con éxito:", currentTenantId);
-            
-            // 2. Cargar datos específicos de este tenant en orden
-            try {
-                await descargarCategoriasDesdeSupabase(); 
-                await descargarAdicionales();
-                await descargarCatalogoDeSupabase(); 
-                await descargarCuentasPago();
-                
-                // Funciones de UI
-                alternarCamposPago(); 
-                renderizerInputsMatrizFotos(); 
-                lucide.createIcons();
-                
-                console.log("Carga de datos de tienda finalizada.");
-            } catch (err) {
-                console.error("Error al cargar los datos de la tienda:", err);
-                alert("Ocurrió un error al cargar la información de tu tienda.");
-            }
-        } else {
-            console.error("Usuario sin tenant asignado o error de perfil:", profileError);
-            alert("Tu cuenta no tiene una empresa asignada. Contacta al soporte.");
+
+    if (!session) {
+        console.warn("No hay sesión activa. Redirigiendo a login...");
+        window.location.href = "login.html";
+        return;
+    }
+
+    // Ocultar modal si existe
+    const authModal = document.getElementById('auth-modal');
+    if (authModal) authModal.classList.add('hidden');
+
+    console.log("Sesión activa para:", session.user.email);
+
+    // 2. Obtener el tenant_id (perfil)
+    const { data: profile, error: profileError } = await supabaseClient
+        .from('profiles')
+        .select('tenant_id')
+        .eq('id', session.user.id)
+        .single();
+
+    if (profile && profile.tenant_id) {
+        window.currentTenantId = profile.tenant_id; // Global para que las funciones lo vean
+        localStorage.setItem('user_tenant_id', window.currentTenantId);
+        console.log("Tenant ID configurado:", window.currentTenantId);
+
+        // 3. Carga de datos en paralelo (mucho más rápido)
+        try {
+            await Promise.all([
+                descargarCategoriasDesdeSupabase(),
+                descargarAdicionales(),
+                descargarCatalogoDeSupabase(),
+                descargarCuentasPago()
+            ]);
+
+            // 4. Inicialización de UI
+            alternarCamposPago();
+            renderizerInputsMatrizFotos();
+            lucide.createIcons();
+
+            console.log("Carga de datos finalizada exitosamente.");
+        } catch (err) {
+            console.error("Error crítico durante la carga de datos:", err);
+            alert("Ocurrió un error al cargar la información de tu tienda. Revisa la consola.");
         }
     } else {
-        console.warn("No hay sesión activa. Redirigiendo a login...");
-        // Redirección forzosa al login si no hay sesión
-        window.location.href = "login.html"; 
+        console.error("Perfil no encontrado o sin tenant:", profileError);
+        alert("Tu cuenta no tiene una empresa asignada. Contacta al soporte.");
     }
-});
-
-// --- GESTIÓN DE CATEGORÍAS (CORREGIDO Y SEGURO) ---
+});// --- GESTIÓN DE CATEGORÍAS (CORREGIDO Y SEGURO) ---
 
 async function descargarCategoriasDesdeSupabase() {
     // Si no tenemos el ID de la tienda, no intentamos consultar para evitar errores
