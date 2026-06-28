@@ -183,8 +183,8 @@
     <footer class="border-t border-stone-950 bg-black/60 p-4 text-center text-[10px] text-stone-600 font-mono tracking-widest mt-12">© 2026 D'UNIG LUXURY ECOSISTEMA. TODOS LOS DERECHOS RESERVADOS.</footer>
 
     <script>
-        const SUPABASE_URL = "https://yogxxziysjtxbexljxqb.supabase.co"; 
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvZ3h4eml5c2p0eGJleGxqeHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1NjA3NDYsImV4cCI6MjA5NzEzNjc0Nn0.ULjhf1bkvGr7O19QPIwjzHINDy1FKUoWVbQss1Goeoc"; 
+        const SUPABASE_URL = "https://yoibmpulvokhvvhkryzv.supabase.co"; 
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE"; 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let baseProductos = [], cuentasDB = [], carritoVIP = [];
@@ -440,18 +440,8 @@
         return; 
     }
 
-    // --- LÓGICA DE CONVERSIÓN (Lo nuevo) ---
-    const metodoElegido = document.getElementById('carrito-selector-pago').options[indexSelector].text;
-    const tasaData = await obtenerTasaDesdeSupabase(metodoElegido); 
-    
-    let subtotalGlobal = 0;
-    carritoVIP.forEach(item => subtotalGlobal += parseFloat(item.precio));
-    
-    const totalConvertido = subtotalGlobal * tasaData.valor;
-    // ----------------------------------------
-
     // 1. Obtener número de WhatsApp desde Supabase
-    let numeroWhatsApp = "584120000000"; 
+    let numeroWhatsApp = "584120000000"; // Número por defecto
     const { data: configData, error: configError } = await supabaseClient
         .from('ajustes_sistema')
         .select('valor')
@@ -462,29 +452,32 @@
         numeroWhatsApp = configData.valor.replace(/[^0-9]/g, "");
     }
 
-    // 2. Construir mensaje (Ahora incluye el total convertido)
-    let listaProductosTexto = carritoVIP.map(item => `• ${item.titulo} ($${parseFloat(item.precio).toFixed(2)})`).join('\n');
+    // 2. Construir mensaje
+    let listaProductosTexto = "";
+    let subtotalGlobal = 0;
+    carritoVIP.forEach((item) => {
+        listaProductosTexto += `• ${item.titulo} ($${parseFloat(item.precio).toFixed(2)})\n`;
+        subtotalGlobal += parseFloat(item.precio) || 0;
+    });
+
     const cuentaSel = cuentasDB[indexSelector];
-    
-    const textoMensaje = `💎 *NUEVO PEDIDO - D'UNIG LUXURY* 💎\n\n🛍️ *PRODUCTOS:*\n${listaProductosTexto}\n\n💵 *TOTAL USD:* $${subtotalGlobal.toFixed(2)}\n💰 *TOTAL A PAGAR:* ${tasaData.simbolo}${totalConvertido.toFixed(2)}\n\n🏦 *PAGO:* ${cuentaSel.plataforma} - ${cuentaSel.banco}\n🔢 *REF:* ${transaccionRef}`;
+    const textoMensaje = `💎 *NUEVO PEDIDO - D'UNIG LUXURY* 💎\n\n🛍️ *PRODUCTOS:*\n${listaProductosTexto}\n💵 *TOTAL:* $${subtotalGlobal.toFixed(2)}\n\n🏦 *PAGO:* ${cuentaSel.plataforma} - ${cuentaSel.banco}\n🔢 *REF:* ${transaccionRef}`;
 
-    // 3. Guardar en ordenes_vip (usamos el total convertido)
-    await supabaseClient.from('ordenes_vip').insert([{
-        productos: carritoVIP.map(item => item.titulo).join(', '),
-        total: totalConvertido, 
-        referencia: transaccionRef,
-        estado: "Pendiente"
-    }]);
+    // ... (todo tu código anterior hasta finalizarOrdenCompraVIP) ...
+        await supabaseClient.from('ordenes_vip').insert([{
+            productos: carritoVIP.map(item => item.titulo).join(', '),
+            total: subtotalGlobal,
+            referencia: transaccionRef,
+            estado: "Pendiente"
+        }]);
 
-    // 4. Finalizar y Limpiar
-    window.open(`https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${encodeURIComponent(textoMensaje)}`, '_blank');
-    
-    carritoVIP = [];
-    document.getElementById('contador-carrito-global').innerText = "0";
-    document.getElementById('carrito-input-referencia').value = "";
-    document.getElementById('caja-detalles-pago-extendida').classList.add('hidden');
-    document.getElementById('carrito-selector-pago').value = "";
-}
+        const urlWhatsApp = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${encodeURIComponent(textoMensaje)}`;
+        
+        carritoVIP = [];
+        document.getElementById('contador-carrito-global').innerText = "0";
+        document.getElementById('carrito-input-referencia').value = "";
+        document.getElementById('caja-detalles-pago-extendida').classList.add('hidden');
+        document.getElementById('carrito-selector-pago').value = "";
         
         irAPantallaVitrina();
         window.open(urlWhatsApp, '_blank');
@@ -533,25 +526,6 @@
         lucide.createIcons();
     }
     // Fin del script
-
-// Agrega esto al final de tus scripts en index.html
-async function obtenerTasaDesdeSupabase(metodo) {
-    try {
-        // Esto invoca a la función que ya desplegaste en Supabase
-        const { data, error } = await supabaseClient.functions.invoke('obtener-tasa');
-        
-        if (error) throw error;
-        
-        // 'data.tasa' es el valor que viene de la API que configuramos en la nube
-        if (metodo === 'Pago Movil') return { valor: data.tasa, simbolo: 'Bs ' };
-        return { valor: 1, simbolo: '$' };
-        
-    } catch (error) {
-        console.error("Error al conectar con Supabase:", error);
-        return { valor: 36.50, simbolo: 'Bs ' }; // Valor de respaldo
-    }
-}
-
     </script>
 </body>
 </html>
