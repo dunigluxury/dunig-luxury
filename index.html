@@ -163,9 +163,15 @@
                 </div>
 
                 <div class="space-y-1.5">
-                    <label class="text-[9px] uppercase text-stone-400 font-bold tracking-widest block font-futurista">2. Referencia / Código de Depósito</label>
-                    <input type="text" id="carrito-input-referencia" placeholder="Ej: REF-77001" class="w-full bg-stone-900 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none focus:border-amber-400/40 font-mono tracking-wider">
-                </div>
+    <label class="text-[9px] uppercase text-stone-400 font-bold tracking-widest block font-futurista">2. Referencia / Código de Depósito</label>
+    <input type="text" 
+           id="carrito-input-referencia" 
+           inputmode="numeric" 
+           pattern="[0-9]{12}" 
+           maxlength="12" 
+           placeholder="Ingresa los 12 dígitos" 
+           class="w-full bg-stone-900 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none focus:border-amber-400/40 font-mono tracking-wider">
+</div>
 
             <button onclick="finalizarOrdenCompraVIP()" class="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-futurista font-black py-3 px-4 rounded-xl text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-2 cursor-pointer shadow-lg transition-all duration-300">
                 <i data-lucide="shield-check" class="w-4 h-4"></i> PROCEED TO CHECKOUT
@@ -435,8 +441,10 @@
         alert("Por favor seleccione un método de pago."); 
         return; 
     }
-    if(!transaccionRef) { 
-        alert("Por favor inserte el código de referencia."); 
+
+    // --- AQUÍ ESTÁ LA VALIDACIÓN DE LOS 12 NÚMEROS ---
+    if (!/^\d{12}$/.test(transaccionRef)) { 
+        alert("Por favor, inserte un código de referencia válido de exactamente 12 números."); 
         return; 
     }
 
