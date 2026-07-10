@@ -60,10 +60,10 @@
             </p>
         </div>
 
-        <div class="bg-stone-900/50 px-4 py-2 rounded-xl border border-stone-800 flex items-center gap-2">
-            <span class="text-[10px] text-stone-500 font-bold uppercase tracking-widest">Canal:</span>
-            <span class="text-xs font-black text-amber-400 tracking-wider font-futurista uppercase">LUXURY_STORE</span>
-        </div>
+        <div class="bg-stone-900/50 px-4 py-2 rounded-xl border border-stone-800 flex items-center gap-2 hidden">
+    <span class="text-[10px] text-stone-500 font-bold uppercase tracking-widest">Canal:</span>
+    <span class="text-xs font-black text-amber-400 tracking-wider font-futurista uppercase">LUXURY_STORE</span>
+</div>
         
     </div>
 
@@ -104,17 +104,18 @@
 
             <div id="contenedor-adicionales" class="w-full"></div>
 
-            <div class="grid grid-cols-2 gap-4 border-t border-stone-900 pt-4">
-                <div>
-                    <span class="text-[9px] uppercase text-stone-500 font-bold block">Disponibilidad:</span>
-                    <span id="detalle-stock" class="text-xs text-white font-bold">0 unidades</span>
-                </div>
-                <div>
-                    <span class="text-[9px] uppercase text-stone-500 font-bold block">Autenticidad VIP:</span>
-                    <span class="text-xs text-green-400 font-bold flex items-center gap-1"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Certificada</span>
-                </div>
-            </div>
-            <div class="pt-2">
+<div class="grid grid-cols-2 gap-4 border-t border-stone-900 pt-4">
+    <!-- Ocultamos el stock con 'hidden' en lugar de borrarlo, así el script lo encuentra y no da error -->
+    <div class="hidden">
+        <span class="text-[9px] uppercase text-stone-500 font-bold block">Disponibilidad:</span>
+        <span id="detalle-stock" class="text-xs text-white font-bold">0 unidades</span>
+    </div>
+    
+    <div>
+        <span class="text-[9px] uppercase text-stone-500 font-bold block">Autenticidad VIP:</span>
+        <span class="text-xs text-green-400 font-bold flex items-center gap-1"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Certificada</span>
+    </div>
+</div>
                 <button onclick="agregarAlCarritoYVolver()" class="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-futurista font-black py-4 px-6 rounded-xl text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-2 cursor-pointer shadow-lg transition-all duration-300">
                     <i data-lucide="shopping-bag" class="w-4 h-4"></i> AÑADIR A LA BOLSA VIP
                 </button>
@@ -189,8 +190,8 @@
     <footer class="border-t border-stone-950 bg-black/60 p-4 text-center text-[10px] text-stone-600 font-mono tracking-widest mt-12">© 2026 D'UNIG LUXURY ECOSISTEMA. TODOS LOS DERECHOS RESERVADOS.</footer>
 
     <script>
-        const SUPABASE_URL = "https://yoibmpulvokhvvhkryzv.supabase.co"; 
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE"; 
+        const SUPABASE_URL = "https://dtjwvllldxpblhisblhq.supabase.co"; 
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0and2bGxsZHhwYmxoaXNibGhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzU4OTAsImV4cCI6MjA5NTY1MTg5MH0.SqzQXSmh1nAnlKpD39khgSQSokFeY_1Hp37PWX2RVsw"; 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let baseProductos = [], cuentasDB = [], carritoVIP = [];
@@ -241,7 +242,6 @@
                             <h3 class="font-futurista font-bold text-xs tracking-wide text-white uppercase truncate">${p.titulo}</h3>
                             <div class="flex justify-between items-center pt-2 border-t border-stone-900/60">
                                 <span class="font-mono text-xs text-amber-400 font-bold">$${parseFloat(p.precio).toFixed(2)}</span>
-                                <span class="text-[9px] font-mono text-stone-500">${p.stock} ITEMS</span>
                             </div>
                         </div>
                     </div>`;
