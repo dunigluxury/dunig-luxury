@@ -33,31 +33,30 @@ const supabaseUrl = 'https://yoibmpulvokhvvhkryzv.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-async function cargarComercios() {
-    // 1. Consulta bruta, sin filtros, a la tabla correcta
+async function cargarComerciosPorId(idBuscado) {
+    // 1. Realizamos la consulta filtrando específicamente por el ID
     const { data, error } = await supabaseClient
         .from('links_vitrinas')
-        .select('*'); 
+        .select('*')
+        .eq('id', idBuscado); // Este es el filtro por ID
 
     if (error) {
-        alert("Error de BD: " + error.message);
-        console.error("Error completo:", error);
+        console.error("Error al buscar por ID:", error.message);
+        alert("Error al cargar el comercio.");
         return;
     }
 
-    // 2. LOG CRUCIAL: Esto nos dirá qué es lo que realmente llega
-    console.log("Datos recibidos:", data);
-    
-    // 3. Verificación visual rápida
-    if (!data || data.length === 0) {
-        // Si entra aquí, es que la tabla que estás viendo en Supabase 
-        // NO es la misma que la tabla que tu código está consultando.
-        alert("La tabla links_vitrinas está vacía en este proyecto. ¿Seguro que es el mismo proyecto?");
+    // 2. Verificamos si existe el ID
+    if (data && data.length > 0) {
+        console.log("Comercio encontrado:", data[0]);
+        renderizar(data); // Tu función que muestra la imagen/link en pantalla
     } else {
-        alert("¡Éxito! Encontré " + data.length + " filas.");
-        renderizar(data);
+        alert("No se encontró ningún comercio con el ID: " + idBuscado);
     }
 }
+
+// Ejemplo de uso: Si quieres cargar el comercio con ID 20:
+// cargarComerciosPorId(20);
         // LÓGICA DE FILTRADO
         function filtrarComercios() {
             const busqueda = document.getElementById('buscador').value.toLowerCase();
