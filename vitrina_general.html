@@ -29,31 +29,37 @@
 
     <script>
         // CONFIGURACIÓN
-        const supabaseUrl = 'https://yoibmpulvokhvvhkryzv.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE';
-        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+const supabaseUrl = 'https://yoibmpulvokhvvhkryzv.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE';
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        let todosLosNegocios = [];
+async function cargarComercios() {
+    console.log("Intentando conectar con Supabase...");
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('links_vitrinas')
+            .select('*');
 
-        // LÓGICA DE CARGA
-        async function cargarComercios() {
-            const { data, error } = await supabaseClient
-                .from('links_vitrinas')
-                .select('nombre, url, imagen_url');
-
-            document.getElementById('cargando').style.display = 'none';
-
-            if (error) {
-                console.error("Error al conectar:", error);
-                document.getElementById('contenedor-comercios').innerHTML = '<p class="col-span-full text-center text-red-500">Error al cargar comercios.</p>';
-                return;
-            }
-
-            if (data) {
-                todosLosNegocios = data;
-                renderizar(data);
-            }
+        if (error) {
+            console.error("Error detallado:", error);
+            document.getElementById('cargando').innerText = "Error: " + error.message;
+            return;
         }
+
+        console.log("Datos recibidos:", data);
+        
+        if (data && data.length > 0) {
+            document.getElementById('cargando').style.display = 'none';
+            renderizar(data);
+        } else {
+            document.getElementById('cargando').innerText = "No hay datos en la tabla.";
+        }
+    } catch (err) {
+        console.error("Error inesperado:", err);
+        document.getElementById('cargando').innerText = "Error de conexión.";
+    }
+}
 
         // LÓGICA DE FILTRADO
         function filtrarComercios() {
