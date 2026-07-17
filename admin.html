@@ -46,9 +46,13 @@
                     container.innerHTML += `
                         <div class="bg-stone-900 p-4 rounded border border-stone-800 flex justify-between items-center">
                             <span class="font-semibold truncate mr-2">${item.nombre}</span>
-                            <button onclick="borrar(${item.id})" class="bg-red-900/30 text-red-400 px-4 py-2 rounded text-sm hover:bg-red-800 transition">
-                                Borrar
-                            </button>
+                            // CAMBIA ESTO:
+// <button onclick="borrar(${item.id})" ...
+
+// POR ESTO (Añadimos un console.log directo en el click):
+<button onclick="console.log('Click en ID:', ${item.id}); borrar(${item.id})" class="...">
+    Borrar
+</button>
                         </div>
                     `;
                 });
