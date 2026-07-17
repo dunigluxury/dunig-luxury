@@ -34,18 +34,27 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 async function cargarComercios() {
+    // 1. Consulta bruta, sin filtros, a la tabla correcta
     const { data, error } = await supabaseClient
         .from('links_vitrinas')
-        .select('*');
+        .select('*'); 
 
     if (error) {
-        // Esto nos dirá si es un problema de permisos, de red, o de nombre de tabla
-        alert("Error técnico: " + error.message + " | Detalle: " + error.details);
+        alert("Error de BD: " + error.message);
         console.error("Error completo:", error);
-    } else if (data.length === 0) {
-        alert("La consulta fue exitosa, pero la tabla devolvió 0 resultados.");
+        return;
+    }
+
+    // 2. LOG CRUCIAL: Esto nos dirá qué es lo que realmente llega
+    console.log("Datos recibidos:", data);
+    
+    // 3. Verificación visual rápida
+    if (!data || data.length === 0) {
+        // Si entra aquí, es que la tabla que estás viendo en Supabase 
+        // NO es la misma que la tabla que tu código está consultando.
+        alert("La tabla links_vitrinas está vacía en este proyecto. ¿Seguro que es el mismo proyecto?");
     } else {
-        alert("¡Éxito! Encontré " + data.length + " registros.");
+        alert("¡Éxito! Encontré " + data.length + " filas.");
         renderizar(data);
     }
 }
