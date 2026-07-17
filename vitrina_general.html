@@ -34,33 +34,25 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 async function cargarComercios() {
-    console.log("Intentando conectar con Supabase...");
+    // Esto pide absolutamente TODO lo que hay en la tabla, sin condiciones
+    const { data, error } = await supabaseClient
+        .from('links_vitrinas')
+        .select('*'); 
+
+    if (error) {
+        console.error("Error:", error);
+        return;
+    }
+
+    console.log("Datos brutos desde la base de datos:", data);
     
-    try {
-        const { data, error } = await supabaseClient
-            .from('links_vitrinas')
-            .select('*');
-
-        if (error) {
-            console.error("Error detallado:", error);
-            document.getElementById('cargando').innerText = "Error: " + error.message;
-            return;
-        }
-
-        console.log("Datos recibidos:", data);
-        
-        if (data && data.length > 0) {
-            document.getElementById('cargando').style.display = 'none';
-            renderizar(data);
-        } else {
-            document.getElementById('cargando').innerText = "No hay datos en la tabla.";
-        }
-    } catch (err) {
-        console.error("Error inesperado:", err);
-        document.getElementById('cargando').innerText = "Error de conexión.";
+    if (data && data.length > 0) {
+        alert("¡Conexión exitosa! Encontré " + data.length + " filas.");
+        renderizar(data);
+    } else {
+        alert("La conexión funciona, pero la tabla está vacía para estas credenciales.");
     }
 }
-
         // LÓGICA DE FILTRADO
         function filtrarComercios() {
             const busqueda = document.getElementById('buscador').value.toLowerCase();
