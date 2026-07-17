@@ -84,30 +84,54 @@
 }
 
         document.getElementById('btnGuardar').onclick = async () => {
-            const file = document.getElementById('fileInput').files[0];
-            const nombre = document.getElementById('nombre').value;
-            const url = document.getElementById('url').value;
+    const btn = document.getElementById('btnGuardar');
+    const file = document.getElementById('fileInput').files[0];
+    const nombre = document.getElementById('nombre').value.trim();
+    const url = document.getElementById('url').value.trim();
 
-            if (!file || !nombre || !url) { alert("Por favor, llena todos los campos"); return; }
+    // 1. Validación estricta
+    if (!file || !nombre || !url) { 
+        alert("Por favor, llena todos los campos y selecciona una imagen"); 
+        return; 
+    }
 
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = async () => {
-                const { error } = await supabaseClient.from('links_vitrinas').insert([{ 
-                    nombre, url, imagen_url: reader.result 
-                }]);
-                
-                if (error) {
-                    alert("Error al guardar: " + error.message);
-                } else {
-                    alert("¡Guardado correctamente!");
-                    document.getElementById('nombre').value = '';
-                    document.getElementById('url').value = '';
-                    document.getElementById('fileInput').value = '';
-                    cargarLista();
-                }
-            };
-        };
+    // 2. Desactivar botón para evitar envíos múltiples
+    btn.disabled = true;
+    btn.innerText = "Guardando...";
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    
+    reader.onload = async () => {
+        const { error } = await supabaseClient.from('links_vitrinas').insert([{ 
+            nombre, 
+            url, 
+            imagen_url: reader.result 
+        }]);
+        
+        // 3. Reactivar botón después de la respuesta
+        btn.disabled = false;
+        btn.innerText = "Guardar Comercio";
+
+        if (error) {
+            alert("Error al guardar: " + error.message);
+        } else {
+            alert("¡Guardado correctamente!");
+            // Limpieza de campos
+            document.getElementById('nombre').value = '';
+            document.getElementById('url').value = '';
+            document.getElementById('fileInput').value = '';
+            // Recargar lista
+            await cargarLista();
+        }
+    };
+    
+    reader.onerror = () => {
+        btn.disabled = false;
+        btn.innerText = "Guardar Comercio";
+        alert("Error al leer la imagen.");
+    };
+};
 
         cargarLista();
     </script>
