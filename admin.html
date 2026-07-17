@@ -4,47 +4,49 @@
     <meta charset="UTF-8">
     <title>Admin - Dunig Luxury</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Cargamos Supabase con defer para asegurar que cargue bien -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-stone-950 text-white p-6">
     <div class="max-w-md mx-auto bg-stone-900 p-6 rounded-xl border border-stone-800">
         <h2 class="text-xl font-bold mb-4 text-amber-500">Nuevo Comercio</h2>
-        <input id="nombre" type="text" placeholder="Nombre del negocio" class="w-full p-2 mb-3 bg-stone-800 rounded text-white">
-        <input id="url" type="text" placeholder="URL de la vitrina" class="w-full p-2 mb-3 bg-stone-800 rounded text-white">
-        <input id="imagen" type="text" placeholder="URL de la imagen" class="w-full p-2 mb-3 bg-stone-800 rounded text-white">
-        <button id="btnGuardar" class="w-full bg-amber-600 p-2 rounded font-bold hover:bg-amber-500">Guardar Comercio</button>
+        <input id="nombre" type="text" placeholder="Nombre" class="w-full p-2 mb-3 bg-stone-800 rounded">
+        <input id="url" type="text" placeholder="URL de vitrina" class="w-full p-2 mb-3 bg-stone-800 rounded">
+        
+        <label class="block mb-2 text-sm text-stone-400">Seleccionar imagen del dispositivo:</label>
+        <input id="fileInput" type="file" accept="image/*" class="w-full mb-4 text-sm">
+        
+        <button id="btnGuardar" class="w-full bg-amber-600 p-2 rounded font-bold hover:bg-amber-500">Guardar con Imagen</button>
     </div>
 
     <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            console.log("Página cargada, iniciando Supabase...");
-            
-            if (typeof supabase === 'undefined') {
-                alert("Error: La librería de Supabase no cargó. Revisa tu conexión a internet.");
-                return;
-            }
+        const supabaseClient = supabase.createClient('https://yoibmpulvokhvvhkryzv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE');
 
-            const supabaseClient = supabase.createClient('https://yoibmpulvokhvvhkryzv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE');
+        document.getElementById('btnGuardar').onclick = async () => {
+            const file = document.getElementById('fileInput').files[0];
+            const nombre = document.getElementById('nombre').value;
+            const url = document.getElementById('url').value;
 
-            document.getElementById('btnGuardar').onclick = async () => {
-                const nombre = document.getElementById('nombre').value;
-                const url = document.getElementById('url').value;
-                const imagen = document.getElementById('imagen').value;
+            if (!file || !nombre) { alert("Sube una imagen y ponle nombre"); return; }
 
-                console.log("Intentando guardar:", nombre);
+            // 1. Subir la imagen al storage (bucket 'vitrinas')
+            const fileName = `${Date.now()}_${file.name}`;
+            const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                .from('vitrinas') // Asegúrate de tener este bucket creado en Supabase
+                .upload(fileName, file);
 
-                const { data, error } = await supabaseClient
-                    .from('links_vitrinas')
-                    .insert([{ nombre, url, imagen_url: imagen }]);
-                
-                if (error) {
-                    alert("Error detectado: " + error.message);
-                } else {
-                    alert("¡Éxito! Comercio guardado.");
-                }
-            };
-        });
+            if (uploadError) { alert("Error al subir imagen: " + uploadError.message); return; }
+
+            // 2. Obtener el link público
+            const { data: { publicUrl } } = supabaseClient.storage.from('vitrinas').getPublicUrl(fileName);
+
+            // 3. Guardar todo en la tabla
+            const { error } = await supabaseClient.from('links_vitrinas').insert([{ 
+                nombre, url, imagen_url: publicUrl 
+            }]);
+
+            if (error) alert("Error: " + error.message);
+            else alert("¡Guardado con éxito!");
+        };
     </script>
 </body>
 </html>
