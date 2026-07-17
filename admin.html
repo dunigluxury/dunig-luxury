@@ -71,8 +71,7 @@
             const { error } = await supabaseClient.from('links_vitrinas').delete().eq('id', id);
             
             if (error) {
-    console.error("Detalle del error:", error);
-    alert("Error: " + error.message + " - Código: " + error.code);
+    alert("Error al borrar: " + error.message);
 } else {
     await cargarLista();
 }
