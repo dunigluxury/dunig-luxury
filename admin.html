@@ -7,43 +7,75 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-stone-950 text-white p-6">
-    <div class="max-w-md mx-auto bg-stone-900 p-6 rounded-xl border border-stone-800">
-        <h2 class="text-xl font-bold mb-4 text-amber-500">Nuevo Comercio (Modo Simple)</h2>
-        
+    <div class="max-w-md mx-auto bg-stone-900 p-6 rounded-xl border border-stone-800 mb-8">
+        <h2 class="text-xl font-bold mb-4 text-amber-500">Nuevo Comercio</h2>
         <input id="nombre" type="text" placeholder="Nombre" class="w-full p-2 mb-3 bg-stone-800 rounded">
         <input id="url" type="text" placeholder="URL" class="w-full p-2 mb-3 bg-stone-800 rounded">
-        
-        <label class="block mb-2 text-sm text-stone-400">Seleccionar imagen:</label>
         <input id="fileInput" type="file" accept="image/*" class="w-full mb-4">
-        
         <button id="btnGuardar" class="w-full bg-amber-600 p-2 rounded font-bold hover:bg-amber-500">Guardar</button>
+    </div>
+
+    <!-- Contenedor de la lista -->
+    <div id="listaComercios" class="max-w-md mx-auto space-y-4">
+        <h2 class="text-xl font-bold text-white">Tus Comercios</h2>
+        <!-- Aquí se cargarán los elementos -->
     </div>
 
     <script>
         const supabaseClient = supabase.createClient('https://yoibmpulvokhvvhkryzv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE');
 
+        // Función para cargar y mostrar la lista
+        async function cargarLista() {
+            const { data, error } = await supabaseClient.from('links_vitrinas').select('*');
+            const container = document.getElementById('listaComercios');
+            container.innerHTML = '<h2 class="text-xl font-bold text-white">Tus Comercios</h2>';
+
+            if (data) {
+                data.forEach(item => {
+                    container.innerHTML += `
+                        <div class="bg-stone-900 p-4 rounded border border-stone-800 flex justify-between items-center">
+                            <span>${item.nombre}</span>
+                            <div class="space-x-2">
+                                <button onclick="borrar(${item.id})" class="text-red-400 hover:text-red-300">Borrar</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        // Función para borrar
+        async function borrar(id) {
+            if (!confirm("¿Seguro que quieres borrar este comercio?")) return;
+            const { error } = await supabaseClient.from('links_vitrinas').delete().eq('id', id);
+            if (error) alert("Error al borrar");
+            else cargarLista();
+        }
+
+        // Guardar nuevo
         document.getElementById('btnGuardar').onclick = async () => {
             const file = document.getElementById('fileInput').files[0];
             const nombre = document.getElementById('nombre').value;
             const url = document.getElementById('url').value;
 
-            if (!file) { alert("Selecciona una imagen"); return; }
+            if (!file || !nombre) { alert("Completa todos los campos"); return; }
 
-            // Convertir imagen a texto (Base64)
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = async () => {
-                const base64Image = reader.result;
-
-                // Guardar directo en la tabla
                 const { error } = await supabaseClient.from('links_vitrinas').insert([{ 
-                    nombre, url, imagen_url: base64Image 
+                    nombre, url, imagen_url: reader.result 
                 }]);
-
                 if (error) alert("Error: " + error.message);
-                else alert("¡Guardado sin problemas!");
+                else {
+                    alert("Guardado!");
+                    cargarLista();
+                }
             };
         };
+
+        // Cargar lista al iniciar
+        cargarLista();
     </script>
 </body>
 </html>
