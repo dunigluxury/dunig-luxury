@@ -33,27 +33,24 @@ const supabaseUrl = 'https://yoibmpulvokhvvhkryzv.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-async function cargarComerciosPorId(idBuscado) {
-    // Prueba de conexión absoluta
-supabaseClient
-  .from('links_vitrinas')
-  .select('id')
-  .then(response => {
-    console.log("URL de tu cliente:", supabaseClient.supabaseUrl);
-    console.log("Respuesta real del servidor:", response);
-  });
-    if (error) {
-        console.error("Error al buscar por ID:", error.message);
-        alert("Error al cargar el comercio.");
-        return;
-    }
+async function cargarDatos() {
+    console.log("Iniciando carga...");
+    const { data, error } = await supabaseClient
+        .from('links_vitrinas')
+        .select('*');
 
-    // 2. Verificamos si existe el ID
-    if (data && data.length > 0) {
-        console.log("Comercio encontrado:", data[0]);
-        renderizar(data); // Tu función que muestra la imagen/link en pantalla
+    if (error) {
+        console.error("Error detectado:", error);
+        alert("Error: " + error.message);
     } else {
-        alert("No se encontró ningún comercio con el ID: " + idBuscado);
+        console.log("Datos encontrados:", data);
+        if (data.length === 0) {
+            alert("Conexión exitosa, pero la tabla está vacía.");
+        } else {
+            alert("¡Éxito! Datos recibidos: " + data.length);
+            // Llama a tu función de renderizado aquí
+            renderizar(data);
+        }
     }
 }
 
