@@ -9,43 +9,66 @@
 <body class="bg-stone-950 text-white p-6">
     <div class="max-w-md mx-auto bg-stone-900 p-6 rounded-xl border border-stone-800">
         <h2 class="text-xl font-bold mb-4 text-amber-500">Nuevo Comercio</h2>
-        <input id="nombre" type="text" placeholder="Nombre" class="w-full p-2 mb-3 bg-stone-800 rounded">
-        <input id="url" type="text" placeholder="URL de vitrina" class="w-full p-2 mb-3 bg-stone-800 rounded">
         
-        <label class="block mb-2 text-sm text-stone-400">Seleccionar imagen del dispositivo:</label>
-        <input id="fileInput" type="file" accept="image/*" class="w-full mb-4 text-sm">
+        <input id="nombre" type="text" placeholder="Nombre del negocio" class="w-full p-2 mb-3 bg-stone-800 rounded text-white">
+        <input id="url" type="text" placeholder="URL de la vitrina" class="w-full p-2 mb-3 bg-stone-800 rounded text-white">
         
-        <button id="btnGuardar" class="w-full bg-amber-600 p-2 rounded font-bold hover:bg-amber-500">Guardar con Imagen</button>
+        <label class="block mb-2 text-sm text-stone-400">Seleccionar logo (abre galería):</label>
+        <div class="relative w-full h-12 bg-stone-800 rounded flex items-center justify-center border-2 border-dashed border-stone-700 mb-6">
+            <span class="text-stone-500 text-sm">Toca aquí para elegir imagen</span>
+            <input id="fileInput" type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+        </div>
+
+        <button id="btnGuardar" class="w-full bg-amber-600 p-2 rounded font-bold hover:bg-amber-500">Guardar Comercio</button>
     </div>
 
     <script>
-        const supabaseClient = supabase.createClient('https://yoibmpulvokhvvhkryzv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE');
+        // Configuración de Supabase
+        const supabaseClient = supabase.createClient(
+            'https://yoibmpulvokhvvhkryzv.supabase.co', 
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE'
+        );
 
         document.getElementById('btnGuardar').onclick = async () => {
             const file = document.getElementById('fileInput').files[0];
             const nombre = document.getElementById('nombre').value;
             const url = document.getElementById('url').value;
 
-            if (!file || !nombre) { alert("Sube una imagen y ponle nombre"); return; }
+            if (!file || !nombre || !url) {
+                alert("Por favor, completa todos los campos y selecciona una imagen.");
+                return;
+            }
 
-            // 1. Subir la imagen al storage (bucket 'vitrinas')
+            // 1. Subir imagen al Storage (Bucket 'vitrinas')
             const fileName = `${Date.now()}_${file.name}`;
-            const { data: uploadData, error: uploadError } = await supabaseClient.storage
-                .from('vitrinas') // Asegúrate de tener este bucket creado en Supabase
+            const { error: uploadError } = await supabaseClient.storage
+                .from('vitrinas')
                 .upload(fileName, file);
 
-            if (uploadError) { alert("Error al subir imagen: " + uploadError.message); return; }
+            if (uploadError) {
+                alert("Error al subir la imagen: " + uploadError.message);
+                return;
+            }
 
-            // 2. Obtener el link público
-            const { data: { publicUrl } } = supabaseClient.storage.from('vitrinas').getPublicUrl(fileName);
+            // 2. Obtener URL pública
+            const { data: publicUrlData } = supabaseClient.storage
+                .from('vitrinas')
+                .getPublicUrl(fileName);
 
-            // 3. Guardar todo en la tabla
-            const { error } = await supabaseClient.from('links_vitrinas').insert([{ 
-                nombre, url, imagen_url: publicUrl 
-            }]);
+            // 3. Insertar registro en la tabla
+            const { error: dbError } = await supabaseClient
+                .from('links_vitrinas')
+                .insert([{ nombre, url, imagen_url: publicUrlData.publicUrl }]);
 
-            if (error) alert("Error: " + error.message);
-            else alert("¡Guardado con éxito!");
+            if (dbError) {
+                alert("Error al guardar en base de datos: " + dbError.message);
+            } else {
+                alert("¡Comercio guardado con éxito!");
+                // Limpiar formulario
+                document.getElementById('nombre').value = '';
+                document.getElementById('url').value = '';
+                document.getElementById('fileInput').value = '';
+            }
         };
     </script>
 </body>
