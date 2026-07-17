@@ -2,89 +2,34 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dunig Luxury - Vitrinas</title>
+    <title>Vitrina General</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-stone-950 text-white min-h-screen">
+<body class="bg-stone-950 text-white p-6">
 
-    <header class="p-8 text-center">
-        <h1 class="text-2xl font-bold uppercase tracking-widest text-amber-500">Dunig Luxury</h1>
-        <p class="text-stone-400 text-xs mt-2 uppercase">Selecciona un comercio</p>
-    </header>
-
-    <!-- Buscador -->
-    <div class="max-w-md mx-auto px-6 mb-8">
-        <input type="text" id="buscador" placeholder="🔍 Buscar comercio..." 
-               onkeyup="filtrarComercios()"
-               class="w-full bg-stone-900 border border-stone-800 p-4 rounded-2xl text-white outline-none focus:border-amber-500 transition-all">
-    </div>
-
-    <!-- Contenedor principal -->
-    <div id="contenedor-comercios" class="grid grid-cols-2 md:grid-cols-4 gap-6 p-6 max-w-5xl mx-auto">
-        <!-- Los logos se cargan aquí -->
+    <div id="contenedor" class="grid grid-cols-2 gap-4">
+        <!-- Las imágenes aparecerán aquí -->
     </div>
 
     <script>
-        // CONFIGURACIÓN
-        const supabaseUrl = 'https://yoibmpulvokhvvhkryzv.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE';
-        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+        const supabase = supabase.createClient('https://yoibmpulvokhvvhkryzv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE');
 
-        let todosLosNegocios = [];
+        async function cargar() {
+            // Traemos solo lo que necesitamos
+            const { data } = await supabase.from('links_vitrinas').select('url, imagen_url');
 
-        // LÓGICA DE CARGA
-        async function cargarComercios() {
-            const { data, error } = await supabaseClient
-                .from('links_vitrinas')
-                .select('nombre, url, imagen_url');
-
-            if (error) {
-                console.error("Error al conectar:", error);
-                return;
-            }
-
-            if (data) {
-                todosLosNegocios = data;
-                renderizar(data);
-            }
-        }
-
-        // LÓGICA DE FILTRADO
-        function filtrarComercios() {
-            const busqueda = document.getElementById('buscador').value.toLowerCase();
-            const filtrados = todosLosNegocios.filter(n => 
-                n.nombre.toLowerCase().includes(busqueda)
-            );
-            renderizar(filtrados);
-        }
-
-        // LÓGICA DE DIBUJO
-        function renderizar(lista) {
-            const contenedor = document.getElementById('contenedor-comercios');
-            if (lista.length === 0) {
-                contenedor.innerHTML = '<p class="col-span-full text-center text-stone-500">No se encontraron comercios.</p>';
-                return;
-            }
+            const cont = document.getElementById('contenedor');
             
-            contenedor.innerHTML = lista.map(n => {
-                // Validación para asegurar que la imagen Base64 se interprete correctamente
-                const imagenSrc = (n.imagen_url && n.imagen_url.startsWith('data:image')) 
-                    ? n.imagen_url 
-                    : ''; 
-
-                return `
-                <a href="${n.url}" target="_blank" class="block bg-stone-900 border border-stone-800 rounded-2xl overflow-hidden hover:border-amber-500 transition-all hover:scale-105">
-                    <img src="${imagenSrc}" alt="${n.nombre}" class="w-full h-32 object-cover" onerror="this.style.display='none'">
-                    <div class="p-3 text-center text-xs font-bold uppercase truncate">${n.nombre}</div>
+            // Dibujamos directo
+            cont.innerHTML = data.map(item => `
+                <a href="${item.url}" target="_blank">
+                    <img src="${item.imagen_url}" class="rounded-lg w-full">
                 </a>
-                `;
-            }).join('');
+            `).join('');
         }
 
-        // Iniciar carga de datos al abrir la página
-        cargarComercios();
+        cargar();
     </script>
 </body>
 </html>
