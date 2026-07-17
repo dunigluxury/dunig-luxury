@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <title>Admin - Dunig Luxury</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Importamos Supabase correctamente -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Cargamos Supabase con defer para asegurar que cargue bien -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 </head>
 <body class="bg-stone-950 text-white p-6">
     <div class="max-w-md mx-auto bg-stone-900 p-6 rounded-xl border border-stone-800">
@@ -17,34 +17,33 @@
     </div>
 
     <script>
-        // CORRECCIÓN: 'supabase' es la librería, 'supabaseClient' es tu conexión
-        const supabaseClient = supabase.createClient('https://yoibmpulvokhvvhkryzv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE');
-
-        document.getElementById('btnGuardar').addEventListener('click', async () => {
-            const nombre = document.getElementById('nombre').value;
-            const url = document.getElementById('url').value;
-            const imagen = document.getElementById('imagen').value;
-
-            if (!nombre || !url) {
-                alert("Por favor, rellena al menos el nombre y la URL");
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log("Página cargada, iniciando Supabase...");
+            
+            if (typeof supabase === 'undefined') {
+                alert("Error: La librería de Supabase no cargó. Revisa tu conexión a internet.");
                 return;
             }
 
-            // Usamos supabaseClient aquí
-            const { data, error } = await supabaseClient
-                .from('links_vitrinas')
-                .insert([{ nombre: nombre, url: url, imagen_url: imagen }]);
-            
-            if (error) {
-                console.error(error);
-                alert("Error al guardar: " + error.message);
-            } else {
-                alert("¡Comercio guardado con éxito!");
-                // Limpiar campos tras guardar
-                document.getElementById('nombre').value = '';
-                document.getElementById('url').value = '';
-                document.getElementById('imagen').value = '';
-            }
+            const supabaseClient = supabase.createClient('https://yoibmpulvokhvvhkryzv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE');
+
+            document.getElementById('btnGuardar').onclick = async () => {
+                const nombre = document.getElementById('nombre').value;
+                const url = document.getElementById('url').value;
+                const imagen = document.getElementById('imagen').value;
+
+                console.log("Intentando guardar:", nombre);
+
+                const { data, error } = await supabaseClient
+                    .from('links_vitrinas')
+                    .insert([{ nombre, url, imagen_url: imagen }]);
+                
+                if (error) {
+                    alert("Error detectado: " + error.message);
+                } else {
+                    alert("¡Éxito! Comercio guardado.");
+                }
+            };
         });
     </script>
 </body>
