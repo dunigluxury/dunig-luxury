@@ -34,12 +34,14 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 async function cargarComerciosPorId(idBuscado) {
-    // 1. Realizamos la consulta filtrando específicamente por el ID
-    const { data, error } = await supabaseClient
-        .from('links_vitrinas')
-        .select('*')
-        .eq('id', idBuscado); // Este es el filtro por ID
-
+    // Prueba de conexión absoluta
+supabaseClient
+  .from('links_vitrinas')
+  .select('id')
+  .then(response => {
+    console.log("URL de tu cliente:", supabaseClient.supabaseUrl);
+    console.log("Respuesta real del servidor:", response);
+  });
     if (error) {
         console.error("Error al buscar por ID:", error.message);
         alert("Error al cargar el comercio.");
