@@ -58,17 +58,26 @@
         }
 
         async function borrar(id) {
-            if (!confirm("¿Seguro que quieres borrar este comercio?")) return;
-            
-            const { error } = await supabaseClient.from('links_vitrinas').delete().eq('id', id);
-            
-            if (error) {
-                alert("Error al borrar: " + error.message);
-            } else {
-                alert("Eliminado con éxito");
-                cargarLista();
-            }
-        }
+    if (!confirm("¿Seguro que quieres borrar este elemento?")) return;
+    
+    // Convertimos el id a un formato seguro
+    const idSaneado = typeof id === 'number' ? id : id.toString();
+    
+    console.log("Intentando borrar ID:", idSaneado, "Tipo:", typeof idSaneado);
+
+    const { data, error } = await supabaseClient
+        .from('links_vitrinas')
+        .delete()
+        .match({ id: idSaneado }); // .match es más robusto que .eq
+    
+    if (error) {
+        alert("Error crítico: " + error.message);
+        console.error(error);
+    } else {
+        alert("¡Eliminado!");
+        cargarLista();
+    }
+}
 
         document.getElementById('btnGuardar').onclick = async () => {
             const file = document.getElementById('fileInput').files[0];
