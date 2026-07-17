@@ -34,23 +34,19 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 async function cargarComercios() {
-    // Esto pide absolutamente TODO lo que hay en la tabla, sin condiciones
     const { data, error } = await supabaseClient
         .from('links_vitrinas')
-        .select('*'); 
+        .select('*');
 
     if (error) {
-        console.error("Error:", error);
-        return;
-    }
-
-    console.log("Datos brutos desde la base de datos:", data);
-    
-    if (data && data.length > 0) {
-        alert("¡Conexión exitosa! Encontré " + data.length + " filas.");
-        renderizar(data);
+        // Esto nos dirá si es un problema de permisos, de red, o de nombre de tabla
+        alert("Error técnico: " + error.message + " | Detalle: " + error.details);
+        console.error("Error completo:", error);
+    } else if (data.length === 0) {
+        alert("La consulta fue exitosa, pero la tabla devolvió 0 resultados.");
     } else {
-        alert("La conexión funciona, pero la tabla está vacía para estas credenciales.");
+        alert("¡Éxito! Encontré " + data.length + " registros.");
+        renderizar(data);
     }
 }
         // LÓGICA DE FILTRADO
