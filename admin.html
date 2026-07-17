@@ -7,22 +7,27 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-stone-950 text-white p-4">
+<body class="bg-stone-950 text-stone-200 min-h-screen p-4 md:p-8">
 
-    <!-- Formulario -->
-    <div class="w-full max-w-lg mx-auto bg-stone-900 p-6 rounded-xl border border-stone-800 mb-8">
-        <h2 class="text-xl font-bold mb-4 text-amber-500">Nuevo Comercio</h2>
-        <input id="nombre" type="text" placeholder="Nombre del Comercio" class="w-full p-3 mb-3 bg-stone-800 rounded border border-stone-700">
-        <input id="url" type="text" placeholder="URL de destino" class="w-full p-3 mb-3 bg-stone-800 rounded border border-stone-700">
-        <label class="block mb-2 text-sm text-stone-400">Seleccionar imagen:</label>
-        <input id="fileInput" type="file" accept="image/*" class="w-full mb-4 text-sm">
-        <button id="btnGuardar" class="w-full bg-amber-600 p-3 rounded font-bold hover:bg-amber-500 transition">Guardar Comercio</button>
-    </div>
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-3xl font-black text-amber-500 mb-8 tracking-tight">DUNIG <span class="text-white">LUXURY</span></h1>
 
-    <!-- Lista -->
-    <div id="listaComercios" class="w-full max-w-lg mx-auto space-y-4">
-        <h2 class="text-xl font-bold text-white mb-4">Comercios Registrados</h2>
-        <div id="loading" class="text-stone-500 text-center">Cargando datos...</div>
+        <!-- Formulario -->
+        <div class="bg-stone-900 p-6 rounded-2xl border border-stone-800 shadow-xl mb-8">
+            <h2 class="text-lg font-bold mb-4 text-white">Agregar Nuevo Comercio</h2>
+            <div class="grid gap-3">
+                <input id="nombre" type="text" placeholder="Nombre del Comercio" class="w-full p-3 bg-stone-950 rounded-lg border border-stone-800 focus:border-amber-500 outline-none transition">
+                <input id="url" type="text" placeholder="URL de destino" class="w-full p-3 bg-stone-950 rounded-lg border border-stone-800 focus:border-amber-500 outline-none transition">
+                <input id="fileInput" type="file" accept="image/*" class="w-full text-sm text-stone-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-stone-800 file:text-white hover:file:bg-stone-700 cursor-pointer">
+                <button id="btnGuardar" class="w-full bg-amber-600 hover:bg-amber-500 text-white p-3 rounded-lg font-bold transition shadow-lg mt-2">Guardar Comercio</button>
+            </div>
+        </div>
+
+        <!-- Lista -->
+        <div id="listaComercios" class="space-y-4">
+            <h2 class="text-xl font-bold text-white mb-4">Comercios Registrados</h2>
+            <div id="loading" class="text-stone-500 text-center py-10 italic">Conectando con la base de datos...</div>
+        </div>
     </div>
 
     <script>
@@ -30,113 +35,78 @@
 
         async function cargarLista() {
             const container = document.getElementById('listaComercios');
-            const { data, error } = await supabaseClient.from('links_vitrinas').select('*');
+            const { data, error } = await supabaseClient.from('links_vitrinas').select('*').order('created_at', { ascending: false });
             
-            document.getElementById('loading').style.display = 'none';
+            // Limpiamos el contenedor y mantenemos el encabezado
+            container.innerHTML = '<h2 class="text-xl font-bold text-white mb-4">Comercios Registrados</h2>';
 
             if (error) {
-                console.error("Error al cargar:", error);
+                container.innerHTML += `<p class="text-red-400 p-4 bg-red-950/30 rounded">Error: ${error.message}</p>`;
                 return;
             }
-
-            container.innerHTML = '<h2 class="text-xl font-bold text-white mb-4">Comercios Registrados</h2>';
             
             if (data && data.length > 0) {
                 data.forEach(item => {
-                    container.innerHTML += `
-                        <div class="bg-stone-900 p-4 rounded border border-stone-800 flex justify-between items-center">
-                            <span class="font-semibold truncate mr-2">${item.nombre}</span>
-                            // CAMBIA ESTO:
-// <button onclick="borrar(${item.id})" ...
-
-// POR ESTO (Añadimos un console.log directo en el click):
-<button onclick="console.log('Click en ID:', ${item.id}); borrar(${item.id})" class="...">
-    Borrar
-</button>
+                    const div = document.createElement('div');
+                    div.className = "bg-stone-900 p-4 rounded-xl border border-stone-800 flex justify-between items-center hover:border-stone-700 transition";
+                    div.innerHTML = `
+                        <div class="flex items-center gap-3 overflow-hidden">
+                            <div class="w-10 h-10 bg-stone-800 rounded-full flex items-center justify-center font-bold text-amber-500">${item.id}</div>
+                            <span class="font-medium truncate">${item.nombre}</span>
                         </div>
+                        <button onclick="borrar(${item.id})" class="bg-red-900/20 hover:bg-red-600 text-red-400 hover:text-white px-4 py-2 rounded-lg text-sm font-bold transition">
+                            Eliminar
+                        </button>
                     `;
+                    container.appendChild(div);
                 });
             } else {
-                container.innerHTML += '<p class="text-stone-600">No hay comercios registrados.</p>';
+                container.innerHTML += '<p class="text-stone-600 italic">No hay comercios registrados actualmente.</p>';
             }
         }
 
         async function borrar(id) {
-    // 1. Confirmación de seguridad
-    if (!confirm("¿Seguro que quieres borrar este elemento con ID: " + id + "?")) return;
-    
-    // 2. Aseguramos que el ID sea un número (si tu columna ID es de tipo int)
-    const idFinal = parseInt(id);
-    
-    console.log("Intentando borrar ID:", idFinal);
-
-    // 3. Ejecutamos la eliminación usando .eq que es el estándar recomendado para IDs
-    const { error } = await supabaseClient
-        .from('links_vitrinas')
-        .delete()
-        .eq('id', idFinal); // Usamos .eq directamente sobre el ID convertido a entero
-    
-    // 4. Manejo de resultados
-    if (error) {
-        console.error("Error técnico:", error);
-        alert("Error al borrar: " + error.message);
-    } else {
-        alert("¡Eliminado correctamente!");
-        // Refrescamos la lista para ver el cambio inmediatamente
-        await cargarLista();
-    }
-}
+            if (!confirm("¿Deseas eliminar este elemento? Esta acción no se puede deshacer.")) return;
+            
+            const { error } = await supabaseClient.from('links_vitrinas').delete().eq('id', id);
+            
+            if (error) {
+                alert("Error al borrar: " + error.message);
+            } else {
+                await cargarLista();
+            }
+        }
 
         document.getElementById('btnGuardar').onclick = async () => {
-    const btn = document.getElementById('btnGuardar');
-    const file = document.getElementById('fileInput').files[0];
-    const nombre = document.getElementById('nombre').value.trim();
-    const url = document.getElementById('url').value.trim();
+            const btn = document.getElementById('btnGuardar');
+            const file = document.getElementById('fileInput').files[0];
+            const nombre = document.getElementById('nombre').value.trim();
+            const url = document.getElementById('url').value.trim();
 
-    // 1. Validación estricta
-    if (!file || !nombre || !url) { 
-        alert("Por favor, llena todos los campos y selecciona una imagen"); 
-        return; 
-    }
+            if (!file || !nombre || !url) return alert("Por favor, completa todos los campos.");
 
-    // 2. Desactivar botón para evitar envíos múltiples
-    btn.disabled = true;
-    btn.innerText = "Guardando...";
+            btn.disabled = true;
+            btn.innerText = "Procesando...";
 
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    
-    reader.onload = async () => {
-        const { error } = await supabaseClient.from('links_vitrinas').insert([{ 
-            nombre, 
-            url, 
-            imagen_url: reader.result 
-        }]);
-        
-        // 3. Reactivar botón después de la respuesta
-        btn.disabled = false;
-        btn.innerText = "Guardar Comercio";
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = async () => {
+                const { error } = await supabaseClient.from('links_vitrinas').insert([{ nombre, url, imagen_url: reader.result }]);
+                btn.disabled = false;
+                btn.innerText = "Guardar Comercio";
 
-        if (error) {
-            alert("Error al guardar: " + error.message);
-        } else {
-            alert("¡Guardado correctamente!");
-            // Limpieza de campos
-            document.getElementById('nombre').value = '';
-            document.getElementById('url').value = '';
-            document.getElementById('fileInput').value = '';
-            // Recargar lista
-            await cargarLista();
-        }
-    };
-    
-    reader.onerror = () => {
-        btn.disabled = false;
-        btn.innerText = "Guardar Comercio";
-        alert("Error al leer la imagen.");
-    };
-};
+                if (error) {
+                    alert("Error: " + error.message);
+                } else {
+                    document.getElementById('nombre').value = '';
+                    document.getElementById('url').value = '';
+                    document.getElementById('fileInput').value = '';
+                    await cargarLista();
+                }
+            };
+        };
 
+        // Iniciar
         cargarLista();
     </script>
 </body>
