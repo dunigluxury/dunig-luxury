@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dunig Luxury - Vitrinas</title>
-    <!-- Tailwind CSS para el diseño -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Supabase SDK para conectar a la base de datos -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-stone-950 text-white min-h-screen">
@@ -16,21 +14,28 @@
         <p class="text-stone-400 text-xs mt-2 uppercase">Selecciona un comercio</p>
     </header>
 
-    <!-- Contenedor principal donde saldrán los negocios -->
+    <!-- Buscador -->
+    <div class="max-w-md mx-auto px-6 mb-8">
+        <input type="text" id="buscador" placeholder="🔍 Buscar comercio..." 
+               onkeyup="filtrarComercios()"
+               class="w-full bg-stone-900 border border-stone-800 p-4 rounded-2xl text-white outline-none focus:border-amber-500 transition-all">
+    </div>
+
+    <!-- Contenedor principal -->
     <div id="contenedor-comercios" class="grid grid-cols-2 md:grid-cols-4 gap-6 p-6 max-w-5xl mx-auto">
         <!-- Los logos se cargan aquí -->
     </div>
 
     <script>
-        // 1. CONFIGURACIÓN: Aquí pegas tus credenciales de Supabase
+        // CONFIGURACIÓN
         const supabaseUrl = 'https://yoibmpulvokhvvhkryzv.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // 2. LÓGICA DE CARGA
+        let todosLosNegocios = [];
+
+        // LÓGICA DE CARGA
         async function cargarComercios() {
-            const contenedor = document.getElementById('contenedor-comercios');
-            
             const { data, error } = await supabaseClient
                 .from('links_vitrinas')
                 .select('nombre, url, imagen_url');
@@ -40,16 +45,37 @@
                 return;
             }
 
-            if (data && data.length > 0) {
-                contenedor.innerHTML = data.map(n => `
-                    <a href="${n.url}" target="_blank" class="block bg-stone-900 border border-stone-800 rounded-2xl overflow-hidden hover:border-amber-500 transition-all hover:scale-105">
-                        <img src="${n.imagen_url}" alt="${n.nombre}" class="w-full h-32 object-cover">
-                        <div class="p-3 text-center text-xs font-bold uppercase">${n.nombre}</div>
-                    </a>
-                `).join('');
+            if (data) {
+                todosLosNegocios = data;
+                renderizar(data);
             }
         }
 
+        // LÓGICA DE FILTRADO
+        function filtrarComercios() {
+            const busqueda = document.getElementById('buscador').value.toLowerCase();
+            const filtrados = todosLosNegocios.filter(n => 
+                n.nombre.toLowerCase().includes(busqueda)
+            );
+            renderizar(filtrados);
+        }
+
+        // LÓGICA DE DIBUJO
+        function renderizar(lista) {
+            const contenedor = document.getElementById('contenedor-comercios');
+            if (lista.length === 0) {
+                contenedor.innerHTML = '<p class="col-span-full text-center text-stone-500">No se encontraron comercios.</p>';
+                return;
+            }
+            contenedor.innerHTML = lista.map(n => `
+                <a href="${n.url}" target="_blank" class="block bg-stone-900 border border-stone-800 rounded-2xl overflow-hidden hover:border-amber-500 transition-all hover:scale-105">
+                    <img src="${n.imagen_url}" alt="${n.nombre}" class="w-full h-32 object-cover">
+                    <div class="p-3 text-center text-xs font-bold uppercase truncate">${n.nombre}</div>
+                </a>
+            `).join('');
+        }
+
+        // Iniciar
         cargarComercios();
     </script>
 </body>
