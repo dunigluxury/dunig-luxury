@@ -72,14 +72,21 @@
                 return;
             }
             
-            contenedor.innerHTML = lista.map(n => `
-                <a href="${n.url}" target="_blank" class="block bg-stone-900 border border-stone-800 rounded-2xl overflow-hidden hover:border-amber-500 transition-all hover:scale-105 shadow-lg">
-                    <div class="w-full h-32 bg-stone-800 flex items-center justify-center overflow-hidden">
-                        ${n.imagen_url ? `<img src="${n.imagen_url}" alt="${n.nombre}" class="w-full h-full object-cover">` : '<span class="text-stone-600 text-xs">Sin imagen</span>'}
-                    </div>
-                    <div class="p-3 text-center text-xs font-bold uppercase truncate">${n.nombre}</div>
-                </a>
-            `).join('');
+            contenedor.innerHTML = lista.map(n => {
+                // Validación: Asegura que el formato Base64 sea interpretado correctamente[cite: 1]
+                const imagenHtml = (n.imagen_url && n.imagen_url.startsWith('data:image')) 
+                    ? `<img src="${n.imagen_url}" alt="${n.nombre}" class="w-full h-full object-cover" loading="lazy">` 
+                    : '<span class="text-stone-600 text-[10px] p-2 text-center">Sin imagen</span>';
+
+                return `
+                    <a href="${n.url}" target="_blank" class="block bg-stone-900 border border-stone-800 rounded-2xl overflow-hidden hover:border-amber-500 transition-all hover:scale-105 shadow-lg">
+                        <div class="w-full h-32 bg-stone-800 flex items-center justify-center overflow-hidden">
+                            ${imagenHtml}
+                        </div>
+                        <div class="p-3 text-center text-xs font-bold uppercase truncate">${n.nombre}</div>
+                    </a>
+                `;
+            }).join('');
         }
 
         // Iniciar
