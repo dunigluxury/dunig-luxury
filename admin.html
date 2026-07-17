@@ -9,25 +9,36 @@
 <body class="bg-stone-950 text-white p-6">
     <div class="max-w-md mx-auto bg-stone-900 p-6 rounded-xl border border-stone-800">
         <h2 class="text-xl font-bold mb-4 text-amber-500">Nuevo Comercio</h2>
-        <input id="nombre" type="text" placeholder="Nombre del negocio" class="w-full p-2 mb-3 bg-stone-800 rounded">
-        <input id="url" type="text" placeholder="URL de la vitrina" class="w-full p-2 mb-3 bg-stone-800 rounded">
-        <input id="imagen" type="text" placeholder="URL de la imagen" class="w-full p-2 mb-3 bg-stone-800 rounded">
-        <button onclick="guardarComercio()" class="w-full bg-amber-600 p-2 rounded font-bold hover:bg-amber-500">Guardar Comercio</button>
+        <input id="nombre" type="text" placeholder="Nombre del negocio" class="w-full p-2 mb-3 bg-stone-800 rounded text-white">
+        <input id="url" type="text" placeholder="URL de la vitrina" class="w-full p-2 mb-3 bg-stone-800 rounded text-white">
+        <input id="imagen" type="text" placeholder="URL de la imagen" class="w-full p-2 mb-3 bg-stone-800 rounded text-white">
+        <button id="btnGuardar" class="w-full bg-amber-600 p-2 rounded font-bold hover:bg-amber-500">Guardar Comercio</button>
     </div>
 
     <script>
-       // CORRECCIÓN: el objeto se llama 'supabase' pero la función es 'createClient'
-const supabaseClient = supabase.createClient('https://yoibmpulvokhvvhkryzv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE');
-        async function guardarComercio() {
+        const supabase = supabase.createClient('https://yoibmpulvokhvvhkryzv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE');
+
+        document.getElementById('btnGuardar').addEventListener('click', async () => {
             const nombre = document.getElementById('nombre').value;
             const url = document.getElementById('url').value;
             const imagen = document.getElementById('imagen').value;
 
-            const { error } = await supabase.from('links_vitrinas').insert([{ nombre, url, imagen_url: imagen }]);
+            if (!nombre || !url) {
+                alert("Por favor, rellena al menos el nombre y la URL");
+                return;
+            }
+
+            const { data, error } = await supabase
+                .from('links_vitrinas')
+                .insert([{ nombre: nombre, url: url, imagen_url: imagen }]);
             
-            if (error) alert("Error: " + error.message);
-            else alert("¡Comercio guardado con éxito!");
-        }
+            if (error) {
+                console.error(error);
+                alert("Error al guardar: " + error.message);
+            } else {
+                alert("¡Comercio guardado con éxito!");
+            }
+        });
     </script>
 </body>
 </html>
