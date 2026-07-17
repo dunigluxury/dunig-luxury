@@ -23,39 +23,34 @@
 
     <!-- Contenedor principal -->
     <div id="contenedor-comercios" class="grid grid-cols-2 md:grid-cols-4 gap-6 p-6 max-w-5xl mx-auto">
-        <!-- Indicador de carga -->
-        <p id="cargando" class="col-span-full text-center text-stone-500">Cargando vitrinas...</p>
+        <!-- Los logos se cargan aquí -->
     </div>
 
     <script>
         // CONFIGURACIÓN
-const supabaseUrl = 'https://yoibmpulvokhvvhkryzv.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE';
-const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseUrl = 'https://yoibmpulvokhvvhkryzv.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-async function cargarDatos() {
-    console.log("Iniciando carga...");
-    const { data, error } = await supabaseClient
-        .from('links_vitrinas')
-        .select('*');
+        let todosLosNegocios = [];
 
-    if (error) {
-        console.error("Error detectado:", error);
-        alert("Error: " + error.message);
-    } else {
-        console.log("Datos encontrados:", data);
-        if (data.length === 0) {
-            alert("Conexión exitosa, pero la tabla está vacía.");
-        } else {
-            alert("¡Éxito! Datos recibidos: " + data.length);
-            // Llama a tu función de renderizado aquí
-            renderizar(data);
+        // LÓGICA DE CARGA
+        async function cargarComercios() {
+            const { data, error } = await supabaseClient
+                .from('links_vitrinas')
+                .select('nombre, url, imagen_url');
+
+            if (error) {
+                console.error("Error al conectar:", error);
+                return;
+            }
+
+            if (data) {
+                todosLosNegocios = data;
+                renderizar(data);
+            }
         }
-    }
-}
 
-// Ejemplo de uso: Si quieres cargar el comercio con ID 20:
-// cargarComerciosPorId(20);
         // LÓGICA DE FILTRADO
         function filtrarComercios() {
             const busqueda = document.getElementById('buscador').value.toLowerCase();
@@ -65,24 +60,20 @@ async function cargarDatos() {
             renderizar(filtrados);
         }
 
-        // LÓGICA DE DIBUJO - FINAL
-function renderizar(lista) {
-    const contenedor = document.getElementById('contenedor-comercios');
-    if (lista.length === 0) {
-        contenedor.innerHTML = '<p class="col-span-full text-center text-stone-500">No hay comercios.</p>';
-        return;
-    }
-
-    contenedor.innerHTML = lista.map(n => `
-        <a href="${n.url}" target="_blank" class="block bg-stone-900 border border-stone-800 rounded-2xl overflow-hidden hover:border-amber-500 transition-all hover:scale-105 shadow-lg">
-            <div class="w-full h-32 bg-stone-800 flex items-center justify-center overflow-hidden">
-                <img src="${n.imagen_url}" alt="${n.nombre}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                <span class="text-stone-600 text-xs" style="display:none;">Sin imagen</span>
-            </div>
-            <div class="p-3 text-center text-xs font-bold uppercase truncate">${n.nombre}</div>
-        </a>
-    `).join('');
-}
+        // LÓGICA DE DIBUJO
+        function renderizar(lista) {
+            const contenedor = document.getElementById('contenedor-comercios');
+            if (lista.length === 0) {
+                contenedor.innerHTML = '<p class="col-span-full text-center text-stone-500">No se encontraron comercios.</p>';
+                return;
+            }
+            contenedor.innerHTML = lista.map(n => `
+                <a href="${n.url}" target="_blank" class="block bg-stone-900 border border-stone-800 rounded-2xl overflow-hidden hover:border-amber-500 transition-all hover:scale-105">
+                    <img src="${n.imagen_url}" alt="${n.nombre}" class="w-full h-32 object-cover">
+                    <div class="p-3 text-center text-xs font-bold uppercase truncate">${n.nombre}</div>
+                </a>
+            `).join('');
+        }
 
         // Iniciar
         cargarComercios();
