@@ -16,8 +16,8 @@
     </div>
 
     <script>
-        const supabase = supabase.createClient('https://yoibmpulvokhvvhkryzv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE');
-
+       // CORRECCIÓN: el objeto se llama 'supabase' pero la función es 'createClient'
+const supabaseClient = supabase.createClient('https://yoibmpulvokhvvhkryzv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE');
         async function guardarComercio() {
             const nombre = document.getElementById('nombre').value;
             const url = document.getElementById('url').value;
