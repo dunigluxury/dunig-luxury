@@ -95,7 +95,7 @@
 
 </div>
 <div class="border-t border-stone-900 pt-4 mt-4">
-    <h4 class="font-futurista font-bold text-[10px] uppercase text-amber-400/80 tracking-wider mb-2">Adicionales Registrados</h4> 
+    <h4 class="font-futurista font-bold text-[10px] uppercase text-amber-400/80 tracking-wider mb-2">Adicionales Registrados</h4>
     <div id="lista-adicionales" class="space-y-1.5 max-h-40 overflow-y-auto"></div>
 </div>
 
@@ -112,6 +112,9 @@
                         <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Banco o Plataforma</label>
                         <select id="pago-plataforma" onchange="alternarCamposPago()" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none focus:border-amber-500/30">
                             <option value="pago_movil">Pago Móvil</option>
+                            <option value="zelle">Zelle</option>
+                            <option value="nequi">Nequi</option>
+                            <option value="efectivo">Efectivo</option>
                         </select>
                     </div>
 
@@ -680,22 +683,23 @@ async function eliminarCategoria(nombre) {
 
             let payload = { plataforma: plataforma };
 
-            // Validamos únicamente la plataforma de Pago Móvil
-if (plataforma === "pago_movil") {
-    payload.banco = document.getElementById('pago-banco').value.trim();
-    payload.ci = document.getElementById('pago-ci').value.trim();
-    payload.telefono = document.getElementById('pago-telefono').value.trim();
-    
-    // Validación de campos obligatorios
-    if (!payload.banco || !payload.ci || !payload.telefono) { 
-        alert("Por favor complete todos los datos de Pago Móvil."); 
-        return; 
-    }
-} else {
-    // Esto es opcional: alerta por si intentan seleccionar otra cosa que ya no existe
-    alert("Plataforma de pago no válida.");
-    return;
-}}
+            if (plataforma === "pago_movil") {
+                payload.banco = document.getElementById('pago-banco').value.trim();
+                payload.ci = document.getElementById('pago-ci').value.trim();
+                payload.telefono = document.getElementById('pago-telefono').value.trim();
+                if(!payload.banco || !payload.ci || !payload.telefono) { alert("Por favor complete todos los datos de Pago Móvil."); return; }
+            } else if (plataforma === "zelle") {
+                payload.email = document.getElementById('pago-email').value.trim();
+                payload.titular = document.getElementById('pago-titular').value.trim();
+                if(!payload.email || !payload.titular) { alert("Complete el correo y el titular de Zelle."); return; }
+            } else if (plataforma === "nequi") {
+                payload.telefono = document.getElementById('pago-telefono').value.trim();
+                payload.titular = document.getElementById('pago-titular').value.trim();
+                if(!payload.telefono || !payload.titular) { alert("Complete el número y titular de Nequi."); return; }
+            } else if (plataforma === "efectivo") {
+                payload.detalles = document.getElementById('pago-detalles').value.trim();
+                if(!payload.detalles) { alert("Escriba los detalles de entrega en efectivo."); return; }
+            }
 
             let res;
             if (id) {
