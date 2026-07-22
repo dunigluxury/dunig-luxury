@@ -276,17 +276,49 @@ async function verificarEstadoContratoComercio() {
         }
 
         async function descargarCatalogoDeSupabase() {
-    // Usamos la función RPC segura para que la API bloquee el catálogo si expiró la fecha
-    const { data, error } = await supabaseClient
-        .rpc('obtener_productos_vitrina', { p_instagram: filtroInstagram });
+    try {
+        // 1. Consultar la fecha de expiración del comercio
+        const { data: comercioData, error: comercioError } = await supabaseClient
+            .from('comercios')
+            .select('fecha_expiracion')
+            .eq('instagram_dueno', filtroInstagram)
+            .maybeSingle();
 
-    if (!error && data) { 
-        baseProductos = data; 
-        renderizarVitrinaPrincipal(); 
-    } else {
-        console.warn("Contrato vencido o acceso bloqueado por la API.");
-        baseProductos = [];
-        renderizarVitrinaPrincipal(); // Esto disparará el aviso de que no hay piezas o mostrará el bloqueo
+        // 2. Validar si la fecha ya expiró
+        if (comercioData && comercioData.fecha_expiracion) {
+            const fechaExpiracion = new Date(comercioData.fecha_expiracion).getTime();
+            const ahora = new Date().getTime(); // Hora actual exacta
+
+            // Si la hora actual es MAYOR o IGUAL a la expiración, bloquea al instante
+            if (ahora >= fechaExpiracion) {
+                console.warn("⛔ Contrato vencido. Bloqueando vitrina.");
+                baseProductos = [];
+                renderizarVitrinaPrincipal();
+                
+                // Muestra un aviso visual inmediato en el grid
+                const grid = document.getElementById('grid-productos-vitrina');
+                if (grid) {
+                    grid.innerHTML = `
+                        <div class="col-span-full p-12 text-center bg-red-950/40 border border-red-900 rounded-xl text-red-400 font-mono text-xs uppercase tracking-widest">
+                            🔒 Contrato Vencido. Servicio Suspendido.
+                        </div>`;
+                }
+                return;
+            }
+        }
+
+        // 3. Si está vigente, descarga los productos normalmente
+        const { data, error } = await supabaseClient
+            .from('productos')
+            .select('*')
+            .eq('instagram_dueno', filtroInstagram);
+
+        if (!error && data) { 
+            baseProductos = data; 
+            renderizarVitrinaPrincipal(); 
+        }
+    } catch (e) {
+        console.error("Error al validar:", e);
     }
 }
             baseProductos.forEach(p => {
