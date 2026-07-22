@@ -283,10 +283,22 @@ window.addEventListener('DOMContentLoaded', validarAccesoYcargarTienda);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        async function descargarCatalogoDeSupabase() {
-            const { data, error } = await supabaseClient.from('productos').select('*').eq('instagram_dueno', filtroInstagram);
-            if (!error && data) { baseProductos = data; renderizarVitrinaPrincipal(); }
+        async function descargarCatalogoDeSupabase(tiendaBuscada) {
+    const { data, error } = await supabaseClient
+        .from('productos') // o tu tabla de productos
+        .select('*')
+        .ilike('nombre_negocio', tiendaBuscada); // Filtra estrictamente por la tienda de la URL
+
+    if (!error && data) {
+        window.baseProductos = data;
+        // Aquí llamas a tu función que pinta las cards de los productos en pantalla
+        if (typeof renderizarVitrinaPrincipal === 'function') {
+            renderizarVitrinaPrincipal();
         }
+    } else {
+        console.error("Error al cargar productos:", error);
+    }
+}
 
         function actualizarFiltroVitrina() {
             const val = document.getElementById('vitrina-owner-input').value.trim().toLowerCase();
@@ -603,29 +615,26 @@ window.addEventListener('DOMContentLoaded', validarAccesoYcargarTienda);
     }
     // Fin del script
      window.addEventListener('DOMContentLoaded', async () => {
-    // 1. Crear una pantalla de bloqueo temporal encima de todo mientras verifica
-    const pantallaBloqueo = document.createElement('div');
-    pantallaBloqueo.id = 'pantalla-bloqueo';
-    pantallaBloqueo.style.cssText = "background-color: #030712; color: #f87171; height: 100vh; width: 100vw; position: fixed; top: 0; left: 0; z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: monospace; text-align: center; padding: 20px;";
-    pantallaBloqueo.innerHTML = `<h1 style="font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Cargando sistema...</h1>`;
-    document.body.appendChild(pantallaBloqueo);
+    // 1. Crear pantalla de bloqueo inicial para que no se vea nada por defecto
+    const bloqueo = document.createElement('div');
+    bloqueo.id = 'pantalla-bloqueo';
+    bloqueo.style.cssText = "position:fixed;top:0;left:0;width:100vw;height:100vh;background:#030712;color:#f87171;z-index:99999;display:flex;flex-direction:column;justify-content:center;align-items:center;font-family:monospace;text-align:center;padding:20px;";
+    bloqueo.innerHTML = `<h1 style="font-size:1.5rem;">Verificando acceso...</h1>`;
+    document.body.appendChild(bloqueo);
 
+    // 2. Leer parámetro de la URL (?tienda=Nombre)
     const params = new URLSearchParams(window.location.search);
     let tiendaBuscada = params.get('tienda');
 
-    // 2. Si entra al link sin ?tienda=... se bloquea de inmediato
     if (!tiendaBuscada) {
-        pantallaBloqueo.innerHTML = `
-            <h1 style="font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Acceso Denegado</h1>
-            <p style="color: #94a3b8; font-size: 0.875rem;">Enlace de tienda no válido o incompleto.</p>
-        `;
+        bloqueo.innerHTML = `<h1 style="font-size:1.5rem;">Acceso Denegado</h1><p>Falta el parámetro de la tienda en el enlace.</p>`;
         return;
     }
 
     tiendaBuscada = tiendaBuscada.trim();
 
     try {
-        // 3. Consultar la fecha de expiración en Supabase
+        // 3. Consultar la fecha en la tabla 'comercios' de Supabase
         const { data, error } = await supabaseClient
             .from('comercios')
             .select('fecha_expiracion')
@@ -633,29 +642,22 @@ window.addEventListener('DOMContentLoaded', validarAccesoYcargarTienda);
             .maybeSingle();
 
         if (error || !data || !data.fecha_expiracion) {
-            pantallaBloqueo.innerHTML = `
-                <h1 style="font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Acceso Denegado</h1>
-                <p style="color: #94a3b8; font-size: 0.875rem;">El comercio asociado a este enlace no existe.</p>
-            `;
+            bloqueo.innerHTML = `<h1 style="font-size:1.5rem;">Acceso Denegado</h1><p>El comercio no existe en el sistema.</p>`;
             return;
         }
 
-        // 4. Validar fecha actual contra la fecha de expiración
+        // 4. Comparar fechas (hoy vs fecha de expiración)
         const ahora = new Date().getTime();
         const expiracion = new Date(data.fecha_expiracion).getTime();
 
         if (ahora >= expiracion) {
-            pantallaBloqueo.innerHTML = `
-                <h1 style="font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Acceso Denegado</h1>
-                <p style="color: #94a3b8; font-size: 0.875rem;">Este contrato ha expirado.</p>
-            `;
+            bloqueo.innerHTML = `<h1 style="font-size:1.5rem;">Contrato Expirado</h1><p>El servicio para este comercio ha finalizado.</p>`;
             return;
         }
 
-        // 5. ¡Éxito! Si pasa la validación, removemos el bloqueo y cargamos todo con normalidad
-        pantallaBloqueo.remove();
+        // 5. Si pasa la seguridad, quitamos el bloqueo y cargamos los datos
+        bloqueo.remove();
 
-        // Ejecutamos las funciones de carga de tu tienda pasando el nombre correcto
         if (typeof descargarCatalogoDeSupabase === 'function') {
             descargarCatalogoDeSupabase(tiendaBuscada);
         }
@@ -667,11 +669,8 @@ window.addEventListener('DOMContentLoaded', validarAccesoYcargarTienda);
         }
 
     } catch (err) {
-        console.error("Error crítico:", err);
-        pantallaBloqueo.innerHTML = `
-            <h1 style="font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Error</h1>
-            <p style="color: #94a3b8; font-size: 0.875rem;">Error de conexión al verificar el servicio.</p>
-        `;
+        console.error("Error:", err);
+        bloqueo.innerHTML = `<h1 style="font-size:1.5rem;">Error</h1><p>No se pudo conectar con el servidor.</p>`;
     }
 });   
     </script>
