@@ -194,7 +194,7 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE"; 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // --- FUNCIÓN DE BLOQUEO AUTOMÁTICO POR ENLACE ---
-        async function validarAccesoPorEnlace() {
+        async function validarAccesoYcargarTienda() {
     const params = new URLSearchParams(window.location.search);
     const tiendaBuscada = params.get('tienda'); 
 
@@ -204,23 +204,21 @@
     }
 
     try {
-        // Consultamos usando ilike para ignorar mayúsculas/minúsculas
-        const { data, error } = await supabaseClient
+        // 1. Validar vigencia del comercio en Supabase de forma segura
+        const { data: comercioData, error: comercioError } = await supabaseClient
             .from('comercios')
             .select('fecha_expiracion')
             .ilike('nombre_negocio', tiendaBuscada)
             .maybeSingle();
 
-        console.log("Resultado Supabase:", { data, error }); // Revisa esto con F12 en tu PC
-
-        if (error || !data) {
+        if (comercioError || !comercioData) {
             bloquearAccesoTotal("El comercio asociado a este enlace no existe.");
             return;
         }
 
-        // Valida la fecha de expiración
-        if (data.fecha_expiracion) {
-            const fechaExpiracion = new Date(data.fecha_expiracion).getTime();
+        // 2. Comprobar fecha actual contra la fecha de expiración
+        if (comercioData.fecha_expiracion) {
+            const fechaExpiracion = new Date(comercioData.fecha_expiracion).getTime();
             const ahora = new Date().getTime();
 
             if (ahora >= fechaExpiracion) {
@@ -232,18 +230,37 @@
             return;
         }
 
-        console.log("Acceso concedido.");
-        if (typeof descargarCatalogoDeSupabase === 'function') {
-            descargarCatalogoDeSupabase();
+        // 3. Si todo está vigente, procedemos a descargar el catálogo de productos de este comercio
+        const { data: productosData, error: productosError } = await supabaseClient
+            .from('productos')
+            .select('*')
+            .ilike('nombre_negocio', tiendaBuscada); // Asegúrate de que tu tabla de productos use esta misma columna para filtrar
+
+        if (!productosError && productosData) {
+            baseProductos = productosData;
+            if (typeof renderizarVitrinaPrincipal === 'function') {
+                renderizarVitrinaPrincipal();
+            }
+            console.log("✅ Tienda cargada correctamente.");
         }
 
-    } commemorativo (err) {
-        console.error("Error al validar el enlace:", err);
-        bloquearAccesoTotal("Error de conexión al verificar el estado del enlace.");
+    } catch (err) {
+        console.error("Error en el proceso:", err);
+        bloquearAccesoTotal("Error de conexión al validar el servicio.");
     }
 }
-        // Se ejecuta automáticamente al cargar la página de la vitrina
-        window.addEventListener('DOMContentLoaded', validarAccesoPorEnlace);
+
+function bloquearAccesoTotal(mensaje) {
+    document.body.innerHTML = `
+        <div style="background-color: #030712; color: #f87171; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: monospace; text-align: center; padding: 20px;">
+            <h1 style="font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Acceso Denegado</h1>
+            <p style="color: #94a3b8; font-size: 0.875rem;">${mensaje}</p>
+        </div>
+    `;
+}
+
+// Ejecutar al cargar la página
+window.addEventListener('DOMContentLoaded', validarAccesoYcargarTienda);
         
         let baseProductos = [], cuentasDB = [], carritoVIP = [];
         let productoSeleccionado = null, filtroInstagram = "luxury_store";
