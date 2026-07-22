@@ -624,15 +624,14 @@ window.addEventListener('DOMContentLoaded', validarAccesoYcargarTienda);
     tiendaBuscada = tiendaBuscada.trim();
 
     try {
-        // 3. Consultar la fecha de expiración y el estado activo/inactivo en Supabase
-        // (Asegúrate de que tu columna en Supabase se llame 'activa' o 'activo', aquí la puse como 'activa')
+        // 3. Consultar SOLO la fecha de expiración en Supabase (evitando el error de columnas que no existen)
         const { data, error } = await supabaseClient
             .from('comercios')
-            .select('activa, fecha_expiracion')
+            .select('fecha_expiracion')
             .ilike('nombre_negocio', tiendaBuscada)
             .maybeSingle();
 
-        if (error || !data) {
+        if (error || !data || !data.fecha_expiracion) {
             document.getElementById('pantalla-bloqueo').innerHTML = `
                 <h1 style="font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Acceso Denegado</h1>
                 <p style="color: #94a3b8; font-size: 0.875rem;">El comercio asociado a este enlace no existe.</p>
@@ -640,36 +639,25 @@ window.addEventListener('DOMContentLoaded', validarAccesoYcargarTienda);
             return;
         }
 
-        // 4. Validar el interruptor manual (si está en false, se apaga de inmediato)
-        if (data.activa === false) {
+        // 4. Validar fecha actual contra la fecha de expiración
+        const ahora = new Date().getTime();
+        const expiracion = new Date(data.fecha_expiracion).getTime();
+
+        if (ahora >= expiracion) {
             document.getElementById('pantalla-bloqueo').innerHTML = `
-                <h1 style="font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Servicio Suspendido</h1>
-                <p style="color: #94a3b8; font-size: 0.875rem;">Este comercio ha sido desactivado temporalmente.</p>
+                <h1 style="font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Acceso Denegado</h1>
+                <p style="color: #94a3b8; font-size: 0.875rem;">Este contrato ha expirado.</p>
             `;
             return;
         }
 
-        // 5. Validar fecha actual contra la fecha de expiración por seguridad
-        if (data.fecha_expiracion) {
-            const ahora = new Date().getTime();
-            const expiracion = new Date(data.fecha_expiracion).getTime();
-
-            if (ahora >= expiracion) {
-                document.getElementById('pantalla-bloqueo').innerHTML = `
-                    <h1 style="font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Acceso Denegado</h1>
-                    <p style="color: #94a3b8; font-size: 0.875rem;">Este contrato ha expirado.</p>
-                `;
-                return;
-            }
-        }
-
-        // 6. ¡Éxito! Si pasa todas las validaciones, removemos la pantalla de bloqueo y cargamos los productos de la tienda
+        // 5. ¡Éxito! Si la fecha es válida, removemos el bloqueo y dejamos cargar la vitrina
         const pantallaBloqueo = document.getElementById('pantalla-bloqueo');
         if (pantallaBloqueo) {
-            pantallaBloqueo.remove(); // Quitamos el aviso de carga/bloqueo
+            pantallaBloqueo.remove();
         }
 
-        // Ejecutamos la función que descarga los productos de este comercio específico y pinta tu vitrina
+        // Ejecutamos tu función para pintar la tienda
         if (typeof descargarCatalogoDeSupabase === 'function') {
             descargarCatalogoDeSupabase(tiendaBuscada);
         } else if (typeof renderizarVitrinaPrincipal === 'function') {
