@@ -218,31 +218,46 @@
         let fotoSeleccionadaParaLightbox = ""
 
         // --- VERIFICACIÓN AUTOMÁTICA DE CONTRATO ---
-        async function verificarEstadoContratoComercio() {
-            try {
-                // Buscamos el comercio actual basándonos en su usuario de Instagram configurado (filtroInstagram)
-                const { data, error } = await supabaseClient
-                    .from('comercios')
-                    .select('fecha_expiracion')
-                    .eq('instagram_dueno', filtroInstagram)
-                    .maybeSingle();
+async function verificarEstadoContratoComercio() {
+    try {
+        console.log("Buscando contrato para el Instagram:", filtroInstagram);
 
-                if (!error && data && data.fecha_expiracion) {
-                    const fechaActual = new Date();
-                    const fechaExpiracion = new Date(data.fecha_expiracion);
+        const { data, error } = await supabaseClient
+            .from('comercios')
+            .select('fecha_expiracion')
+            .eq('instagram_dueno', filtroInstagram)
+            .maybeSingle();
 
-                    // Si la fecha actual sobrepasa la fecha de expiración, mostramos el modal de bloqueo
-                    if (fechaActual > fechaExpiracion) {
-                        const modal = document.getElementById('modal-bloqueo-contrato');
-                        if (modal) {
-                            modal.classList.remove('hidden');
-                        }
-                    }
-                }
-            } catch (err) {
-                console.error("Error al validar la expiración del contrato:", err);
-            }
+        if (error) {
+            console.error("Error en la consulta de Supabase:", error);
+            return;
         }
+
+        if (data && data.fecha_expiracion) {
+            const fechaActual = new Date();
+            // Limpiamos y convertimos correctamente la fecha de Supabase
+            const fechaExpiracion = new Date(data.fecha_expiracion);
+
+            console.log("Fecha actual del sistema:", fechaActual);
+            console.log("Fecha de expiración en BD:", fechaExpiracion);
+
+            // Si la fecha actual sobrepasa la fecha de expiración, mostramos el modal de bloqueo
+            if (fechaActual > fechaExpiracion) {
+                console.log("⚠️ El contrato ha expirado. Bloqueando vitrina...");
+                const modal = document.getElementById('modal-bloqueo-contrato');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                }
+            } else {
+                console.log("✅ El contrato está activo.");
+            }
+        } else {
+            console.log("No se encontró fecha de expiración para este comercio o el campo está NULL.");
+        }
+    } catch (err) {
+        console.error("Error al validar la expiración del contrato:", err);
+    }
+}
 
         function irAPantallaVitrina() {
             document.getElementById('pantalla-detalle').classList.add('hidden');
