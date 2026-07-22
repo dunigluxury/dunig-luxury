@@ -603,18 +603,19 @@ window.addEventListener('DOMContentLoaded', validarAccesoYcargarTienda);
     }
     // Fin del script
      window.addEventListener('DOMContentLoaded', async () => {
-    // 1. Bloquear la pantalla por defecto al cargar cualquier cosa
-    document.body.innerHTML = `
-        <div id="pantalla-bloqueo" style="background-color: #030712; color: #f87171; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: monospace; text-align: center; padding: 20px; position: fixed; top: 0; left: 0; width: 100%; z-index: 99999;">
-            <h1 style="font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Cargando sistema...</h1>
-        </div>`;
+    // 1. Crear una pantalla de bloqueo temporal encima de todo mientras verifica
+    const pantallaBloqueo = document.createElement('div');
+    pantallaBloqueo.id = 'pantalla-bloqueo';
+    pantallaBloqueo.style.cssText = "background-color: #030712; color: #f87171; height: 100vh; width: 100vw; position: fixed; top: 0; left: 0; z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: monospace; text-align: center; padding: 20px;";
+    pantallaBloqueo.innerHTML = `<h1 style="font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Cargando sistema...</h1>`;
+    document.body.appendChild(pantallaBloqueo);
 
     const params = new URLSearchParams(window.location.search);
     let tiendaBuscada = params.get('tienda');
 
     // 2. Si entra al link sin ?tienda=... se bloquea de inmediato
     if (!tiendaBuscada) {
-        document.getElementById('pantalla-bloqueo').innerHTML = `
+        pantallaBloqueo.innerHTML = `
             <h1 style="font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Acceso Denegado</h1>
             <p style="color: #94a3b8; font-size: 0.875rem;">Enlace de tienda no válido o incompleto.</p>
         `;
@@ -624,7 +625,7 @@ window.addEventListener('DOMContentLoaded', validarAccesoYcargarTienda);
     tiendaBuscada = tiendaBuscada.trim();
 
     try {
-        // 3. Consultar SOLO la fecha de expiración en Supabase (evitando el error de columnas que no existen)
+        // 3. Consultar la fecha de expiración en Supabase
         const { data, error } = await supabaseClient
             .from('comercios')
             .select('fecha_expiracion')
@@ -632,7 +633,7 @@ window.addEventListener('DOMContentLoaded', validarAccesoYcargarTienda);
             .maybeSingle();
 
         if (error || !data || !data.fecha_expiracion) {
-            document.getElementById('pantalla-bloqueo').innerHTML = `
+            pantallaBloqueo.innerHTML = `
                 <h1 style="font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Acceso Denegado</h1>
                 <p style="color: #94a3b8; font-size: 0.875rem;">El comercio asociado a este enlace no existe.</p>
             `;
@@ -644,29 +645,30 @@ window.addEventListener('DOMContentLoaded', validarAccesoYcargarTienda);
         const expiracion = new Date(data.fecha_expiracion).getTime();
 
         if (ahora >= expiracion) {
-            document.getElementById('pantalla-bloqueo').innerHTML = `
+            pantallaBloqueo.innerHTML = `
                 <h1 style="font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Acceso Denegado</h1>
                 <p style="color: #94a3b8; font-size: 0.875rem;">Este contrato ha expirado.</p>
             `;
             return;
         }
 
-        // 5. ¡Éxito! Si la fecha es válida, removemos el bloqueo y dejamos cargar la vitrina
-        const pantallaBloqueo = document.getElementById('pantalla-bloqueo');
-        if (pantallaBloqueo) {
-            pantallaBloqueo.remove();
-        }
+        // 5. ¡Éxito! Si pasa la validación, removemos el bloqueo y cargamos todo con normalidad
+        pantallaBloqueo.remove();
 
-        // Ejecutamos tu función para pintar la tienda
+        // Ejecutamos las funciones de carga de tu tienda pasando el nombre correcto
         if (typeof descargarCatalogoDeSupabase === 'function') {
             descargarCatalogoDeSupabase(tiendaBuscada);
-        } else if (typeof renderizarVitrinaPrincipal === 'function') {
-            renderizarVitrinaPrincipal();
+        }
+        if (typeof descargarAdicionalesDeSupabase === 'function') {
+            descargarAdicionalesDeSupabase();
+        }
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
         }
 
     } catch (err) {
         console.error("Error crítico:", err);
-        document.getElementById('pantalla-bloqueo').innerHTML = `
+        pantallaBloqueo.innerHTML = `
             <h1 style="font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Error</h1>
             <p style="color: #94a3b8; font-size: 0.875rem;">Error de conexión al verificar el servicio.</p>
         `;
