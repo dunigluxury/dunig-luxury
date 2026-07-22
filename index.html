@@ -193,7 +193,70 @@
         const SUPABASE_URL = "https://yoibmpulvokhvvhkryzv.supabase.co"; 
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE"; 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// --- FUNCIÓN DE BLOQUEO AUTOMÁTICO POR ENLACE ---
+        async function validarAccesoPorEnlace() {
+            // 1. Obtiene el identificador del negocio desde la URL (ejemplo: vitrina.html?tienda=tu_negocio)
+            const params = new URLSearchParams(window.location.search);
+            const instagramComercio = params.get('tienda'); 
 
+            if (!instagramComercio) {
+                bloquearAccesoTotal("Enlace de tienda no válido o incompleto.");
+                return;
+            }
+
+            try {
+                // 2. Consulta la fecha de expiración en Supabase para este link
+                const { data, error } = await supabaseClient
+                    .from('comercios')
+                    .select('fecha_expiracion')
+                    .eq('instagram_dueno', instagramComercio)
+                    .maybeSingle();
+
+                if (error || !data) {
+                    bloquearAccesoTotal("El comercio asociado a este enlace no existe.");
+                    return;
+                }
+
+                // 3. Valida la fecha y hora actual contra el sistema
+                if (data.fecha_expiracion) {
+                    const fechaExpiracion = new Date(data.fecha_expiracion).getTime();
+                    const ahora = new Date().getTime();
+
+                    // Si la hora actual es mayor o igual a la expiración, bloquea el acceso
+                    if (ahora >= fechaExpiracion) {
+                        bloquearAccesoTotal("🔒 Este enlace se encuentra suspendido por vencimiento de contrato.");
+                        return;
+                    }
+                } else {
+                    bloquearAccesoTotal("🔒 Este enlace no cuenta con una vigencia activa.");
+                    return;
+                }
+
+                // 4. Si todo está correcto, puedes proceder a descargar tu catálogo normal
+                console.log("Acceso concedido al enlace.");
+                if (typeof descargarCatalogoDeSupabase === 'function') {
+                    descargarCatalogoDeSupabase();
+                }
+
+            } catch (err) {
+                console.error("Error al validar el enlace:", err);
+                bloquearAccesoTotal("Error de conexión al verificar el estado del enlace.");
+            }
+        }
+
+        function bloquearAccesoTotal(mensaje) {
+            // Destruye la vista de la página y muestra una pantalla de bloqueo limpia
+            document.body.innerHTML = `
+                <div style="background-color: #030712; color: #f87171; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: monospace; text-align: center; padding: 20px;">
+                    <h1 style="font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Acceso Denegado</h1>
+                    <p style="color: #94a3b8; font-size: 0.875rem;">${mensaje}</p>
+                </div>
+            `;
+        }
+
+        // Se ejecuta automáticamente al cargar la página de la vitrina
+        window.addEventListener('DOMContentLoaded', validarAccesoPorEnlace);
+        
         let baseProductos = [], cuentasDB = [], carritoVIP = [];
         let productoSeleccionado = null, filtroInstagram = "luxury_store";
         let fotoSeleccionadaParaLightbox = ""
