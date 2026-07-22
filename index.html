@@ -209,40 +209,43 @@
     <footer class="border-t border-stone-950 bg-black/60 p-4 text-center text-[10px] text-stone-600 font-mono tracking-widest mt-12">© 2026 D'UNIG LUXURY ECOSISTEMA. TODOS LOS DERECHOS RESERVADOS.</footer>
 
     <script>
-        const SUPABASE_URL = "https://yoibmpulvokhvvhkryzv.supabase.co"; 
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE"; 
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const SUPABASE_URL = "https://yoibmpulvokhvvhkryzv.supabase.co";     
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvaWJtcHVsdm9raHZ2aGtyeXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDgwODQsImV4cCI6MjA5ODA4NDA4NH0.cNq3eZzXyB7kqdsyqf3ctKsYO5x1ABo20hgFeJdyzBE";     
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let baseProductos = [], cuentasDB = [], carritoVIP = [];
-        let productoSeleccionado = null, filtroInstagram = "luxury_store";
-        let fotoSeleccionadaParaLightbox = ""
+let baseProductos = [], cuentasDB = [], carritoVIP = [];
+let productoSeleccionado = null, filtroInstagram = "tuaureola"; // <-- CAMBIA AQUÍ al Instagram exacto del comercio que pruebas
+let fotoSeleccionadaParaLightbox = "";
 
-        async function verificarYMostrarVitrina() {
+function irAPantallaVitrina() {
+    document.getElementById('pantalla-detalle').classList.add('hidden');
+    document.getElementById('pantalla-carrito').classList.add('hidden');
+    document.getElementById('pantalla-vitrina').classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-        function irAPantallaVitrina() {
-            document.getElementById('pantalla-detalle').classList.add('hidden');
-            document.getElementById('pantalla-carrito').classList.add('hidden');
-            document.getElementById('pantalla-vitrina').classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+function irAPantallaCarrito() {
+    document.getElementById('pantalla-vitrina').classList.add('hidden');
+    document.getElementById('pantalla-detalle').classList.add('hidden');
+    document.getElementById('pantalla-carrito').classList.remove('hidden');
+    renderizarContenidoCarrito();
+    obtenerCuentasPagoParaCarrito();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-        function irAPantallaCarrito() {
-            document.getElementById('pantalla-vitrina').classList.add('hidden');
-            document.getElementById('pantalla-detalle').classList.add('hidden');
-            document.getElementById('pantalla-carrito').classList.remove('hidden');
-            renderizarContenidoCarrito();
-            obtenerCuentasPagoParaCarrito();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        async function descargarCatalogoDeSupabase() {
+async function descargarCatalogoDeSupabase() {
     try {
-        // 1. Consultar la fecha de expiración del comercio
+        // 1. Consultar la fecha de expiración del comercio usando el filtro actual
         const { data: comercioData, error: comercioError } = await supabaseClient
             .from('comercios')
             .select('fecha_expiracion')
             .eq('instagram_dueno', filtroInstagram)
             .maybeSingle();
+
+        // Si el comercio no existe o hay error al buscarlo, prevenimos
+        if (comercioError) {
+            console.error("Error consultando el comercio:", comercioError);
+        }
 
         // 2. Validar si la fecha ya expiró
         if (comercioData && comercioData.fecha_expiracion) {
@@ -265,6 +268,8 @@
                 }
                 return;
             }
+        } else {
+            console.warn("⚠️ El comercio no tiene fecha de expiración asignada o no se encontró en la tabla 'comercios'.");
         }
 
         // 3. Si está vigente, descarga los productos normalmente
