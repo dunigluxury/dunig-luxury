@@ -603,57 +603,85 @@ window.addEventListener('DOMContentLoaded', validarAccesoYcargarTienda);
     }
     // Fin del script
      window.addEventListener('DOMContentLoaded', async () => {
-    // 1. Obtener el parámetro 'tienda' de la URL (Ej: ?tienda=Hotdog)
-    const params = new URLSearchParams(window.location.search);
-    const tiendaBuscada = params.get('tienda');
+    // 1. Bloquear la pantalla por defecto al cargar cualquier cosa
+    document.body.innerHTML = `
+        <div id="pantalla-bloqueo" style="background-color: #030712; color: #f87171; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: monospace; text-align: center; padding: 20px; position: fixed; top: 0; left: 0; width: 100%; z-index: 99999;">
+            <h1 style="font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Cargando sistema...</h1>
+        </div>`;
 
+    const params = new URLSearchParams(window.location.search);
+    let tiendaBuscada = params.get('tienda');
+
+    // 2. Si entra al link sin ?tienda=... se bloquea de inmediato
     if (!tiendaBuscada) {
-        document.body.innerHTML = '<div style="background:#030712; color:#f87171; height:100vh; display:flex; justify-content:center; align-items:center; font-family:monospace;">ENLACE NO VÁLIDO</div>';
+        document.getElementById('pantalla-bloqueo').innerHTML = `
+            <h1 style="font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Acceso Denegado</h1>
+            <p style="color: #94a3b8; font-size: 0.875rem;">Enlace de tienda no válido o incompleto.</p>
+        `;
         return;
     }
 
+    tiendaBuscada = tiendaBuscada.trim();
+
     try {
-        // 2. Consultar directamente a Supabase la fecha de expiración
+        // 3. Consultar la fecha de expiración y el estado activo/inactivo en Supabase
+        // (Asegúrate de que tu columna en Supabase se llame 'activa' o 'activo', aquí la puse como 'activa')
         const { data, error } = await supabaseClient
             .from('comercios')
-            .select('fecha_expiracion')
+            .select('activa, fecha_expiracion')
             .ilike('nombre_negocio', tiendaBuscada)
             .maybeSingle();
 
-        if (error || !data || !data.fecha_expiracion) {
-            document.body.innerHTML = '<div style="background:#030712; color:#f87171; height:100vh; display:flex; justify-content:center; align-items:center; font-family:monospace;">COMERCIO NO ENCONTRADO</div>';
+        if (error || !data) {
+            document.getElementById('pantalla-bloqueo').innerHTML = `
+                <h1 style="font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Acceso Denegado</h1>
+                <p style="color: #94a3b8; font-size: 0.875rem;">El comercio asociado a este enlace no existe.</p>
+            `;
             return;
         }
 
-        // 3. Comparar fechas (Hora actual vs Fecha de expiración en Supabase)
-        const ahora = new Date().getTime();
-        const expiracion = new Date(data.fecha_expiracion).getTime();
+        // 4. Validar el interruptor manual (si está en false, se apaga de inmediato)
+        if (data.activa === false) {
+            document.getElementById('pantalla-bloqueo').innerHTML = `
+                <h1 style="font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Servicio Suspendido</h1>
+                <p style="color: #94a3b8; font-size: 0.875rem;">Este comercio ha sido desactivado temporalmente.</p>
+            `;
+            return;
+        }
 
-        if (ahora >= expiracion) {
-            // BLOQUEO TOTAL SI YA VENCIÓ
-            document.body.innerHTML = `
-                <div style="background-color: #030712; color: #f87171; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: monospace; text-align: center; padding: 20px;">
+        // 5. Validar fecha actual contra la fecha de expiración por seguridad
+        if (data.fecha_expiracion) {
+            const ahora = new Date().getTime();
+            const expiracion = new Date(data.fecha_expiracion).getTime();
+
+            if (ahora >= expiracion) {
+                document.getElementById('pantalla-bloqueo').innerHTML = `
                     <h1 style="font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Acceso Denegado</h1>
                     <p style="color: #94a3b8; font-size: 0.875rem;">Este contrato ha expirado.</p>
-                </div>`;
-            return;
+                `;
+                return;
+            }
         }
 
-        // 4. Si pasa la validación, cargamos los productos con normalidad
-        const { data: prods } = await supabaseClient
-            .from('productos')
-            .select('*')
-            .ilike('nombre_negocio', tiendaBuscada);
+        // 6. ¡Éxito! Si pasa todas las validaciones, removemos la pantalla de bloqueo y cargamos los productos de la tienda
+        const pantallaBloqueo = document.getElementById('pantalla-bloqueo');
+        if (pantallaBloqueo) {
+            pantallaBloqueo.remove(); // Quitamos el aviso de carga/bloqueo
+        }
 
-        if (prods && typeof baseProductos !== 'undefined') {
-            baseProductos = prods;
-            if (typeof renderizarVitrinaPrincipal === 'function') {
-                renderizarVitrinaPrincipal();
-            }
+        // Ejecutamos la función que descarga los productos de este comercio específico y pinta tu vitrina
+        if (typeof descargarCatalogoDeSupabase === 'function') {
+            descargarCatalogoDeSupabase(tiendaBuscada);
+        } else if (typeof renderizarVitrinaPrincipal === 'function') {
+            renderizarVitrinaPrincipal();
         }
 
     } catch (err) {
         console.error("Error crítico:", err);
+        document.getElementById('pantalla-bloqueo').innerHTML = `
+            <h1 style="font-size: 1.5rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Error</h1>
+            <p style="color: #94a3b8; font-size: 0.875rem;">Error de conexión al verificar el servicio.</p>
+        `;
     }
 });   
     </script>
