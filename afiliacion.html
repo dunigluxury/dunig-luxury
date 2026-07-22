@@ -39,13 +39,8 @@
                     <input type="email" id="email" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:outline-none focus:border-amber-400" placeholder="tucorreo@gmail.com">
                 </div>
 
-                <div>
-                    <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Contraseña de Acceso</label>
-                    <input type="password" id="password" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:outline-none focus:border-amber-400" placeholder="••••••••">
-                </div>
-
                 <button type="submit" id="btn-submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 rounded-lg transition duration-200 mt-4">
-                    Crear mi Sistema
+                    Solicitar Afiliación
                 </button>
             </form>
 
@@ -73,50 +68,34 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             btnSubmit.disabled = true;
-            btnSubmit.textContent = "Registrando...";
+            btnSubmit.textContent = "Enviando solicitud...";
             mensajeAlerta.classList.add('hidden');
 
             const nombreNegocio = document.getElementById('nombre_negocio').value.trim();
             const instagramDueno = document.getElementById('instagram_dueno').value.trim().toLowerCase();
             const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
 
             try {
-                // 1. Crear el usuario en la autenticación de Supabase
-                const { data: authData, error: authError } = await supabaseClient.auth.signUp({
-                    email: email,
-                    password: password
-                });
+                // Guardar los datos del comercio directamente en la tabla 'comercios'
+                const { error: dbError } = await supabaseClient
+                    .from('comercios')
+                    .insert([
+                        { 
+                            nombre_negocio: nombreNegocio,
+                            instagram_dueno: instagramDueno,
+                            email: email
+                        }
+                    ]);
 
-                if (authError) throw authError;
+                if (dbError) throw dbError;
 
-                const userId = authData.user ? authData.user.id : null;
-
-                if (userId) {
-                    // 2. Guardar los datos del comercio en la tabla 'comercios'
-                    const { error: dbError } = await supabaseClient
-                        .from('comercios')
-                        .insert([
-                            { 
-                                user_id: userId, 
-                                nombre_negocio: nombreNegocio,
-                                instagram_dueno: instagramDueno,
-                                email: email
-                            }
-                        ]);
-
-                    if (dbError) {
-                        console.warn("Aviso al guardar el comercio:", dbError.message);
-                    }
-                }
-
-                mensajeAlerta.textContent = "¡Registro exitoso! Redirigiendo a tu panel...";
+                mensajeAlerta.textContent = "¡Solicitud enviada con éxito! Nos pondremos en contacto contigo.";
                 mensajeAlerta.className = "mt-4 text-center text-sm text-green-400 font-medium";
                 mensajeAlerta.classList.remove('hidden');
 
-                setTimeout(() => {
-                    window.location.href = "login.html";
-                }, 2000);
+                form.reset();
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = "Solicitar Afiliación";
 
             } catch (error) {
                 console.error("Error en el registro:", error.message);
@@ -124,7 +103,7 @@
                 mensajeAlerta.className = "mt-4 text-center text-sm text-red-400 font-medium";
                 mensajeAlerta.classList.remove('hidden');
                 btnSubmit.disabled = false;
-                btnSubmit.textContent = "Crear mi Sistema";
+                btnSubmit.textContent = "Solicitar Afiliación";
             }
         });
     </script>
