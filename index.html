@@ -276,15 +276,19 @@ async function verificarEstadoContratoComercio() {
         }
 
         async function descargarCatalogoDeSupabase() {
-            const { data, error } = await supabaseClient.from('productos').select('*').eq('instagram_dueno', filtroInstagram);
-            if (!error && data) { baseProductos = data; renderizarVitrinaPrincipal(); }
-        }
+    // Usamos la función RPC segura para que la API bloquee el catálogo si expiró la fecha
+    const { data, error } = await supabaseClient
+        .rpc('obtener_productos_vitrina', { p_instagram: filtroInstagram });
 
-        function renderizarVitrinaPrincipal() {
-            const grid = document.getElementById('grid-productos-vitrina'); if (!grid) return; grid.innerHTML = "";
-            if (baseProductos.length === 0) {
-                grid.innerHTML = `<div class="col-span-full p-12 text-center text-stone-600 font-mono text-xs uppercase tracking-widest">Ninguna pieza cargada.</div>`; return;
-            }
+    if (!error && data) { 
+        baseProductos = data; 
+        renderizarVitrinaPrincipal(); 
+    } else {
+        console.warn("Contrato vencido o acceso bloqueado por la API.");
+        baseProductos = [];
+        renderizarVitrinaPrincipal(); // Esto disparará el aviso de que no hay piezas o mostrará el bloqueo
+    }
+}
             baseProductos.forEach(p => {
                 const imgPortada = p.imagen_url || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600";
                 grid.innerHTML += `
