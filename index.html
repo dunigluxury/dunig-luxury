@@ -615,44 +615,20 @@ window.addEventListener('DOMContentLoaded', validarAccesoYcargarTienda);
     }
     // Fin del script
      <script>
-    window.addEventListener('DOMContentLoaded', async () => {
-        const params = new URLSearchParams(window.location.search);
-        let tiendaBuscada = params.get('tienda');
-
-        if (!tiendaBuscada) {
-            document.body.innerHTML = '<h1 style="color:red; text-align:center; margin-top:20vh;">ACCESO DENEGADO / ENLACE INVÁLIDO</h1>';
-            return;
-        }
-
-        tiendaBuscada = tiendaBuscada.trim();
-        const hoy = new Date().toISOString().split('T')[0];
-
-        // Consultamos productos solo si el comercio asociado tiene su fecha vigente
-        const { data, error } = await supabaseClient
-            .from('productos')
-            .select('*, comercios!inner(fecha_expiracion)')
-            .eq('comercios.nombre_negocio', tiendaBuscada)
-            .gt('comercios.fecha_expiracion', hoy);
-
-        if (error || !data || data.length === 0) {
-            // Si la fecha expiró, la base de datos no da datos y bloquea la pantalla
-            document.body.innerHTML = '<h1 style="background:#030712; color:#f87171; height:100vh; display:flex; justify-content:center; align-items:center; font-family:monospace; font-size:1.5rem; text-align:center;">ACCESO DENEGADO / CONTRATO VENCIDO</h1>';
-            return;
-        }
-
-        // Si pasa la validación, guardamos los productos y pintamos la vitrina con normalidad
-        window.baseProductos = data;
-        if (typeof renderizarVitrinaPrincipal === 'function') {
-            renderizarVitrinaPrincipal();
-        }
-        if (typeof descargarAdicionalesDeSupabase === 'function') {
-            descargarAdicionalesDeSupabase();
-        }
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
-    });
-</script>   
+    window.addEventListener('DOMContentLoaded', () => {
+    // 1. Cargar el catálogo y los adicionales con normalidad
+    if (typeof descargarCatalogoDeSupabase === 'function') {
+        descargarCatalogoDeSupabase();
+    }
+    if (typeof descargarAdicionalesDeSupabase === 'function') {
+        descargarAdicionalesDeSupabase();
+    }
+    
+    // 2. Inicializar iconos si usas Lucide
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+});   
     </script>
 </body>
 </html>
