@@ -614,52 +614,36 @@ window.addEventListener('DOMContentLoaded', validarAccesoYcargarTienda);
         lucide.createIcons();
     }
     // Fin del script
-     window.addEventListener('DOMContentLoaded', async () => {
-    // 1. Crear pantalla de bloqueo inicial para que no se vea nada por defecto
-    const bloqueo = document.createElement('div');
-    bloqueo.id = 'pantalla-bloqueo';
-    bloqueo.style.cssText = "position:fixed;top:0;left:0;width:100vw;height:100vh;background:#030712;color:#f87171;z-index:99999;display:flex;flex-direction:column;justify-content:center;align-items:center;font-family:monospace;text-align:center;padding:20px;";
-    bloqueo.innerHTML = `<h1 style="font-size:1.5rem;">Verificando acceso...</h1>`;
-    document.body.appendChild(bloqueo);
+     <script>
+    window.addEventListener('DOMContentLoaded', async () => {
+        const params = new URLSearchParams(window.location.search);
+        let tiendaBuscada = params.get('tienda');
 
-    // 2. Leer parámetro de la URL (?tienda=Nombre)
-    const params = new URLSearchParams(window.location.search);
-    let tiendaBuscada = params.get('tienda');
+        if (!tiendaBuscada) {
+            document.body.innerHTML = '<h1 style="color:red; text-align:center; margin-top:20vh;">ACCESO DENEGADO / ENLACE INVÁLIDO</h1>';
+            return;
+        }
 
-    if (!tiendaBuscada) {
-        bloqueo.innerHTML = `<h1 style="font-size:1.5rem;">Acceso Denegado</h1><p>Falta el parámetro de la tienda en el enlace.</p>`;
-        return;
-    }
+        tiendaBuscada = tiendaBuscada.trim();
+        const hoy = new Date().toISOString().split('T')[0];
 
-    tiendaBuscada = tiendaBuscada.trim();
-
-    try {
-        // 3. Consultar la fecha en la tabla 'comercios' de Supabase
+        // Consultamos productos solo si el comercio asociado tiene su fecha vigente
         const { data, error } = await supabaseClient
-            .from('comercios')
-            .select('fecha_expiracion')
-            .ilike('nombre_negocio', tiendaBuscada)
-            .maybeSingle();
+            .from('productos')
+            .select('*, comercios!inner(fecha_expiracion)')
+            .eq('comercios.nombre_negocio', tiendaBuscada)
+            .gt('comercios.fecha_expiracion', hoy);
 
-        if (error || !data || !data.fecha_expiracion) {
-            bloqueo.innerHTML = `<h1 style="font-size:1.5rem;">Acceso Denegado</h1><p>El comercio no existe en el sistema.</p>`;
+        if (error || !data || data.length === 0) {
+            // Si la fecha expiró, la base de datos no da datos y bloquea la pantalla
+            document.body.innerHTML = '<h1 style="background:#030712; color:#f87171; height:100vh; display:flex; justify-content:center; align-items:center; font-family:monospace; font-size:1.5rem; text-align:center;">ACCESO DENEGADO / CONTRATO VENCIDO</h1>';
             return;
         }
 
-        // 4. Comparar fechas (hoy vs fecha de expiración)
-        const ahora = new Date().getTime();
-        const expiracion = new Date(data.fecha_expiracion).getTime();
-
-        if (ahora >= expiracion) {
-            bloqueo.innerHTML = `<h1 style="font-size:1.5rem;">Contrato Expirado</h1><p>El servicio para este comercio ha finalizado.</p>`;
-            return;
-        }
-
-        // 5. Si pasa la seguridad, quitamos el bloqueo y cargamos los datos
-        bloqueo.remove();
-
-        if (typeof descargarCatalogoDeSupabase === 'function') {
-            descargarCatalogoDeSupabase(tiendaBuscada);
+        // Si pasa la validación, guardamos los productos y pintamos la vitrina con normalidad
+        window.baseProductos = data;
+        if (typeof renderizarVitrinaPrincipal === 'function') {
+            renderizarVitrinaPrincipal();
         }
         if (typeof descargarAdicionalesDeSupabase === 'function') {
             descargarAdicionalesDeSupabase();
@@ -667,12 +651,8 @@ window.addEventListener('DOMContentLoaded', validarAccesoYcargarTienda);
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
-
-    } catch (err) {
-        console.error("Error:", err);
-        bloqueo.innerHTML = `<h1 style="font-size:1.5rem;">Error</h1><p>No se pudo conectar con el servidor.</p>`;
-    }
-});   
+    });
+</script>   
     </script>
 </body>
 </html>
