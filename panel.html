@@ -606,33 +606,7 @@ async function eliminarCategoria(nombre) {
                     <div>
                         <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Teléfono:</label>
                         <input type="text" id="pago-telefono" placeholder="Ej: 04121234567" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none font-mono">
-                    </div>`;
-            } else if (plataforma === "zelle") {
-                wrapper.innerHTML = `
-                    <div>
-                        <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Correo Electrónico:</label>
-                        <input type="email" id="pago-email" placeholder="ejemplo@zelle.com" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none font-mono">
-                    </div>
-                    <div>
-                        <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Titular de la Cuenta:</label>
-                        <input type="text" id="pago-titular" placeholder="Nombre completo..." class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none">
-                    </div>`;
-            } else if (plataforma === "nequi") {
-                wrapper.innerHTML = `
-                    <div>
-                        <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Número de Cuenta / Teléfono:</label>
-                        <input type="text" id="pago-telefono" placeholder="Ej: 3001234567" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none font-mono">
-                    </div>
-                    <div>
-                        <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Nombre del Titular:</label>
-                        <input type="text" id="pago-titular" placeholder="Nombre en Nequi..." class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none">
-                    </div>`;
-            } else if (plataforma === "efectivo") {
-                wrapper.innerHTML = `
-                    <div>
-                        <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Detalles de Entrega o Retiro:</label>
-                        <input type="text" id="pago-detalles" placeholder="Ej: Retiro en tienda física / Acuerdo previo" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none">
-                    </div>`;
+                    </div>';
             }
         }
 
