@@ -111,7 +111,8 @@
                     <div>
                         <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Banco o Plataforma</label>
                         <select id="pago-plataforma" onchange="alternarCamposPago()" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none focus:border-amber-500/30">
-                            <option value="pago_movil">Pago Móvil</option>
+                            <option value="pago_movil">Pago Móvil</option>
+
                         </select>
                     </div>
 
@@ -701,15 +702,6 @@ async function eliminarCategoria(nombre) {
                 document.getElementById('pago-banco').value = cuenta.banco || '';
                 document.getElementById('pago-ci').value = cuenta.ci || '';
                 document.getElementById('pago-telefono').value = cuenta.telefono || '';
-            } else if (cuenta.plataforma === "zelle") {
-                document.getElementById('pago-email').value = cuenta.email || '';
-                document.getElementById('pago-titular').value = cuenta.titular || '';
-            } else if (cuenta.plataforma === "nequi") {
-                document.getElementById('pago-telefono').value = cuenta.telefono || '';
-                document.getElementById('pago-titular').value = cuenta.titular || '';
-            } else if (cuenta.plataforma === "efectivo") {
-                document.getElementById('pago-detalles').value = cuenta.detalles || '';
-            }
 
             document.getElementById('pago-form-titulo').innerText = "Modificar Cuenta";
             document.getElementById('btn-guardar-pago').innerText = "Actualizar Cuenta";
