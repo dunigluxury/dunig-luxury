@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADMINISTRACIÓN DE CUPONES - PIZZA PLANETA</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: radial-gradient(circle at 50% 0%, #1c1917 0%, #0c0a09 100%); background-color: #030202; }
+        .font-futurista { font-family: 'Orbitron', sans-serif; }
+        .glow-gold { box-shadow: 0 0 25px rgba(229, 193, 88, 0.15); }
+        .glass-panel { background: linear-gradient(135deg, rgba(28, 25, 23, 0.45) 0%, rgba(12, 10, 9, 0.6) 100%); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.02); }
+        .grid-bg { background-image: linear-gradient(rgba(229, 193, 88, 0.01) 1px, transparent 1px), linear-gradient(90deg, rgba(229, 193, 88, 0.01) 1px, transparent 1px); background-size: 32px 32px; }
+        .btn-oro {
+            background: linear-gradient(135deg, #f5d77f 0%, #dfb347 50%, #c79524 100%);
+            box-shadow: 0 4px 20px rgba(223, 179, 71, 0.3), inset 0 2px 3px rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+        .btn-oro:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 25px rgba(223, 179, 71, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.7);
+        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #e5c158; border-radius: 10px; }
+    </style>
+</head>
+<body class="text-stone-200 antialiased min-h-screen flex flex-col justify-between grid-bg relative">
+
+    <!-- HEADER -->
+    <header class="bg-black/40 backdrop-blur-xl border-b border-stone-900/80 sticky top-0 z-40 px-4">
+        <div class="max-w-7xl mx-auto h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="border border-amber-500/30 p-2 rounded-xl bg-stone-950/80 glow-gold">
+                    <i data-lucide="shield-alert" class="w-6 h-6 text-amber-400"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-black tracking-[0.15em] text-white font-futurista">
+                        PANEL <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-500">ADMIN CUPONES</span>
+                    </h1>
+                    <p class="text-[8px] text-amber-500/70 uppercase tracking-[0.25em] font-bold font-futurista">
+                        GESTIÓN DE CLAVES E IMÁGENES VIP
+                    </p>
+                </div>
+            </div>
+            <button onclick="window.location.href='index.html'" class="bg-stone-900 border border-amber-500/20 px-3 py-2 rounded-lg text-xs font-futurista text-amber-400 hover:bg-stone-800 transition-colors cursor-pointer flex items-center gap-2">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Ir al Menú
+            </button>
+        </div>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="max-w-5xl w-full mx-auto px-4 py-8 flex-grow space-y-8 relative z-10">
+        
+        <!-- FORMULARIO DE CREACIÓN / EDICIÓN -->
+        <div class="glass-panel p-6 sm:p-8 rounded-3xl shadow-2xl border border-stone-800 space-y-6">
+            <div class="border-b border-stone-800 pb-4">
+                <h2 id="form-titulo-accion" class="text-lg font-black font-futurista text-white uppercase tracking-wider">Registrar Nuevo Cupón Exclusivo</h2>
+                <p class="text-xs text-stone-400 mt-1">Configura la clave secreta que introducirá el usuario y la imagen que se desplegará en pantalla completa.</p>
+            </div>
+
+            <form id="form-cupon" onsubmit="guardarCupon(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input type="hidden" id="cupon-id">
+
+                <div class="space-y-1.5">
+                    <label class="text-[10px] uppercase font-futurista font-bold text-amber-400 tracking-wider block">Código / Clave de Acceso *</label>
+                    <input type="text" id="input-codigo" required placeholder="EJ: PLANETA2026" class="w-full bg-stone-900 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none focus:border-amber-400 uppercase font-mono font-bold tracking-widest">
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-[10px] uppercase font-futurista font-bold text-amber-400 tracking-wider block">URL de la Imagen Exclusiva *</label>
+                    <input type="url" id="input-imagen" required placeholder="https://ejemplo.com/imagen-cupon.jpg" class="w-full bg-stone-900 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none focus:border-amber-400 font-mono">
+                </div>
+
+                <div class="sm:col-span-2 space-y-1.5">
+                    <label class="text-[10px] uppercase font-futurista font-bold text-amber-400 tracking-wider block">Descripción / Nota Informativa</label>
+                    <input type="text" id="input-descripcion" placeholder="Ej: Pizza Familiar Gratis por Aniversario" class="w-full bg-stone-900 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none focus:border-amber-400">
+                </div>
+
+                <div class="sm:col-span-2 flex gap-3 pt-2">
+                    <button type="submit" class="flex-1 btn-oro text-stone-950 font-futurista font-black py-3.5 px-6 rounded-xl text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-2 cursor-pointer shadow-lg">
+                        <i data-lucide="save" class="w-4 h-4"></i> Guardar Cupón
+                    </button>
+                    <button type="button" id="btn-cancelar-edicion" onclick="limpiarFormulario()" class="hidden bg-stone-900 border border-stone-800 hover:bg-stone-800 text-stone-300 font-futurista font-bold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider cursor-pointer">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- LISTADO DE CUPONES REGISTRADOS -->
+        <div class="glass-panel p-6 sm:p-8 rounded-3xl shadow-2xl border border-stone-800 space-y-6">
+            <h3 class="text-base font-black font-futurista text-white uppercase tracking-wider">Cupones Registrados en el Sistema</h3>
+            
+            <div id="contenedor-lista-cupones" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="text-stone-500 font-mono text-xs text-center col-span-full py-8">Cargando cupones...</div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-stone-950 bg-black/60 p-4 text-center text-[10px] text-stone-600 font-mono tracking-widest mt-12">© 2026 D'UNIG LUXURY ECOSISTEMA. TODOS LOS DERECHOS RESERVADOS.</footer>
+
+    <script>
+        const SUPABASE_URL = "https://vcymfspywjabnbddbruh.supabase.co"; 
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjeW1mc3B5d2phYm5iZGRicnVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2Njg1MjIsImV4cCI6MjEwMDI0NDUyMn0.bXamCrThn-oGgK_6Ol2w3cSoxUd0pJDHW0_UkPqGEuA"; 
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function cargarCuponesAdmin() {
+            const contenedor = document.getElementById('contenedor-lista-cupones');
+            const { data, error } = await supabaseClient.from('cupones').select('*').order('id', { ascending: false });
+
+            if (error) {
+                contenedor.innerHTML = `<div class="text-red-400 font-mono text-xs text-center col-span-full">Error al cargar cupones.</div>`;
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                contenedor.innerHTML = `<div class="text-stone-500 font-mono text-xs text-center col-span-full py-6">No hay cupones registrados todavía.</div>`;
+                return;
+            }
+
+            contenedor.innerHTML = "";
+            data.forEach(c => {
+                const img = c.imagen_url || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400";
+                contenedor.innerHTML += `
+                    <div class="bg-stone-900/90 border border-stone-800 rounded-2xl p-4 flex gap-4 items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <img src="${img}" class="w-16 h-16 object-cover rounded-xl border border-stone-800 bg-black shrink-0">
+                            <div class="space-y-1">
+                                <span class="bg-amber-500/10 text-amber-400 font-mono font-bold text-xs px-2 py-0.5 rounded border border-amber-500/20">${c.codigo}</span>
+                                <h4 class="text-xs text-white font-bold uppercase tracking-wide line-clamp-1">${c.descripcion || 'Sin descripción'}</h4>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-1.5 shrink-0">
+                            <button onclick='prepararEdicion(${JSON.stringify(c)})' class="bg-stone-800 hover:bg-stone-700 text-amber-400 p-2 rounded-lg text-xs cursor-pointer transition-colors" title="Editar">
+                                <i data-lucide="edit-3" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="eliminarCupon(${c.id})" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 p-2 rounded-lg text-xs cursor-pointer transition-colors" title="Eliminar">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>`;
+            });
+            lucide.createIcons();
+        }
+
+        async function guardarCupon(e) {
+            e.preventDefault();
+            const id = document.getElementById('cupon-id').value;
+            const codigo = document.getElementById('input-codigo').value.trim().toUpperCase();
+            const imagen_url = document.getElementById('input-imagen').value.trim();
+            const descripcion = document.getElementById('input-descripcion').value.trim();
+
+            const objetoDatos = { codigo, imagen_url, descripcion };
+
+            let errorSupabase = null;
+
+            if (id) {
+                // Actualizar existente
+                const { error } = await supabaseClient.from('cupones').update(objetoDatos).eq('id', id);
+                errorSupabase = error;
+            } else {
+                // Insertar nuevo
+                const { error } = await supabaseClient.from('cupones').insert([objetoDatos]);
+                errorSupabase = error;
+            }
+
+            if (errorSupabase) {
+                alert("Error al guardar el cupón: " + errorSupabase.message);
+            } else {
+                alert("¡Cupón guardado con éxito!");
+                limpiarFormulario();
+                cargarCuponesAdmin();
+            }
+        }
+
+        function prepararEdicion(cupon) {
+            document.getElementById('cupon-id').value = cupon.id;
+            document.getElementById('input-codigo').value = cupon.codigo;
+            document.getElementById('input-imagen').value = cupon.imagen_url || '';
+            document.getElementById('input-descripcion').value = cupon.descripcion || '';
+            
+            document.getElementById('form-titulo-accion').innerText = "Editar Cupón VIP Existente";
+            document.getElementById('btn-cancelar-edicion').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function limpiarFormulario() {
+            document.getElementById('form-cupon').reset();
+            document.getElementById('cupon-id').value = "";
+            document.getElementById('form-titulo-accion').innerText = "Registrar Nuevo Cupón Exclusivo";
+            document.getElementById('btn-cancelar-edicion').classList.add('hidden');
+        }
+
+        async function eliminarCupon(id) {
+            if (!confirm("¿Estás seguro de eliminar este cupón?")) return;
+
+            const { error } = await supabaseClient.from('cupones').delete().eq('id', id);
+            if (error) {
+                alert("No se pudo eliminar el cupón.");
+            } else {
+                cargarCuponesAdmin();
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            cargarCuponesAdmin();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
