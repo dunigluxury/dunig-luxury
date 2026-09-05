@@ -3,18 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIZZA PLANETA 🌎🪐- Ecosistema Integrado</title>
+    <title>EL CACHAPÓN- Ecosistema Integrado</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght=400;700;900&family=Plus+Jakarta+Sans:wght=200;300;400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;700&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: radial-gradient(circle at 50% 0%, #1c1917 0%, #0c0a09 100%); background-color: #030202; }
         .font-futurista { font-family: 'Orbitron', sans-serif; }
         .glow-gold { box-shadow: 0 0 25px rgba(229, 193, 88, 0.15); }
         .text-gold { color: #e5c158; text-shadow: 0 0 12px rgba(229, 193, 88, 0.2); }
         .glass-panel { background: linear-gradient(135deg, rgba(28, 25, 23, 0.45) 0%, rgba(12, 10, 9, 0.6) 100%); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.02); }
         .grid-bg { background-image: linear-gradient(rgba(229, 193, 88, 0.01) 1px, transparent 1px), linear-gradient(90deg, rgba(229, 193, 88, 0.01) 1px, transparent 1px); background-size: 32px 32px; }
+        /* Estilo para el botón flotante de oro fino */
+        .btn-oro-flotante {
+            background: linear-gradient(135deg, #f5d77f 0%, #dfb347 50%, #c79524 100%);
+            box-shadow: 0 4px 20px rgba(223, 179, 71, 0.4), inset 0 2px 3px rgba(255, 255, 255, 0.6);
+            transition: all 0.3s ease;
+        }
+        .btn-oro-flotante:hover {
+            transform: scale(1.08);
+            box-shadow: 0 6px 25px rgba(223, 179, 71, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.8);
+        }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: #e5c158; border-radius: 10px; }
     </style>
@@ -31,7 +41,7 @@
             
             <div class="text-center">
                 <h1 class="text-lg sm:text-xl font-black tracking-[0.15em] text-white font-futurista">
-                    D'UNIG <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-500">LUXURY</span>
+                   EL<span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-500">       CACHAPÓN</span>
                 </h1>
                 <p class="hidden sm:block text-[8px] text-amber-500/70 uppercase tracking-[0.25em] font-bold font-futurista">
                     SISTEMA INTEGRADO v7000
@@ -40,7 +50,8 @@
         </div>
 
         <div class="absolute right-2 flex items-center gap-2">
-            <button onclick="irAPantallaCarrito()" class="bg-stone-900 border border-amber-500/20 p-2 rounded-lg flex items-center gap-1">
+            <!-- Botón del carrito -->
+            <button onclick="irAPantallaCarrito()" class="bg-stone-900 border border-amber-500/20 p-2 rounded-lg flex items-center gap-1 cursor-pointer">
                 <i data-lucide="shopping-cart" class="w-4 h-4 text-amber-400"></i>
                 <span id="contador-carrito-global" class="bg-amber-500 text-black font-mono text-[10px] font-black px-1.5 rounded">0</span>
             </button>
@@ -50,21 +61,14 @@
 
     <main id="pantalla-vitrina" class="max-w-7xl w-full mx-auto px-4 py-8 flex-grow space-y-8 relative z-10">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-stone-950/60 p-6 rounded-2xl border border-stone-900">
-        
         <div>
             <h2 class="text-xl sm:text-2xl font-black text-white font-futurista tracking-widest uppercase">
                 MENÚ DIGITAL
             </h2>
             <p class="text-[10px] sm:text-xs text-amber-500/70 font-bold uppercase tracking-[0.2em] mt-1">
-                
+                Selecciona tus especialidades favoritas
             </p>
         </div>
-
-        <div class="bg-stone-900/50 px-4 py-2 rounded-xl border border-stone-800 flex items-center gap-2 hidden">
-    <span class="text-[10px] text-stone-500 font-bold uppercase tracking-widest">Canal:</span>
-    <span class="text-xs font-black text-amber-400 tracking-wider font-futurista uppercase">LUXURY_STORE</span>
-</div>
-        
     </div>
 
     <div id="grid-productos-vitrina" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
@@ -104,22 +108,19 @@
 
             <div id="contenedor-adicionales" class="w-full"></div>
 
-<div class="grid grid-cols-2 gap-4 border-t border-stone-900 pt-4">
-    <!-- Ocultamos el stock con 'hidden' en lugar de borrarlo, así el script lo encuentra y no da error -->
-    <div class="hidden">
-        <span class="text-[9px] uppercase text-stone-500 font-bold block">Disponibilidad:</span>
-        <span id="detalle-stock" class="text-xs text-white font-bold">0 unidades</span>
-    </div>
-    
-    <div>
-        <span class="text-[9px] uppercase text-stone-500 font-bold block">Autenticidad VIP:</span>
-        <span class="text-xs text-green-400 font-bold flex items-center gap-1"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Certificada</span>
-    </div>
-</div>
-                <button onclick="agregarAlCarritoYVolver()" class="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-futurista font-black py-4 px-6 rounded-xl text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-2 cursor-pointer shadow-lg transition-all duration-300">
-                    <i data-lucide="shopping-bag" class="w-4 h-4"></i> AÑADIR A LA BOLSA VIP
-                </button>
+            <div class="grid grid-cols-2 gap-4 border-t border-stone-900 pt-4">
+                <div class="hidden">
+                    <span class="text-[9px] uppercase text-stone-500 font-bold block">Disponibilidad:</span>
+                    <span id="detalle-stock" class="text-xs text-white font-bold">0 unidades</span>
+                </div>
+                <div>
+                    <span class="text-[9px] uppercase text-stone-500 font-bold block">Autenticidad VIP:</span>
+                    <span class="text-xs text-green-400 font-bold flex items-center gap-1"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Certificada</span>
+                </div>
             </div>
+            <button onclick="agregarAlCarritoYVolver()" class="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-futurista font-black py-4 px-6 rounded-xl text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-2 cursor-pointer shadow-lg transition-all duration-300">
+                <i data-lucide="shopping-bag" class="w-4 h-4"></i> AÑADIR A LA BOLSA VIP
+            </button>
         </div>
     </div>
 </main>
@@ -134,7 +135,7 @@
             </div>
             <div id="carrito-lista-items" class="divide-y divide-stone-900"></div>
             <div class="text-right text-sm md:text-base border-t border-stone-900 pt-4 mt-4 font-futurista">
-                Subtotal (<span id="cantidad-items-abajo" class="text-amber-400 font-bold font-mono">0</span> productos): 
+                Subtotal (<span id="cantidad-items-abajo" class="text-amber-400 font-bold font-mono">0</span> products): 
                 <span class="text-white font-black font-mono ml-1" id="carrito-subtotal-monto-abajo">$0.00</span>
             </div>
         </section>
@@ -164,21 +165,27 @@
                 </div>
 
                 <div class="space-y-1.5">
-    <label class="text-[9px] uppercase text-stone-400 font-bold tracking-widest block font-futurista">2. Referencia / Código de Depósito</label>
-    <input type="text" 
-           id="carrito-input-referencia" 
-           inputmode="numeric" 
-           pattern="[0-9]{12}" 
-           maxlength="12" 
-           placeholder="Ingresa los 12 dígitos" 
-           class="w-full bg-stone-900 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none focus:border-amber-400/40 font-mono tracking-wider">
-</div>
+                    <label class="text-[9px] uppercase text-stone-400 font-bold tracking-widest block font-futurista">2. Referencia / Código de Depósito</label>
+                    <input type="text" 
+                           id="carrito-input-referencia" 
+                           inputmode="numeric" 
+                           pattern="[0-9]{12}" 
+                           maxlength="12" 
+                           placeholder="Ingresa los 12 dígitos" 
+                           class="w-full bg-stone-900 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none focus:border-amber-400/40 font-mono tracking-wider">
+                </div>
 
-            <button onclick="finalizarOrdenCompraVIP()" class="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-futurista font-black py-3 px-4 rounded-xl text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-2 cursor-pointer shadow-lg transition-all duration-300">
-                <i data-lucide="shield-check" class="w-4 h-4"></i> PROCEED TO CHECKOUT
-            </button>
+                <button onclick="finalizarOrdenCompraVIP()" class="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-futurista font-black py-3 px-4 rounded-xl text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-2 cursor-pointer shadow-lg transition-all duration-300">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i> PROCEED TO CHECKOUT
+                </button>
+            </div>
         </section>
     </main>
+
+    <!-- BOTÓN FLOTANTE DE CUPONERA (ESTILO ORO FINO) -->
+    <a href="cuponera.html" class="btn-oro-flotante fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full flex items-center justify-center text-stone-950 shadow-2xl cursor-pointer" title="Ver Cuponera">
+        <i data-lucide="ticket" class="w-7 h-7 stroke-[2.5]"></i>
+    </a>
 
     <div id="modal-lightbox" class="hidden fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4 cursor-zoom-out" onclick="cerrarAmplificacion()">
         <button class="absolute top-6 right-6 text-stone-400 hover:text-white transition-colors cursor-pointer">
@@ -190,14 +197,13 @@
     <footer class="border-t border-stone-950 bg-black/60 p-4 text-center text-[10px] text-stone-600 font-mono tracking-widest mt-12">© 2026 D'UNIG LUXURY ECOSISTEMA. TODOS LOS DERECHOS RESERVADOS.</footer>
 
     <script>
-        const SUPABASE_URL = "https://xikiwlmxhnrymwmbsyug.supabase.co"; 
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpa2l3bG14aG5yeW13bWJzeXVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0NDg3NTMsImV4cCI6MjEwMTAyNDc1M30.1HkgasBvA763iO6u0FnEhOIiCoTkBLJ8O8fL1WpGeDM"; 
+        const SUPABASE_URL = "https://vcymfspywjabnbddbruh.supabase.co"; 
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjeW1mc3B5d2phYm5iZGRicnVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2Njg1MjIsImV4cCI6MjEwMDI0NDUyMn0.bXamCrThn-oGgK_6Ol2w3cSoxUd0pJDHW0_UkPqGEuA"; 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let baseProductos = [], cuentasDB = [], carritoVIP = [];
         let productoSeleccionado = null, filtroInstagram = "luxury_store";
-        let fotoSeleccionadaParaLightbox = ""
-    
+        let fotoSeleccionadaParaLightbox = "";
 
         function irAPantallaVitrina() {
             document.getElementById('pantalla-detalle').classList.add('hidden');
@@ -218,11 +224,6 @@
         async function descargarCatalogoDeSupabase() {
             const { data, error } = await supabaseClient.from('productos').select('*').eq('instagram_dueno', filtroInstagram);
             if (!error && data) { baseProductos = data; renderizarVitrinaPrincipal(); }
-        }
-
-        function actualizarFiltroVitrina() {
-            const val = document.getElementById('vitrina-owner-input').value.trim().toLowerCase();
-            if (val) { filtroInstagram = val; descargarCatalogoDeSupabase(); }
         }
 
         function renderizarVitrinaPrincipal() {
@@ -251,7 +252,6 @@
         function verDetalleDeProducto(idProducto) {
             productoSeleccionado = baseProductos.find(p => p.id === idProducto); if (!productoSeleccionado) return;
 
-            document.getElementById('text-gold');
             document.getElementById('detalle-titulo').innerText = productoSeleccionado.titulo;
             document.getElementById('detalle-categoria').innerText = productoSeleccionado.categoria;
             document.getElementById('detalle-precio').innerText = `$${parseFloat(productoSeleccionado.precio).toFixed(2)}`;
@@ -266,23 +266,20 @@
             if (fotosSlider.length === 0 && productoSeleccionado.imagen_url) { fotosSlider.push(productoSeleccionado.imagen_url); }
 
             const containerMiniaturas = document.getElementById('detalle-contenedor-miniaturas'); containerMiniaturas.innerHTML = "";
-     fotosSlider.forEach((img) => {
+            fotosSlider.forEach((img) => {
                 if(img) {
                     containerMiniaturas.innerHTML += `<div onclick="actualizarVisorFoto('${img}')" class="aspect-square rounded-xl bg-stone-950 border border-stone-800 overflow-hidden cursor-pointer hover:border-amber-500/40 transition-all"><img src="${img}" class="w-full h-full object-cover"></div>`;
                 }
             });
 
-            // 1. Aquí llamamos a la función que pinta los adicionales en pantalla
             renderizarAdicionales();
 
-            // 2. Cambiamos de pantalla
             document.getElementById('pantalla-vitrina').classList.add('hidden');
             document.getElementById('pantalla-detalle').classList.remove('hidden');
             
-            // 3. Inicializamos iconos y scroll
             lucide.createIcons();
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        } // Esta es la llave que cierra la función verDetalleDeProducto
+        }
 
         function actualizarVisorFoto(url) {
             fotoSeleccionadaParaLightbox = url;
@@ -304,34 +301,31 @@
         }
 
         function agregarAlCarritoYVolver() {
-    if (!productoSeleccionado) return;
+            if (!productoSeleccionado) return;
 
-    // 1. Buscar todos los checkboxes seleccionados
-    const checkboxes = document.querySelectorAll('.check-adicional:checked');
-    let adicionalesSeleccionados = [];
-    let extraTotal = 0;
+            const checkboxes = document.querySelectorAll('.check-adicional:checked');
+            let adicionalesSeleccionados = [];
+            let extraTotal = 0;
 
-    checkboxes.forEach(cb => {
-        const nombre = cb.getAttribute('data-nombre');
-        const precio = parseFloat(cb.getAttribute('data-precio'));
-        adicionalesSeleccionados.push(nombre);
-        extraTotal += precio;
-    });
+            checkboxes.forEach(cb => {
+                const nombre = cb.getAttribute('data-nombre');
+                const precio = parseFloat(cb.getAttribute('data-precio'));
+                adicionalesSeleccionados.push(nombre);
+                extraTotal += precio;
+            });
 
-    // 2. Crear un objeto de producto "híbrido" (Producto base + precio extra)
-    const productoParaCarrito = {
-        ...productoSeleccionado,
-        titulo: `${productoSeleccionado.titulo} ${adicionalesSeleccionados.length > 0 ? '(+ ' + adicionalesSeleccionados.join(', ') + ')' : ''}`,
-        precio: parseFloat(productoSeleccionado.precio) + extraTotal
-    };
+            const productoParaCarrito = {
+                ...productoSeleccionado,
+                titulo: `${productoSeleccionado.titulo} ${adicionalesSeleccionados.length > 0 ? '(+ ' + adicionalesSeleccionados.join(', ') + ')' : ''}`,
+                precio: parseFloat(productoSeleccionado.precio) + extraTotal
+            };
 
-    // 3. Añadir al carrito
-    carritoVIP.push(productoParaCarrito);
-    document.getElementById('contador-carrito-global').innerText = carritoVIP.length;
-    
-    alert(`¡"${productoParaCarrito.titulo}" agregado al carrito!`);
-    irAPantallaVitrina();
-}
+            carritoVIP.push(productoParaCarrito);
+            document.getElementById('contador-carrito-global').innerText = carritoVIP.length;
+            
+            alert(`¡"${productoParaCarrito.titulo}" agregado al carrito!`);
+            irAPantallaVitrina();
+        }
 
         function renderizarContenidoCarrito() {
             const container = document.getElementById('carrito-lista-items'); if(!container) return;
@@ -407,7 +401,7 @@
             cajaExtendida.classList.remove('hidden');
             
             let htmlDetalles = "";
-            if(cuenta.banco)    htmlDetalles += `<div><span class="text-amber-400/70 text-[10px] uppercase font-bold block">Banco / Plataforma:</span> <span class="text-white font-bold text-sm">${cuenta.banco}</span></div>`;
+            if(cuenta.banco)   htmlDetalles += `<div><span class="text-amber-400/70 text-[10px] uppercase font-bold block">Banco / Plataforma:</span> <span class="text-white font-bold text-sm">${cuenta.banco}</span></div>`;
             if(cuenta.titular)  htmlDetalles += `<div class="mt-1"><span class="text-amber-400/70 text-[10px] uppercase font-bold block">Titular:</span> <span class="text-stone-200">${cuenta.titular}</span></div>`;
             if(cuenta.ci)       htmlDetalles += `<div class="mt-1"><span class="text-amber-400/70 text-[10px] uppercase font-bold block">CI / RIF:</span> <span class="text-stone-200 font-bold tracking-wider">${cuenta.ci}</span></div>`;
             if(cuenta.telefono) htmlDetalles += `<div class="mt-1"><span class="text-amber-400/70 text-[10px] uppercase font-bold block">Teléfono:</span> <span class="text-stone-200">${cuenta.telefono}</span></div>`;
@@ -418,13 +412,6 @@
             lucide.createIcons();
         }
 
-        function removerCapturePagoDelCarrito() {
-            captureBase64Global = "";
-            document.getElementById('carrito-capture-file').value = "";
-            document.getElementById('label-upload-capture').classList.remove('hidden');
-            document.getElementById('preview-capture-box').classList.add('hidden');
-        }
-
         function removerItemDelCarrito(index) {
             carritoVIP.splice(index, 1);
             document.getElementById('contador-carrito-global').innerText = carritoVIP.length;
@@ -432,108 +419,101 @@
         }
 
         async function finalizarOrdenCompraVIP() {
-    if (carritoVIP.length === 0) { alert("Tu bolsa de compras está vacía."); return; }
-    
-    const transaccionRef = document.getElementById('carrito-input-referencia').value.trim();
-    const indexSelector = document.getElementById('carrito-selector-pago').value;
+            if (carritoVIP.length === 0) { alert("Tu bolsa de compras está vacía."); return; }
+            
+            const transaccionRef = document.getElementById('carrito-input-referencia').value.trim();
+            const indexSelector = document.getElementById('carrito-selector-pago').value;
 
-    if(indexSelector === "" || !cuentasDB[indexSelector]) { 
-        alert("Por favor seleccione un método de pago."); 
-        return; 
-    }
+            if(indexSelector === "" || !cuentasDB[indexSelector]) { 
+                alert("Por favor seleccione un método de pago."); 
+                return; 
+            }
 
-    // --- AQUÍ ESTÁ LA VALIDACIÓN DE LOS 12 NÚMEROS ---
-    if (!/^\d{12}$/.test(transaccionRef)) { 
-        alert("Por favor, inserte un código de referencia válido de exactamente 12 números."); 
-        return; 
-    }
+            if (!/^\d{12}$/.test(transaccionRef)) { 
+                alert("Por favor, inserte un código de referencia válido de exactamente 12 números."); 
+                return; 
+            }
 
-    // 1. Obtener número de WhatsApp desde Supabase
-    let numeroWhatsApp = "584120000000"; // Número por defecto
-    const { data: configData, error: configError } = await supabaseClient
-        .from('ajustes_sistema')
-        .select('valor')
-        .eq('id', 'whatsapp_notificaciones')
-        .single();
-    
-    if(!configError && configData) {
-        numeroWhatsApp = configData.valor.replace(/[^0-9]/g, "");
-    }
+            const cuentaActual = cuentasDB[indexSelector];
 
-    // 2. Construir mensaje
-    let listaProductosTexto = "";
-    let subtotalGlobal = 0;
-    carritoVIP.forEach((item) => {
-        listaProductosTexto += `• ${item.titulo} ($${parseFloat(item.precio).toFixed(2)})\n`;
-        subtotalGlobal += parseFloat(item.precio) || 0;
-    });
+            let numeroWhatsApp = "584120000000"; 
+            const { data: configData, error: configError } = await supabaseClient
+                .from('ajustes_sistema')
+                .select('valor')
+                .eq('id', 'whatsapp_notificaciones')
+                .single();
+            
+            if(!configError && configData) {
+                numeroWhatsApp = configData.valor.replace(/[^0-9]/g, "");
+            }
 
-    const cuentaSel = cuentasDB[indexSelector];
-    const textoMensaje = `💎 *NUEVO PEDIDO - D'UNIG LUXURY* 💎\n\n🛍️ *PRODUCTOS:*\n${listaProductosTexto}\n💵 *TOTAL:* $${subtotalGlobal.toFixed(2)}\n\n🏦 *PAGO:* ${cuentaSel.plataforma} - ${cuentaSel.banco}\n🔢 *REF:* ${transaccionRef}`;
+            let listaProductosTexto = "";
+            let subtotalGlobal = 0;
+            carritoVIP.forEach((item) => {
+                listaProductosTexto += `• ${item.titulo} ($${parseFloat(item.precio).toFixed(2)})\n`;
+                subtotalGlobal += parseFloat(item.precio) || 0;
+            });
 
-    // ... (todo tu código anterior hasta finalizarOrdenCompraVIP) ...
-        await supabaseClient.from('ordenes_vip').insert([{
-            productos: carritoVIP.map(item => item.titulo).join(', '),
-            total: subtotalGlobal,
-            referencia: transaccionRef,
-            estado: "Pendiente"
-        }]);
+            const CONFIG_REF = "684908";
 
-        const urlWhatsApp = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${encodeURIComponent(textoMensaje)}`;
-        
-        carritoVIP = [];
-        document.getElementById('contador-carrito-global').innerText = "0";
-        document.getElementById('carrito-input-referencia').value = "";
-        document.getElementById('caja-detalles-pago-extendida').classList.add('hidden');
-        document.getElementById('carrito-selector-pago').value = "";
-        
-        irAPantallaVitrina();
-        window.open(urlWhatsApp, '_blank');
-    } // <-- Esta es la llave que cierra finalizarOrdenCompraVIP
+            const textoMensaje = `💎 *NUEVO PEDIDO -EL CACHAPÓN* 💎\n\n🛍️ *PRODUCTOS:*\n${listaProductosTexto}\n💵 *TOTAL:* $${subtotalGlobal.toFixed(2)}\n\n🏦 *PAGO:* ${cuentaActual.plataforma} - ${cuentaActual.banco}\n🔢 *REF:* ${transaccionRef}\n\n[SYS-VER:${CONFIG_REF}]`;
 
-    // --- CARGA Y RENDERIZADO ---
-    window.addEventListener('DOMContentLoaded', () => { 
-        descargarCatalogoDeSupabase(); 
-        descargarAdicionalesDeSupabase(); 
-        lucide.createIcons(); 
-    });
+            await supabaseClient.from('ordenes_vip').insert([{
+                productos: carritoVIP.map(item => item.titulo).join(', '),
+                total: subtotalGlobal,
+                referencia: transaccionRef,
+                estado: "Pendiente"
+            }]);
 
-    async function descargarAdicionalesDeSupabase() {
-        const { data, error } = await supabaseClient.from('adicionales').select('*');
-        if (!error && data) {
-            window.listaAdicionales = data;
-            console.log("Adicionales cargados:", window.listaAdicionales);
-        } else {
-            console.error("Error al cargar adicionales:", error);
+            const urlWhatsApp = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${encodeURIComponent(textoMensaje)}`;
+            
+            carritoVIP = [];
+            document.getElementById('contador-carrito-global').innerText = "0";
+            document.getElementById('carrito-input-referencia').value = "";
+            document.getElementById('caja-detalles-pago-extendida').classList.add('hidden');
+            document.getElementById('carrito-selector-pago').value = "";
+            
+            irAPantallaVitrina();
+            window.open(urlWhatsApp, '_blank');
         }
-    }
 
-    function renderizarAdicionales() {
-        const contenedor = document.getElementById('contenedor-adicionales');
-        if (!contenedor || !window.listaAdicionales || window.listaAdicionales.length === 0) return;
+        window.addEventListener('DOMContentLoaded', () => { 
+            descargarCatalogoDeSupabase(); 
+            descargarAdicionalesDeSupabase(); 
+            lucide.createIcons(); 
+        });
 
-        contenedor.innerHTML = `
-            <details class="group bg-stone-900 border border-stone-800 rounded-xl overflow-hidden my-4">
-                <summary class="list-none p-4 text-[10px] font-bold text-stone-400 cursor-pointer flex justify-between items-center hover:text-amber-400">
-                    <span>SELECCIONAR ADICIONALES</span>
-                    <i data-lucide="chevron-down" class="w-4 h-4 group-open:rotate-180 transition-transform"></i>
-                </summary>
-                <div class="p-3 border-t border-stone-800 space-y-2">
-                    ${window.listaAdicionales.map(ad => `
-                        <label class="flex items-center gap-3 cursor-pointer p-2 hover:bg-stone-800 rounded-lg">
-                            <input type="checkbox" class="check-adicional w-4 h-4 accent-amber-500" data-nombre="${ad.nombre}" data-precio="${ad.precio}">
-                            <div class="flex justify-between w-full">
-                                <span class="text-xs text-stone-300">${ad.nombre}</span>
-                                <span class="text-xs text-amber-400 font-mono">+$${parseFloat(ad.precio).toFixed(2)}</span>
-                            </div>
-                        </label>
-                    `).join('')}
-                </div>
-            </details>
-        `;
-        lucide.createIcons();
-    }
-    // Fin del script
+        async function descargarAdicionalesDeSupabase() {
+            const { data, error } = await supabaseClient.from('adicionales').select('*');
+            if (!error && data) {
+                window.listaAdicionales = data;
+            } else {
+                console.error("Error al cargar adicionales:", error);
+            }
+        }
+
+        function renderizarAdicionales() {
+            const contenedor = document.getElementById('contenedor-adicionales');
+            if (!contenedor || !window.listaAdicionales || window.listaAdicionales.length === 0) return;
+
+            contenedor.innerHTML = `
+                <details class="group bg-stone-900 border border-stone-800 rounded-xl overflow-hidden my-4">
+                    <summary class="list-none p-4 text-[10px] font-bold text-stone-400 cursor-pointer flex justify-between items-center hover:text-amber-400">
+                        <span>SELECCIONAR ADICIONALES</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 group-open:rotate-180 transition-transform"></i>
+                    </summary>
+                    <div class="p-3 border-t border-stone-800 space-y-2">
+                        ${window.listaAdicionales.map(ad => `
+                            <label class="flex items-center gap-3 cursor-pointer p-2 hover:bg-stone-800 rounded-lg">
+                                <input type="checkbox" class="check-adicional w-4 h-4 accent-amber-500" data-nombre="${ad.nombre}" data-precio="${ad.precio}">
+                                <span class="text-xs text-white font-medium">${ad.nombre}</span>
+                                <span class="text-xs text-amber-400 font-mono ml-auto">+$${parseFloat(ad.precio).toFixed(2)}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </details>`;
+            lucide.createIcons();
+        }
     </script>
 </body>
 </html>
