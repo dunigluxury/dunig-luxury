@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EL CACHAPÓN- Ecosistema Integrado</title>
+    <title>CASA DE LAS PAPAS- Ecosistema Studio 3D & VIP</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;700&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: radial-gradient(circle at 50% 0%, #1c1917 0%, #0c0a09 100%); background-color: #030202; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: radial-gradient(circle at 50% 0%, #1c1917 0%, #0c0a09 100%); background-color: #030202; overflow-x: hidden; }
         .font-futurista { font-family: 'Orbitron', sans-serif; }
         .glow-gold { box-shadow: 0 0 25px rgba(229, 193, 88, 0.15); }
         .text-gold { color: #e5c158; text-shadow: 0 0 12px rgba(229, 193, 88, 0.2); }
         .glass-panel { background: linear-gradient(135deg, rgba(28, 25, 23, 0.45) 0%, rgba(12, 10, 9, 0.6) 100%); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.02); }
-        .grid-bg { background-image: linear-gradient(rgba(229, 193, 88, 0.01) 1px, transparent 1px), linear-gradient(90deg, rgba(229, 193, 88, 0.01) 1px, transparent 1px); background-size: 32px 32px; }
-        /* Estilo para el botón flotante de oro fino */
+        .grid-bg { background-image: radial-gradient(rgba(229, 193, 88, 0.08) 1px, transparent 1px); background-size: 24px 24px; }
+        .draggable-item { cursor: grab; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .draggable-item:active { cursor: grabbing; transform: scale(0.95); }
         .btn-oro-flotante {
             background: linear-gradient(135deg, #f5d77f 0%, #dfb347 50%, #c79524 100%);
             box-shadow: 0 4px 20px rgba(223, 179, 71, 0.4), inset 0 2px 3px rgba(255, 255, 255, 0.6);
@@ -25,168 +27,230 @@
             transform: scale(1.08);
             box-shadow: 0 6px 25px rgba(223, 179, 71, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.8);
         }
-        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #e5c158; border-radius: 10px; }
     </style>
 </head>
 <body class="text-stone-200 antialiased min-h-screen flex flex-col justify-between grid-bg relative">
 
-    <header class="bg-black/40 backdrop-blur-xl border-b border-stone-900/80 sticky top-0 z-40 px-2">
-    <div class="max-w-7xl mx-auto h-20 flex items-center justify-center relative">
-        
-        <div class="flex items-center gap-3 cursor-pointer shrink-0" onclick="irAPantallaVitrina()">
-            <div class="border border-amber-500/30 p-2 rounded-xl bg-stone-950/80 glow-gold">
-                <i data-lucide="cpu" class="w-6 h-6 text-amber-400"></i>
+    <!-- HEADER UNIFICADO -->
+    <header class="bg-black/80 backdrop-blur-xl border-b border-stone-900 sticky top-0 z-50 px-4">
+        <div class="max-w-7xl mx-auto h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="cambiarPantalla('vitrina')">
+                <div class="border border-amber-500/30 p-2.5 rounded-2xl bg-stone-950 shadow-[0_0_20px_rgba(229,193,88,0.15)] glow-gold">
+                    <i data-lucide="cpu" class="w-6 h-6 text-amber-400"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-black tracking-widest text-white font-futurista">
+                       CASA DE LAS <span class="text-amber-400">PAPAS</span>
+                    </h1>
+                    <p class="text-[8px] text-amber-500/70 uppercase tracking-[0.25em] font-bold font-futurista">
+                        ECOSISTEMA STUDIO 3D & VIP
+                    </p>
+                </div>
             </div>
-            
-            <div class="text-center">
-                <h1 class="text-lg sm:text-xl font-black tracking-[0.15em] text-white font-futurista">
-                   EL<span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-500">       CACHAPÓN</span>
-                </h1>
-                <p class="hidden sm:block text-[8px] text-amber-500/70 uppercase tracking-[0.25em] font-bold font-futurista">
-                    SISTEMA INTEGRADO v7000
-                </p>
+
+
+                <button onclick="cambiarPantalla('simulador3d')" class="hidden sm:flex bg-stone-900 border border-amber-500/30 hover:border-amber-500/60 px-4 py-2 rounded-xl items-center gap-2 text-xs font-futurista uppercase font-bold text-amber-400 cursor-pointer transition-all">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i> Simulador 3D🍔
+                </button>
+                <button onclick="cambiarPantalla('carrito')" class="bg-stone-900 border border-amber-500/30 p-2.5 rounded-xl flex items-center gap-2 cursor-pointer hover:border-amber-500/60">
+                    <i data-lucide="shopping-cart" class="w-4 h-4 text-amber-400"></i>
+                    <span id="contador-carrito-badge" class="bg-amber-500 text-black font-mono text-[10px] font-black px-1.5 py-0.5 rounded-md">0</span>
+                </button>
             </div>
         </div>
+    </header>
 
-        <div class="absolute right-2 flex items-center gap-2">
-            <!-- Botón del carrito -->
-            <button onclick="irAPantallaCarrito()" class="bg-stone-900 border border-amber-500/20 p-2 rounded-lg flex items-center gap-1 cursor-pointer">
-                <i data-lucide="shopping-cart" class="w-4 h-4 text-amber-400"></i>
-                <span id="contador-carrito-global" class="bg-amber-500 text-black font-mono text-[10px] font-black px-1.5 rounded">0</span>
+    <!-- VISTA 1: VITRINA / CATÁLOGO PRINCIPAL -->
+    <main id="vista-vitrina" class="max-w-7xl w-full mx-auto px-4 py-8 flex-grow space-y-8 relative z-10">
+        <div class="glass-panel p-8 rounded-3xl border border-stone-800/80 flex flex-col md:flex-row justify-between items-center gap-6 shadow-2xl">
+            <div class="space-y-2">
+                <span class="text-[10px] text-amber-400 font-futurista font-bold uppercase tracking-widest bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">Motor Gráfico WebGL & Catálogo VIP</span>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 text-center">
+    <img src="https://images.seeklogo.com/logo-png/53/2/bdv-banco-de-venezuela-logo-png_seeklogo-534119.png" alt="Logo BCV" class="w-12 h-12 object-contain filter drop-shadow-[0_0_8px_rgba(234,179,8,0.4)]">
+    
+    <h2 class="text-2xl md:text-3xl font-black text-white font-futurista tracking-wider uppercase">
+        BIENVENIDOS a la CASA DE LAS PAPAS (Merida-Veneuela)
+    </h2>
+</div>
+                <p class="text-xs text-stone-400 max-w-xl">Arrastra ingredientes en tiempo real o explora nuestras especialidades certificadas.</p>
+            </div>
+            <button onclick="cambiarPantalla('simulador3d')" class="bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-futurista font-black px-8 py-4 rounded-2xl text-xs uppercase tracking-widest flex items-center gap-3 shadow-xl cursor-pointer shrink-0">
+                <i data-lucide="sparkles" class="w-5 h-5"></i> CREAR MI HAMBURGUESA
             </button>
         </div>
-    </div>
-</header>
+        <div id="grid-productos-vitrina" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </main>
 
-    <main id="pantalla-vitrina" class="max-w-7xl w-full mx-auto px-4 py-8 flex-grow space-y-8 relative z-10">
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-stone-950/60 p-6 rounded-2xl border border-stone-900">
-        <div>
-            <h2 class="text-xl sm:text-2xl font-black text-white font-futurista tracking-widest uppercase">
-                MENÚ DIGITAL
-            </h2>
-            <p class="text-[10px] sm:text-xs text-amber-500/70 font-bold uppercase tracking-[0.2em] mt-1">
-                Selecciona tus especialidades favoritas
-            </p>
-        </div>
-    </div>
+    <!-- VISTA DETALLE DE PRODUCTO (Catálogo Integrado) -->
+    <main id="vista-detalle" class="hidden max-w-7xl w-full mx-auto px-4 py-8 flex-grow relative z-10">
+        <button onclick="cambiarPantalla('vitrina')" class="mb-6 flex items-center gap-2 text-xs font-futurista uppercase tracking-widest text-stone-400 hover:text-amber-400 font-bold cursor-pointer transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Catálogo
+        </button>
 
-    <div id="grid-productos-vitrina" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-</main>
-
-    <main id="pantalla-detalle" class="hidden max-w-7xl w-full mx-auto px-4 py-8 flex-grow relative z-10">
-    <button onclick="irAPantallaVitrina()" class="mb-6 flex items-center gap-2 text-xs font-futurista uppercase tracking-widest text-stone-400 hover:text-amber-400 font-bold cursor-pointer transition-colors">
-        <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Catálogo
-    </button>
-
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        <div class="lg:col-span-6 space-y-4">
-            <div class="relative group rounded-3xl overflow-hidden bg-stone-950 border border-stone-900 shadow-2xl aspect-video flex items-center justify-center">
-                <div id="contenedor-media-principal" class="w-full h-full flex items-center justify-center bg-black cursor-zoom-in" onclick="amplificarFotoActual()">
-                    <img id="detalle-visor-principal" src="" alt="Visor Principal" class="w-full h-full object-cover transition-transform duration-300">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div class="lg:col-span-6 space-y-4">
+                <div class="relative group rounded-3xl overflow-hidden bg-stone-950 border border-stone-900 shadow-2xl aspect-video flex items-center justify-center">
+                    <div id="contenedor-media-principal" class="w-full h-full flex items-center justify-center bg-black cursor-zoom-in" onclick="amplificarFotoActual()">
+                        <img id="detalle-visor-principal" src="" alt="Visor Principal" class="w-full h-full object-cover transition-transform duration-300">
+                    </div>
+                    <div class="absolute top-4 right-4 z-20">
+                        <button onclick="amplificarFotoActual()" class="bg-black/80 backdrop-blur-md hover:bg-amber-500 hover:text-black border border-amber-500/40 text-amber-400 px-4 py-2.5 rounded-xl text-[10px] font-futurista font-black tracking-widest uppercase flex items-center gap-2 shadow-2xl transition-all cursor-pointer">
+                            <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Amplificar Foto
+                        </button>
+                    </div>
                 </div>
-                <div class="absolute top-4 right-4 z-20">
-                    <button onclick="amplificarFotoActual()" class="bg-black/80 backdrop-blur-md hover:bg-amber-500 hover:text-black border border-amber-500/40 text-amber-400 px-4 py-2.5 rounded-xl text-[10px] font-futurista font-black tracking-widest uppercase flex items-center gap-2 shadow-2xl transition-all cursor-pointer">
-                        <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Amplificar Foto
+                <div id="detalle-contenedor-miniaturas" class="grid grid-cols-5 gap-2"></div>
+            </div>
+
+            <div class="lg:col-span-6 glass-panel p-6 lg:p-8 rounded-3xl space-y-6 shadow-2xl">
+                <div>
+                    <span id="detalle-categoria" class="text-[10px] uppercase tracking-[0.2em] font-futurista font-black text-amber-400 bg-amber-500/5 px-2.5 py-1 rounded-md border border-amber-500/10">CATEGORÍA</span>
+                    <h2 id="detalle-titulo" class="text-2xl lg:text-3xl font-black font-futurista text-white mt-3 tracking-wide">Título del Producto</h2>
+                    <p id="detalle-precio" class="text-xl font-mono text-amber-400 font-bold mt-1">$0.00</p>
+                </div>
+                
+                <div class="border-t border-stone-900 pt-4 space-y-2">
+                    <h4 class="text-[9px] uppercase tracking-widest text-stone-500 font-bold font-futurista">Características & Detalles:</h4>
+                    <p id="detalle-descripcion" class="text-xs text-stone-400 leading-relaxed min-h-12">Procesando descripción...</p>
+                </div>
+
+                <div id="contenedor-adicionales" class="w-full"></div>
+
+                <div class="grid grid-cols-2 gap-4 border-t border-stone-900 pt-4">
+                    <div>
+                        <span class="text-[9px] uppercase text-stone-500 font-bold block">Disponibilidad:</span>
+                        <span id="detalle-stock" class="text-xs text-white font-bold">0 unidades</span>
+                    </div>
+                    <div>
+                        <span class="text-[9px] uppercase text-stone-500 font-bold block">Autenticidad VIP:</span>
+                        <span class="text-xs text-green-400 font-bold flex items-center gap-1"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Certificada</span>
+                    </div>
+                </div>
+                <button onclick="agregarDetalleAlCarritoYVolver()" class="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-futurista font-black py-4 px-6 rounded-xl text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-2 cursor-pointer shadow-lg transition-all duration-300">
+                    <i data-lucide="shopping-bag" class="w-4 h-4"></i> AÑADIR A LA BOLSA VIP
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- VISTA 2: SIMULADOR 3D REAL -->
+    <main id="vista-simulador3d" class="hidden max-w-7xl w-full mx-auto px-4 py-6 flex-grow space-y-6 relative z-10">
+        <div class="flex justify-between items-center">
+            <button onclick="cambiarPantalla('vitrina')" class="flex items-center gap-2 text-xs font-futurista uppercase tracking-widest text-stone-400 hover:text-amber-400 font-bold cursor-pointer transition-colors">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Menú
+            </button>
+            <div class="bg-stone-900/90 border border-amber-500/30 px-4 py-1.5 rounded-full flex items-center gap-2.5 shadow-lg">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                <span class="text-[10px] font-futurista uppercase tracking-widest text-amber-400 font-bold">Estación 3D Interactiva</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <div class="lg:col-span-7 bg-stone-950/90 border border-stone-800 rounded-3xl p-6 flex flex-col items-center justify-between min-h-[580px] relative overflow-hidden shadow-2xl" id="zona-drop-canvas">
+                <div class="absolute top-4 left-4 bg-black/80 border border-stone-800 px-3 py-1.5 rounded-xl z-20 backdrop-blur-md">
+                    <span class="text-[9px] font-futurista text-amber-400 uppercase tracking-widest">Render 3D en Tiempo Real</span>
+                </div>
+
+                <div id="webgl-container" class="w-full h-[400px] flex items-center justify-center cursor-grab active:cursor-grabbing"></div>
+
+                <div class="w-full flex justify-between items-center bg-stone-900/90 border border-stone-800/80 p-4 rounded-2xl z-20 backdrop-blur-md">
+                    <div>
+                        <span class="text-[9px] uppercase tracking-widest text-stone-400 block font-futurista">Valor Total de la Creación</span>
+                        <span id="precio-total-3d" class="text-2xl font-mono text-amber-400 font-black">$1.00</span>
+                    </div>
+                    <button onclick="enviarCreacion3DAlCarrito()" class="bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-futurista font-black px-6 py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg cursor-pointer flex items-center gap-2">
+                        <i data-lucide="check-check" class="w-4 h-4"></i> Servir Hamburguesa 3D
                     </button>
                 </div>
             </div>
-            <div id="detalle-contenedor-miniaturas" class="grid grid-cols-5 gap-2"></div>
-        </div>
 
-        <div class="lg:col-span-6 glass-panel p-6 lg:p-8 rounded-3xl space-y-6 shadow-2xl">
-            <div>
-                <span id="detalle-categoria" class="text-[10px] uppercase tracking-[0.2em] font-futurista font-black text-amber-400 bg-amber-500/5 px-2.5 py-1 rounded-md border border-amber-500/10">CATEGORÍA</span>
-                <h2 id="detalle-titulo" class="text-2xl lg:text-3xl font-black font-futurista text-white mt-3 tracking-wide">Título del Producto</h2>
-                <p id="detalle-precio" class="text-xl font-mono text-amber-400 font-bold mt-1">$0.00</p>
-            </div>
-            
-            <div class="border-t border-stone-900 pt-4 space-y-2">
-                <h4 class="text-[9px] uppercase tracking-widest text-stone-500 font-bold font-futurista">Características & Detalles:</h4>
-                <p id="detalle-descripcion" class="text-xs text-stone-400 leading-relaxed min-h-12">Procesando descripción...</p>
-            </div>
+            <div class="lg:col-span-5 space-y-5">
+                <div class="glass-panel p-6 rounded-3xl space-y-4">
+                    <div>
+                        <h3 class="text-lg font-black font-futurista text-white uppercase tracking-wide">Ingredientes 3D</h3>
+                        <p class="text-xs text-amber-500/70 font-bold uppercase tracking-wider mt-1">Arrastra o haz clic para agregar</p>
+                    </div>
 
-            <div id="contenedor-adicionales" class="w-full"></div>
-
-            <div class="grid grid-cols-2 gap-4 border-t border-stone-900 pt-4">
-                <div class="hidden">
-                    <span class="text-[9px] uppercase text-stone-500 font-bold block">Disponibilidad:</span>
-                    <span id="detalle-stock" class="text-xs text-white font-bold">0 unidades</span>
+                    <div class="grid grid-cols-2 gap-3 max-h-[320px] overflow-y-auto pr-1" id="bandeja-ingredientes-arrastrables">
+                        <div class="text-xs text-stone-500 text-center py-6 col-span-2 font-mono">Cargando ingredientes...</div>
+                    </div>
                 </div>
-                <div>
-                    <span class="text-[9px] uppercase text-stone-500 font-bold block">Autenticidad VIP:</span>
-                    <span class="text-xs text-green-400 font-bold flex items-center gap-1"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Certificada</span>
+
+                <div class="glass-panel p-6 rounded-3xl space-y-3">
+                    <div class="flex justify-between items-center border-b border-stone-800 pb-2">
+                        <h4 class="text-xs font-black font-futurista text-stone-300 uppercase tracking-widest">Capas en la Hamburguesa</h4>
+                        <button onclick="limpiarTodasLasCapas()" class="text-[9px] text-red-400 hover:underline uppercase font-bold cursor-pointer">Limpiar Todo</button>
+                    </div>
+                    <div id="lista-capas-activas-pila" class="space-y-2 max-h-[180px] overflow-y-auto pr-1">
+                        <div class="text-xs text-stone-500 text-center py-4 font-mono">Sin ingredientes agregados aún.</div>
+                    </div>
                 </div>
             </div>
-            <button onclick="agregarAlCarritoYVolver()" class="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-futurista font-black py-4 px-6 rounded-xl text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-2 cursor-pointer shadow-lg transition-all duration-300">
-                <i data-lucide="shopping-bag" class="w-4 h-4"></i> AÑADIR A LA BOLSA VIP
-            </button>
         </div>
-    </div>
-</main>
+    </main>
 
-    <main id="pantalla-carrito" class="hidden max-w-7xl w-full mx-auto px-4 py-8 flex-grow relative z-10 grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-        <section class="lg:col-span-3 glass-panel p-5 rounded-2xl shadow-2xl border border-stone-900/60">
+    <!-- VISTA 3: CARRITO Y CHECKOUT VIP UNIFICADO -->
+    <main id="vista-carrito" class="hidden max-w-7xl w-full mx-auto px-4 py-8 flex-grow relative z-10 grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+        <section class="lg:col-span-3 glass-panel p-6 rounded-3xl space-y-4 shadow-2xl border border-stone-900/60">
             <div class="border-b border-stone-800 pb-3 mb-4 flex justify-between items-end">
                 <h2 class="text-xl font-black font-futurista tracking-widest text-white uppercase flex items-center gap-2">
-                    <i data-lucide="shopping-basket" class="w-5 h-5 text-amber-400"></i> Carrito de Compras VIP
+                    <i data-lucide="shopping-basket" class="w-5 h-5 text-amber-400"></i> Bolsa de Pedidos VIP
                 </h2>
                 <span class="text-xs font-futurista text-stone-500 tracking-wider hidden md:block">Precio</span>
             </div>
-            <div id="carrito-lista-items" class="divide-y divide-stone-900"></div>
+            <div id="lista-items-carrito" class="divide-y divide-stone-900"></div>
             <div class="text-right text-sm md:text-base border-t border-stone-900 pt-4 mt-4 font-futurista">
                 Subtotal (<span id="cantidad-items-abajo" class="text-amber-400 font-bold font-mono">0</span> products): 
                 <span class="text-white font-black font-mono ml-1" id="carrito-subtotal-monto-abajo">$0.00</span>
             </div>
         </section>
 
-        <section class="bg-stone-950/90 border border-stone-800 p-5 rounded-2xl shadow-2xl space-y-5">
+        <section class="bg-stone-950/90 border border-stone-800 p-6 rounded-3xl shadow-2xl space-y-5">
             <div class="flex items-start gap-2.5 text-xs text-stone-300 bg-amber-500/5 border border-amber-500/10 p-3 rounded-xl">
                 <span class="bg-emerald-600 text-black font-black rounded-full w-4 h-4 flex items-center justify-center shrink-0 text-[10px] mt-0.5">✓</span>
                 <div>
-                    <span class="text-emerald-400 font-bold">Tu suite califica para Envío Global VIP.</span> Elige entrega prioritaria protegida al finalizar.
+                    <span class="text-emerald-400 font-bold">Tu suite califica para Envío Global VIP.</span>
                 </div>
             </div>
             <div class="text-base font-normal font-futurista text-stone-300">
-                Subtotal (<span id="cantidad-items-lateral" class="text-amber-400 font-mono">0</span> piezas): 
-                <span class="block text-2xl font-black font-mono text-white mt-1" id="carrito-total-monto">$0.00</span>
+                Total a Pagar: 
+                <span class="block text-2xl font-black font-mono text-white mt-1" id="carrito-monto-total">$0.00</span>
             </div>
-            <div class="border-t border-stone-900 pt-4 space-y-3">
+            
+            <div class="space-y-3 pt-2 border-t border-stone-900">
                 <div class="space-y-1.5">
                     <label class="text-[9px] uppercase text-stone-400 font-bold tracking-widest block font-futurista">1. Cuenta Destino Colectora</label>
-                    <select id="carrito-selector-pago" onchange="mostrarDetallesCuentaSeleccionada()" class="w-full bg-stone-900 border border-stone-800 text-xs text-stone-300 p-3 rounded-xl focus:outline-none focus:border-amber-500/40 font-medium"></select>
+                    <select id="select-metodo-pago" onchange="mostrarDetallesBanco()" class="w-full bg-stone-900 border border-stone-800 text-xs text-stone-300 p-3.5 rounded-xl focus:outline-none focus:border-amber-500/40 font-medium"></select>
                 </div>
-                
-                <div id="caja-detalles-pago-extendida" class="hidden bg-stone-900/90 border border-amber-500/20 p-4 rounded-xl space-y-2">
-                    <div class="text-[9px] uppercase font-futurista font-black text-amber-400 tracking-wider flex items-center gap-1.5 border-b border-stone-800/60 pb-1.5">
-                        <i data-lucide="info" class="w-3 h-3"></i> Datos de Transferencia Confirmados
-                    </div>
-                    <div id="contenido-detalles-cuenta" class="text-xs space-y-1 text-stone-300 font-mono"></div>
-                </div>
+
+                <div id="caja-banco-detalle" class="hidden bg-stone-900/90 border border-amber-500/20 p-4 rounded-xl text-xs space-y-1.5 text-stone-300 font-mono"></div>
 
                 <div class="space-y-1.5">
-                    <label class="text-[9px] uppercase text-stone-400 font-bold tracking-widest block font-futurista">2. Referencia / Código de Depósito</label>
-                    <input type="text" 
-                           id="carrito-input-referencia" 
-                           inputmode="numeric" 
-                           pattern="[0-9]{12}" 
-                           maxlength="12" 
-                           placeholder="Ingresa los 12 dígitos" 
-                           class="w-full bg-stone-900 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none focus:border-amber-400/40 font-mono tracking-wider">
+                    <label class="text-[9px] uppercase text-stone-400 font-bold tracking-widest block font-futurista">2. Referencia (12 Dígitos)</label>
+                    <input type="text" id="input-ref-pago" maxlength="12" inputmode="numeric" placeholder="000012345678" class="w-full bg-stone-900 border border-stone-800 text-xs text-white p-3.5 rounded-xl font-mono tracking-wider">
                 </div>
 
-                <button onclick="finalizarOrdenCompraVIP()" class="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-futurista font-black py-3 px-4 rounded-xl text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-2 cursor-pointer shadow-lg transition-all duration-300">
-                    <i data-lucide="shield-check" class="w-4 h-4"></i> PROCEED TO CHECKOUT
+                <!-- Muestra código de referido si aplica -->
+                <div id="contenedor-ref-info" class="hidden bg-stone-900 border border-amber-500/30 p-3 rounded-xl text-xs">
+                    <span class="text-stone-400 font-futurista">Referido Aplicado:</span>
+                    <div id="display-codigo-referido" class="font-bold text-amber-400 font-mono mt-0.5">NINGUNO</div>
+                </div>
+
+                <button onclick="finalizarOrdenWhatsApp()" class="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-futurista font-black py-4 rounded-xl text-xs uppercase tracking-wider cursor-pointer shadow-xl flex items-center justify-center gap-2">
+                    <i data-lucide="send" class="w-4 h-4"></i> Enviar Orden por WhatsApp
                 </button>
             </div>
         </section>
     </main>
 
-    <!-- BOTÓN FLOTANTE DE CUPONERA (ESTILO ORO FINO) -->
+    <!-- BOTÓN FLOTANTE DE CUPONERA -->
     <a href="cuponera.html" class="btn-oro-flotante fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full flex items-center justify-center text-stone-950 shadow-2xl cursor-pointer" title="Ver Cuponera">
         <i data-lucide="ticket" class="w-7 h-7 stroke-[2.5]"></i>
     </a>
 
+    <!-- MODAL LIGHTBOX PARA FOTOS -->
     <div id="modal-lightbox" class="hidden fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4 cursor-zoom-out" onclick="cerrarAmplificacion()">
         <button class="absolute top-6 right-6 text-stone-400 hover:text-white transition-colors cursor-pointer">
             <i data-lucide="x" class="w-8 h-8"></i>
@@ -194,326 +258,580 @@
         <img id="lightbox-imagen-completa" src="" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl transition-transform duration-300">
     </div>
 
-    <footer class="border-t border-stone-950 bg-black/60 p-4 text-center text-[10px] text-stone-600 font-mono tracking-widest mt-12">© 2026 D'UNIG LUXURY ECOSISTEMA. TODOS LOS DERECHOS RESERVADOS.</footer>
+    <footer class="border-t border-stone-950 bg-black/80 p-4 text-center text-[10px] text-stone-600 font-mono tracking-widest mt-12">© 2026 PIZZA PLANETA & D'UNIG LUXURY ECOSISTEMA. TODOS LOS DERECHOS RESERVADOS.</footer>
 
     <script>
         const SUPABASE_URL = "https://xikiwlmxhnrymwmbsyug.supabase.co"; 
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpa2l3bG14aG5yeW13bWJzeXVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0NDg3NTMsImV4cCI6MjEwMTAyNDc1M30.1HkgasBvA763iO6u0FnEhOIiCoTkBLJ8O8fL1WpGeDM"; 
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpa2l3bG14aG5yeW13bWJzeXVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0NDg3NTMsImV4cCI6MjEwMTAyNDc1M30.1HkgasBvA763iO6u0FnEhOIiCoTkBLJ8O8fL1WpGeDM"; 
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let baseProductos = [], cuentasDB = [], carritoVIP = [];
-        let productoSeleccionado = null, filtroInstagram = "luxury_store";
-        let fotoSeleccionadaParaLightbox = "";
+let carrito = [];
+let capasActuales = []; 
+let catalogoIngredientes3D = [];
+let baseProductos = [], cuentasDB = [];
+let productoSeleccionado = null, filtroInstagram = "luxury_store";
+let fotoSeleccionadaParaLightbox = "";
+const precioBasePan = 1.00; // <-- Ajustado a 1.00
 
-        function irAPantallaVitrina() {
-            document.getElementById('pantalla-detalle').classList.add('hidden');
-            document.getElementById('pantalla-carrito').classList.add('hidden');
-            document.getElementById('pantalla-vitrina').classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+let scene, camera, renderer, hamburguesaGrupo;
 
-        function irAPantallaCarrito() {
-            document.getElementById('pantalla-vitrina').classList.add('hidden');
-            document.getElementById('pantalla-detalle').classList.add('hidden');
-            document.getElementById('pantalla-carrito').classList.remove('hidden');
-            renderizarContenidoCarrito();
-            obtenerCuentasPagoParaCarrito();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+function cambiarPantalla(nombre) {
+    ['vitrina', 'detalle', 'simulador3d', 'carrito'].forEach(v => {
+        const el = document.getElementById(`vista-${v}`);
+        if(el) el.classList.add('hidden');
+    });
+    const target = document.getElementById(`vista-${nombre}`);
+    if(target) target.classList.remove('hidden');
 
-        async function descargarCatalogoDeSupabase() {
-            const { data, error } = await supabaseClient.from('productos').select('*').eq('instagram_dueno', filtroInstagram);
-            if (!error && data) { baseProductos = data; renderizarVitrinaPrincipal(); }
-        }
-
-        function renderizarVitrinaPrincipal() {
-            const grid = document.getElementById('grid-productos-vitrina'); if (!grid) return; grid.innerHTML = "";
-            if (baseProductos.length === 0) {
-                grid.innerHTML = `<div class="col-span-full p-12 text-center text-stone-600 font-mono text-xs uppercase tracking-widest">Ninguna pieza cargada.</div>`; return;
-            }
-            baseProductos.forEach(p => {
-                const imgPortada = p.imagen_url || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600";
-                grid.innerHTML += `
-                    <div onclick="verDetalleDeProducto(${p.id})" class="glass-panel rounded-2xl overflow-hidden group cursor-pointer hover:border-amber-500/20 transition-all duration-300 flex flex-col justify-between">
-                        <div class="relative aspect-video bg-stone-950 overflow-hidden">
-                            <img src="${imgPortada}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                            <span class="absolute top-3 left-3 bg-black/70 backdrop-blur-md text-[8px] font-futurista font-bold uppercase tracking-widest text-amber-400 px-2 py-1 rounded border border-stone-800">${p.categoria}</span>
-                        </div>
-                        <div class="p-4 space-y-3">
-                            <h3 class="font-futurista font-bold text-xs tracking-wide text-white uppercase truncate">${p.titulo}</h3>
-                            <div class="flex justify-between items-center pt-2 border-t border-stone-900/60">
-                                <span class="font-mono text-xs text-amber-400 font-bold">$${parseFloat(p.precio).toFixed(2)}</span>
-                            </div>
-                        </div>
-                    </div>`;
-            });
-        }
-
-        function verDetalleDeProducto(idProducto) {
-            productoSeleccionado = baseProductos.find(p => p.id === idProducto); if (!productoSeleccionado) return;
-
-            document.getElementById('detalle-titulo').innerText = productoSeleccionado.titulo;
-            document.getElementById('detalle-categoria').innerText = productoSeleccionado.categoria;
-            document.getElementById('detalle-precio').innerText = `$${parseFloat(productoSeleccionado.precio).toFixed(2)}`;
-            document.getElementById('detalle-descripcion').innerText = productoSeleccionado.descripcion || "Sin descripción.";
-            document.getElementById('detalle-stock').innerText = `${productoSeleccionado.stock} unidades disponibles`;
-
-            const imgInicial = productoSeleccionado.imagen_url || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600";
-            actualizarVisorFoto(imgInicial);
-
-            let fotosSlider = [];
-            try { if(productoSeleccionado.imagenes_slider) fotosSlider = JSON.parse(productoSeleccionado.imagenes_slider) || []; } catch(e){}
-            if (fotosSlider.length === 0 && productoSeleccionado.imagen_url) { fotosSlider.push(productoSeleccionado.imagen_url); }
-
-            const containerMiniaturas = document.getElementById('detalle-contenedor-miniaturas'); containerMiniaturas.innerHTML = "";
-            fotosSlider.forEach((img) => {
-                if(img) {
-                    containerMiniaturas.innerHTML += `<div onclick="actualizarVisorFoto('${img}')" class="aspect-square rounded-xl bg-stone-950 border border-stone-800 overflow-hidden cursor-pointer hover:border-amber-500/40 transition-all"><img src="${img}" class="w-full h-full object-cover"></div>`;
+    if (nombre === 'simulador3d') {
+        setTimeout(async () => {
+            if (!scene) inicializarThreeJS();
+            else {
+                const container = document.getElementById('webgl-container');
+                if (renderer && container) {
+                    renderer.setSize(container.clientWidth, container.clientHeight);
+                    camera.aspect = container.clientWidth / container.clientHeight;
+                    camera.updateProjectionMatrix();
                 }
-            });
-
-            renderizarAdicionales();
-
-            document.getElementById('pantalla-vitrina').classList.add('hidden');
-            document.getElementById('pantalla-detalle').classList.remove('hidden');
-            
-            lucide.createIcons();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function actualizarVisorFoto(url) {
-            fotoSeleccionadaParaLightbox = url;
-            document.getElementById('detalle-visor-principal').src = url;
-        }
-
-        function amplificarFotoActual() {
-            if(!fotoSeleccionadaParaLightbox) return;
-            const lightbox = document.getElementById('modal-lightbox');
-            const imgCompleta = document.getElementById('lightbox-imagen-completa');
-            imgCompleta.src = fotoSeleccionadaParaLightbox;
-            lightbox.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function cerrarAmplificacion() {
-            document.getElementById('modal-lightbox').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-
-        function agregarAlCarritoYVolver() {
-            if (!productoSeleccionado) return;
-
-            const checkboxes = document.querySelectorAll('.check-adicional:checked');
-            let adicionalesSeleccionados = [];
-            let extraTotal = 0;
-
-            checkboxes.forEach(cb => {
-                const nombre = cb.getAttribute('data-nombre');
-                const precio = parseFloat(cb.getAttribute('data-precio'));
-                adicionalesSeleccionados.push(nombre);
-                extraTotal += precio;
-            });
-
-            const productoParaCarrito = {
-                ...productoSeleccionado,
-                titulo: `${productoSeleccionado.titulo} ${adicionalesSeleccionados.length > 0 ? '(+ ' + adicionalesSeleccionados.join(', ') + ')' : ''}`,
-                precio: parseFloat(productoSeleccionado.precio) + extraTotal
-            };
-
-            carritoVIP.push(productoParaCarrito);
-            document.getElementById('contador-carrito-global').innerText = carritoVIP.length;
-            
-            alert(`¡"${productoParaCarrito.titulo}" agregado al carrito!`);
-            irAPantallaVitrina();
-        }
-
-        function renderizarContenidoCarrito() {
-            const container = document.getElementById('carrito-lista-items'); if(!container) return;
-            container.innerHTML = "";
-            let totalAcumulado = 0;
-
-            const totalPiezas = carritoVIP.length;
-            document.getElementById('cantidad-items-abajo').innerText = totalPiezas;
-            document.getElementById('cantidad-items-lateral').innerText = totalPiezas;
-
-            if (totalPiezas === 0) {
-                container.innerHTML = `<div class="p-12 text-center text-stone-500 font-mono text-xs uppercase tracking-widest">El carrito VIP está vacío.</div>`;
-                document.getElementById('carrito-total-monto').innerText = "$0.00";
-                document.getElementById('carrito-subtotal-monto-abajo').innerText = "$0.00";
-                return;
             }
+            await cargarIngredientesDesdeSupabase();
+            actualizarEscena3D();
+        }, 150);
+    }
+    if (nombre === 'carrito') {
+        renderizarCarrito();
+        cargarCuentasPago();
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => lucide.createIcons(), 50);
+}
 
-            carritoVIP.forEach((item, index) => {
-                totalAcumulado += parseFloat(item.precio);
-                const img = item.imagen_url || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600";
-                container.innerHTML += `
-                    <div class="flex flex-col sm:flex-row justify-between gap-4 py-5 first:pt-2 last:pb-2">
-                        <div class="flex gap-4 items-start">
-                            <img src="${img}" class="w-24 h-24 object-cover rounded-xl border border-stone-900 bg-stone-950">
-                            <div class="space-y-1">
-                                <h3 class="text-sm font-bold font-futurista text-white tracking-wide uppercase truncate max-w-xs md:max-w-md">${item.titulo}</h3>
-                                <p class="text-[10px] text-amber-500/80 uppercase tracking-wider">${item.categoria}</p>
-                                <button onclick="removerItemDelCarrito(${index})" class="text-xs text-red-400 hover:underline pt-2 cursor-pointer block">Eliminar</button>
-                            </div>
+async function descargarCatalogoDeSupabase() {
+    const grid = document.getElementById('grid-productos-vitrina');
+    if(!grid) return;
+
+    const { data, error } = await supabaseClient.from('productos').select('*');
+    if (error) {
+        grid.innerHTML = `<div class="col-span-3 text-center text-red-400 font-mono text-xs">Error al conectar con la base de datos.</div>`;
+        return;
+    }
+
+    if (data && data.length > 0) {
+        baseProductos = data;
+        grid.innerHTML = "";
+        data.forEach(p => {
+            const titulo = p.titulo || p.nombre || "Producto sin nombre";
+            const precio = parseFloat(p.precio || p.valor || 0);
+            const imagen = p.imagen_url || p.imagen || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600';
+            const categoria = p.categoria || 'ESPECIALIDAD';
+
+            grid.innerHTML += `
+                <div onclick="verDetalleDeProducto(${p.id})" class="glass-panel rounded-3xl overflow-hidden border border-stone-800 flex flex-col justify-between shadow-xl cursor-pointer hover:border-amber-500/40 transition-all group">
+                    <div class="aspect-video bg-stone-950 overflow-hidden relative">
+                        <img src="${imagen}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <span class="absolute top-3 left-3 bg-black/70 backdrop-blur-md text-[8px] font-futurista font-bold uppercase tracking-widest text-amber-400 px-2.5 py-1 rounded border border-stone-800">${categoria}</span>
+                    </div>
+                    <div class="p-5 space-y-3">
+                        <h3 class="font-futurista font-bold text-xs text-white uppercase truncate">${titulo}</h3>
+                        <div class="flex justify-between items-center pt-2 border-t border-stone-900">
+                            <span class="font-mono text-xs text-amber-400 font-bold">$${precio.toFixed(2)}</span>
+                            <span class="text-[10px] font-futurista font-black uppercase text-amber-400 underline">Ver Detalles</span>
                         </div>
-                        <div class="text-right">
-                            <span class="text-base font-bold font-mono text-amber-400">$${parseFloat(item.precio).toFixed(2)}</span>
-                        </div>
-                    </div>`;
-            });
+                    </div>
+                </div>`;
+        });
+    } else {
+        grid.innerHTML = `<div class="col-span-3 text-center text-stone-500 font-mono text-xs">No se encontraron productos registrados en Supabase.</div>`;
+    }
+    lucide.createIcons();
+}
 
-            const montoFormateado = `$${totalAcumulado.toFixed(2)}`;
-            document.getElementById('carrito-total-monto').innerText = montoFormateado;
-            document.getElementById('carrito-subtotal-monto-abajo').innerText = montoFormateado;
+function verDetalleDeProducto(idProducto) {
+    productoSeleccionado = baseProductos.find(p => p.id === idProducto); 
+    if (!productoSeleccionado) return;
+
+    document.getElementById('detalle-titulo').innerText = productoSeleccionado.titulo || productoSeleccionado.nombre;
+    document.getElementById('detalle-categoria').innerText = productoSeleccionado.categoria || 'ESPECIALIDAD';
+    document.getElementById('detalle-precio').innerText = `$${parseFloat(productoSeleccionado.precio || 0).toFixed(2)}`;
+    document.getElementById('detalle-descripcion').innerText = productoSeleccionado.descripcion || "Sin descripción disponible.";
+    document.getElementById('detalle-stock').innerText = `${productoSeleccionado.stock || 10} unidades disponibles`;
+
+    const imgInicial = productoSeleccionado.imagen_url || productoSeleccionado.imagen || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600";
+    actualizarVisorFoto(imgInicial);
+
+    let fotosSlider = [];
+    try { if(productoSeleccionado.imagenes_slider) fotosSlider = JSON.parse(productoSeleccionado.imagenes_slider) || []; } catch(e){}
+    if (fotosSlider.length === 0 && imgInicial) { fotosSlider.push(imgInicial); }
+
+    const containerMiniaturas = document.getElementById('detalle-contenedor-miniaturas'); 
+    containerMiniaturas.innerHTML = "";
+    fotosSlider.forEach((img) => {
+        if(img) {
+            containerMiniaturas.innerHTML += `<div onclick="actualizarVisorFoto('${img}')" class="aspect-square rounded-xl bg-stone-950 border border-stone-800 overflow-hidden cursor-pointer hover:border-amber-500/40 transition-all"><img src="${img}" class="w-full h-full object-cover"></div>`;
+        }
+    });
+
+    renderizarAdicionales();
+    cambiarPantallaDetalleDirecto();
+}
+
+function cambiarPantallaDetalleDirecto() {
+    ['vitrina', 'simulador3d', 'carrito'].forEach(v => {
+        const el = document.getElementById(`vista-${v}`);
+        if(el) el.classList.add('hidden');
+    });
+    document.getElementById('vista-detalle').classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => lucide.createIcons(), 50);
+}
+
+function actualizarVisorFoto(url) {
+    fotoSeleccionadaParaLightbox = url;
+    document.getElementById('detalle-visor-principal').src = url;
+}
+
+function amplificarFotoActual() {
+    if(!fotoSeleccionadaParaLightbox) return;
+    const lightbox = document.getElementById('modal-lightbox');
+    const imgCompleta = document.getElementById('lightbox-imagen-completa');
+    imgCompleta.src = fotoSeleccionadaParaLightbox;
+    lightbox.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarAmplificacion() {
+    document.getElementById('modal-lightbox').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+async function descargarAdicionalesDeSupabase() {
+    const { data, error } = await supabaseClient.from('adicionales').select('*');
+    if (!error && data) {
+        window.listaAdicionales = data;
+    }
+}
+
+function renderizarAdicionales() {
+    const contenedor = document.getElementById('contenedor-adicionales');
+    if (!contenedor || !window.listaAdicionales || window.listaAdicionales.length === 0) {
+        if(contenedor) contenedor.innerHTML = "";
+        return;
+    }
+
+    contenedor.innerHTML = `
+        <details class="group bg-stone-900 border border-stone-800 rounded-xl overflow-hidden my-4">
+            <summary class="list-none p-4 text-[10px] font-bold text-stone-400 cursor-pointer flex justify-between items-center hover:text-amber-400">
+                <span>SELECCIONAR ADICIONALES / EXTRAS</span>
+                <i data-lucide="chevron-down" class="w-4 h-4 group-open:rotate-180 transition-transform"></i>
+            </summary>
+            <div class="p-3 border-t border-stone-800 space-y-2">
+                ${window.listaAdicionales.map(ad => `
+                    <label class="flex items-center gap-3 cursor-pointer p-2 hover:bg-stone-800 rounded-lg">
+                        <input type="checkbox" class="check-adicional w-4 h-4 accent-amber-500" data-nombre="${ad.nombre}" data-precio="${ad.precio}">
+                        <span class="text-xs text-white font-medium">${ad.nombre}</span>
+                        <span class="text-xs text-amber-400 font-mono ml-auto">+$${parseFloat(ad.precio).toFixed(2)}</span>
+                    </label>
+                `).join('')}
+            </div>
+        </details>`;
+    lucide.createIcons();
+}
+
+function agregarDetalleAlCarritoYVolver() {
+    if (!productoSeleccionado) return;
+
+    const checkboxes = document.querySelectorAll('.check-adicional:checked');
+    let adicionalesSeleccionados = [];
+    let extraTotal = 0;
+
+    checkboxes.forEach(cb => {
+        adicionalesSeleccionados.push(cb.getAttribute('data-nombre'));
+        extraTotal += parseFloat(cb.getAttribute('data-precio') || 0);
+    });
+
+    const tituloBase = productoSeleccionado.titulo || productoSeleccionado.nombre;
+    const tituloFinal = `${tituloBase} ${adicionalesSeleccionados.length > 0 ? '(+ ' + adicionalesSeleccionados.join(', ') + ')' : ''}`;
+    const precioFinal = parseFloat(productoSeleccionado.precio || 0) + extraTotal;
+    const imagenFinal = productoSeleccionado.imagen_url || productoSeleccionado.imagen || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600';
+
+    carrito.push({ titulo: tituloFinal, precio: precioFinal, imagen_url: imagenFinal });
+    document.getElementById('contador-carrito-badge').innerText = carrito.length;
+    
+    alert(`¡"${tituloFinal}" agregado al carrito con éxito!`);
+    cambiarPantalla('vitrina');
+}
+
+async function cargarIngredientesDesdeSupabase() {
+    try {
+        const { data, error } = await supabaseClient.from('ingredientes_3d').select('*');
+        if (error || !data || data.length === 0) {
+            catalogoIngredientes3D = [];
+        } else {
+            catalogoIngredientes3D = data.map(item => ({
+                id: item.id, // UUID real de Supabase
+                nombre: item.nombre || item.titulo,
+                precio: parseFloat(item.precio || item.valor || 0),
+                color: item.color || '#c47622',
+                tipo: item.tipo || 'cilindro',
+                imagen_url: item.imagen_url || item.imagen || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=300'
+            }));
+            renderizarBandejaIngredientes();
+        }
+    } catch (err) {
+        console.error("Error cargando ingredientes:", err);
+    }
+}
+
+function inicializarThreeJS() {
+    const container = document.getElementById('webgl-container');
+    if(!container) return;
+    container.innerHTML = ""; 
+
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
+    camera.position.set(0, 5, 12);
+    camera.lookAt(0, 0, 0);
+
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    container.appendChild(renderer.domElement);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+    const dirLight = new THREE.DirectionalLight(0xfffaed, 2.0);
+    dirLight.position.set(5, 10, 7);
+    scene.add(dirLight);
+
+    hamburguesaGrupo = new THREE.Group();
+    scene.add(hamburguesaGrupo);
+
+    let isDragging = false;
+    let previousMousePosition = { x: 0, y: 0 };
+
+    container.addEventListener('mousedown', (e) => { isDragging = true; previousMousePosition = { x: e.clientX, y: e.clientY }; });
+    container.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const deltaX = e.clientX - previousMousePosition.x;
+        hamburguesaGrupo.rotation.y += deltaX * 0.01;
+        previousMousePosition = { x: e.clientX, y: e.clientY };
+    });
+    window.addEventListener('mouseup', () => { isDragging = false; });
+
+    animarThreeJS();
+}
+
+function animarThreeJS() {
+    requestAnimationFrame(animarThreeJS);
+    if(renderer && scene && camera) {
+        renderer.render(scene, camera);
+    }
+}
+
+function renderizarBandejaIngredientes() {
+    const contenedor = document.getElementById('bandeja-ingredientes-arrastrables');
+    if(!contenedor) return;
+    contenedor.innerHTML = "";
+    
+    catalogoIngredientes3D.forEach(ing => {
+        contenedor.innerHTML += `
+            <div draggable="true" ondragstart="event.dataTransfer.setData('text/plain', '${ing.id}')" onclick="agregarCapa('${ing.id}')" class="draggable-item glass-panel border border-stone-800 hover:border-amber-500/60 p-3 rounded-2xl flex flex-col justify-between items-center text-center cursor-pointer shadow-lg group">
+                <div class="w-full h-16 rounded-xl overflow-hidden mb-2 relative bg-stone-900">
+                    <img src="${ing.imagen_url}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                </div>
+                <span class="text-xs text-white font-bold block">${ing.nombre}</span>
+                <span class="text-[10px] text-amber-400 font-mono mt-0.5">+$${ing.precio.toFixed(2)}</span>
+            </div>`;
+    });
+
+    const zonaDrop = document.getElementById('zona-drop-canvas');
+    if(zonaDrop) {
+        zonaDrop.ondragover = (e) => e.preventDefault();
+        zonaDrop.ondrop = (e) => {
+            e.preventDefault();
+            const idIngrediente = e.dataTransfer.getData('text/plain');
+            if(idIngrediente) agregarCapa(idIngrediente);
+        };
+    }
+}
+
+function agregarCapa(id) {
+    const ing = catalogoIngredientes3D.find(i => i.id == id);
+    if(ing) {
+        capasActuales.push({ ...ing, uuid: Math.random().toString(36).substring(2, 9) });
+        actualizarEscena3D();
+        renderizarListaCapasActivas();
+    }
+}
+
+function eliminarCapaPorUuid(uuid) {
+    capasActuales = capasActuales.filter(c => c.uuid !== uuid);
+    actualizarEscena3D();
+    renderizarListaCapasActivas();
+}
+
+function limpiarTodasLasCapas() {
+    capasActuales = [];
+    actualizarEscena3D();
+    renderizarListaCapasActivas();
+}
+
+function renderizarListaCapasActivas() {
+    const contenedor = document.getElementById('lista-capas-activas-pila');
+    if(!contenedor) return;
+    contenedor.innerHTML = "";
+
+    if(capasActuales.length === 0) {
+        contenedor.innerHTML = `<div class="text-xs text-stone-500 text-center py-4 font-mono">Sin ingredientes agregados aún.</div>`;
+        document.getElementById('precio-total-3d').innerText = `$${precioBasePan.toFixed(2)}`;
+        window.precioFinal3D = precioBasePan;
+        return;
+    }
+
+    let total = precioBasePan;
+    capasActuales.forEach((capa, index) => {
+        total += capa.precio;
+        contenedor.innerHTML += `
+            <div class="flex justify-between items-center bg-stone-900/90 border border-stone-800 px-3 py-2 rounded-xl text-xs">
+                <div class="flex items-center gap-2">
+                    <span class="font-mono text-[10px] text-amber-400 font-bold">#${index + 1}</span>
+                    <span class="text-stone-200 font-bold">${capa.nombre}</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="font-mono text-amber-400">+$${capa.precio.toFixed(2)}</span>
+                    <button onclick="eliminarCapaPorUuid('${capa.uuid}')" class="w-5 h-5 bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white rounded-md flex items-center justify-center transition-colors font-bold text-[10px] cursor-pointer">✕</button>
+                </div>
+            </div>`;
+    });
+
+    document.getElementById('precio-total-3d').innerText = `$${total.toFixed(2)}`;
+    window.precioFinal3D = total;
+}
+
+function crearPanBeigeOscuroConPuntitos(esSuperior = false) {
+    const grupoPan = new THREE.Group();
+    const materialPan = new THREE.MeshStandardMaterial({ color: 0x8c6747, roughness: 0.55 });
+    
+    if (!esSuperior) {
+        const geoBase = new THREE.CylinderGeometry(2.3, 2.45, 0.6, 32);
+        grupoPan.add(new THREE.Mesh(geoBase, materialPan));
+    } else {
+        const geoSup = new THREE.SphereGeometry(2.3, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+        const meshSup = new THREE.Mesh(geoSup, materialPan);
+        meshSup.scale.set(1, 0.75, 1);
+        grupoPan.add(meshSup);
+
+        const materialPuntito = new THREE.MeshStandardMaterial({ color: 0x3d2715 });
+        const totalPuntitos = 28;
+        for(let i = 0; i < totalPuntitos; i++) {
+            const geoPunto = new THREE.SphereGeometry(0.05, 8, 8);
+            const meshPunto = new THREE.Mesh(geoPunto, materialPuntito);
+            const phi = Math.acos(-1 + (2 * i) / totalPuntitos) * 0.5;
+            const theta = Math.sqrt(totalPuntitos * Math.PI) * phi;
+            const radioDist = 1.6 * Math.sin(phi);
+            meshPunto.position.set(radioDist * Math.cos(theta), 1.1 + (Math.cos(phi) * 0.4), radioDist * Math.sin(theta));
+            grupoPan.add(meshPunto);
+        }
+    }
+    return grupoPan;
+}
+
+function actualizarEscena3D() {
+    if(!hamburguesaGrupo) return;
+    while(hamburguesaGrupo.children.length > 0){ hamburguesaGrupo.remove(hamburguesaGrupo.children[0]); }
+
+    let alturaActualY = -2.2;
+    const panBaseMesh = crearPanBeigeOscuroConPuntitos(false);
+    panBaseMesh.position.y = alturaActualY;
+    hamburguesaGrupo.add(panBaseMesh);
+    alturaActualY += 0.5;
+
+    capasActuales.forEach((capa) => {
+        let meshCapa;
+        let colorHex = parseInt((capa.color || '#c47622').replace('#', '0x'));
+        const matCapa = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.4 });
+
+        if (capa.tipo === 'cilindro') {
+            meshCapa = new THREE.Mesh(new THREE.CylinderGeometry(2.35, 2.35, 0.45, 32), matCapa);
+            alturaActualY += 0.35;
+        } else if (capa.tipo === 'slab') {
+            meshCapa = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.15, 3.6), matCapa);
+            alturaActualY += 0.2;
+        } else if (capa.tipo === 'huevo_frito') {
+            const grupoHuevo = new THREE.Group();
+            grupoHuevo.add(new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.4, 0.12, 32), new THREE.MeshStandardMaterial({ color: 0xffffff })));
+            const meshYema = new THREE.Mesh(new THREE.SphereGeometry(0.9, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0xffaa00 }));
+            meshYema.scale.set(1, 0.5, 1);
+            meshYema.position.set(0.4, 0.06, -0.3);
+            grupoHuevo.add(meshYema);
+            meshCapa = grupoHuevo;
+            alturaActualY += 0.2;
+        } else {
+            meshCapa = new THREE.Mesh(new THREE.CylinderGeometry(2.35, 2.35, 0.2, 32), matCapa);
+            alturaActualY += 0.2;
         }
 
-        async function obtenerCuentasPagoParaCarrito() {
-            const selector = document.getElementById('carrito-selector-pago'); if(!selector) return;
-            selector.innerHTML = "<option value=''>Cargando cuentas...</option>";
-            
-            const { data, error } = await supabaseClient.from('cuentas_pago').select('*');
-            if(!error && data) {
-                cuentasDB = data;
-                selector.innerHTML = "<option value=''>-- Seleccione una opción --</option>";
-                if(cuentasDB.length === 0) {
-                    selector.innerHTML = "<option value=''>No hay cuentas configuradas</option>";
-                    document.getElementById('caja-detalles-pago-extendida').classList.add('hidden');
-                    return;
-                }
-                cuentasDB.forEach((c, index) => {
-                    const plataformaStr = c.plataforma ? c.plataforma.toUpperCase().replace('_',' ') : 'MÉTODO';
-                    const bancoStr = c.banco ? ` - ${c.banco}` : '';
-                    selector.innerHTML += `<option value="${index}" class="bg-stone-950 text-white">[${plataformaStr}]${bancoStr}</option>`;
-                });
-            }
-        }
+        meshCapa.position.y = alturaActualY;
+        hamburguesaGrupo.add(meshCapa);
+        alturaActualY += 0.2;
+    });
 
-        function mostrarDetallesCuentaSeleccionada() {
-            const selector = document.getElementById('carrito-selector-pago');
-            const cajaExtendida = document.getElementById('caja-detalles-pago-extendida');
-            const contenido = document.getElementById('contenido-detalles-cuenta');
-            
-            if(!selector || !cajaExtendida || !contenido) return;
-            const index = selector.value;
-            if(index === "" || !cuentasDB[index]) { cajaExtendida.classList.add('hidden'); return; }
-            
-            const cuenta = cuentasDB[index];
-            cajaExtendida.classList.remove('hidden');
-            
-            let htmlDetalles = "";
-            if(cuenta.banco)   htmlDetalles += `<div><span class="text-amber-400/70 text-[10px] uppercase font-bold block">Banco / Plataforma:</span> <span class="text-white font-bold text-sm">${cuenta.banco}</span></div>`;
-            if(cuenta.titular)  htmlDetalles += `<div class="mt-1"><span class="text-amber-400/70 text-[10px] uppercase font-bold block">Titular:</span> <span class="text-stone-200">${cuenta.titular}</span></div>`;
-            if(cuenta.ci)       htmlDetalles += `<div class="mt-1"><span class="text-amber-400/70 text-[10px] uppercase font-bold block">CI / RIF:</span> <span class="text-stone-200 font-bold tracking-wider">${cuenta.ci}</span></div>`;
-            if(cuenta.telefono) htmlDetalles += `<div class="mt-1"><span class="text-amber-400/70 text-[10px] uppercase font-bold block">Teléfono:</span> <span class="text-stone-200">${cuenta.telefono}</span></div>`;
-            if(cuenta.email)    htmlDetalles += `<div class="mt-1"><span class="text-amber-400/70 text-[10px] uppercase font-bold block">Email:</span> <span class="text-stone-200 break-all">${cuenta.email}</span></div>`;
-            if(cuenta.detalles) htmlDetalles += `<div class="mt-1 border-t border-stone-800 pt-1.5 text-[11px] text-stone-400 italic">${cuenta.detalles}</div>`;
-            
-            contenido.innerHTML = htmlDetalles;
-            lucide.createIcons();
-        }
+    const panSupMesh = crearPanBeigeOscuroConPuntitos(true);
+    panSupMesh.position.y = alturaActualY + 0.1;
+    hamburguesaGrupo.add(panSupMesh);
+}
 
-        function removerItemDelCarrito(index) {
-            carritoVIP.splice(index, 1);
-            document.getElementById('contador-carrito-global').innerText = carritoVIP.length;
-            renderizarContenidoCarrito();
-        }
+function enviarCreacion3DAlCarrito() {
+    if (capasActuales.length === 0) {
+        alert("Arma tu hamburguesa 3D agregando al menos un ingrediente.");
+        return;
+    }
+    const nombres = capasActuales.map(i => i.nombre).join(', ');
+    
+    // Guardamos los IDs reales y la estructura para que la RPC los procese en el backend
+    carrito.push({
+        titulo: `🍔 Burger 3D Real (${nombres})`,
+        precio: window.precioFinal3D || 1.00,
+        imagen_url: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600",
+        idsIngredientes: capasActuales.map(c => c.id) // Guardamos los UUIDs exactos
+    });
+    
+    document.getElementById('contador-carrito-badge').innerText = carrito.length;
+    alert("¡Hamburguesa 3D agregada con éxito al carrito!");
+    capasActuales = [];
+    cambiarPantalla('vitrina');
+}
 
-        async function finalizarOrdenCompraVIP() {
-            if (carritoVIP.length === 0) { alert("Tu bolsa de compras está vacía."); return; }
-            
-            const transaccionRef = document.getElementById('carrito-input-referencia').value.trim();
-            const indexSelector = document.getElementById('carrito-selector-pago').value;
+function renderizarCarrito() {
+    const cont = document.getElementById('lista-items-carrito');
+    const contAbajo = document.getElementById('cantidad-items-abajo');
+    if(!cont) return;
+    cont.innerHTML = "";
+    let total = 0;
+    if(contAbajo) contAbajo.innerText = carrito.length;
 
-            if(indexSelector === "" || !cuentasDB[indexSelector]) { 
-                alert("Por favor seleccione un método de pago."); 
-                return; 
-            }
+    if(carrito.length === 0) {
+        cont.innerHTML = `<div class="p-8 text-center text-stone-500 font-mono text-xs">Tu bolsa está vacía.</div>`;
+        document.getElementById('carrito-monto-total').innerText = "$0.00";
+        if(document.getElementById('carrito-subtotal-monto-abajo')) document.getElementById('carrito-subtotal-monto-abajo').innerText = "$0.00";
+        return;
+    }
 
-            if (!/^\d{12}$/.test(transaccionRef)) { 
-                alert("Por favor, inserte un código de referencia válido de exactamente 12 números."); 
-                return; 
-            }
+    carrito.forEach((item, idx) => {
+        total += item.precio;
+        cont.innerHTML += `
+            <div class="flex justify-between items-center py-4 first:pt-2 last:pb-2">
+                <div class="flex items-center gap-3">
+                    <img src="${item.imagen_url}" class="w-12 h-12 object-cover rounded-xl border border-stone-800">
+                    <div>
+                        <h4 class="text-xs font-bold text-white font-futurista uppercase">${item.titulo}</h4>
+                        <button onclick="carrito.splice(${idx},1);renderizarCarrito();document.getElementById('contador-carrito-badge').innerText=carrito.length;" class="text-[10px] text-red-400 hover:underline cursor-pointer">Eliminar</button>
+                    </div>
+                </div>
+                <span class="font-mono text-amber-400 font-bold">$${item.precio.toFixed(2)}</span>
+            </div>`;
+    });
+    document.getElementById('carrito-monto-total').innerText = `$${total.toFixed(2)}`;
+    if(document.getElementById('carrito-subtotal-monto-abajo')) document.getElementById('carrito-subtotal-monto-abajo').innerText = `$${total.toFixed(2)}`;
+}
 
-            const cuentaActual = cuentasDB[indexSelector];
+async function cargarCuentasPago() {
+    const sel = document.getElementById('select-metodo-pago');
+    if(!sel) return;
+    const { data } = await supabaseClient.from('cuentas_pago').select('*');
+    if(data) {
+        cuentasDB = data;
+        sel.innerHTML = "<option value=''>-- Seleccionar Método --</option>";
+        data.forEach((c, i) => {
+            const plataformaStr = c.plataforma ? c.plataforma.toUpperCase() : 'MÉTODO';
+            const bancoStr = c.banco ? ` - ${c.banco}` : '';
+            sel.innerHTML += `<option value="${i}">[${plataformaStr}]${bancoStr}</option>`;
+        });
+    }
+}
 
-            let numeroWhatsApp = "584120000000"; 
-            const { data: configData, error: configError } = await supabaseClient
-                .from('ajustes_sistema')
-                .select('valor')
-                .eq('id', 'whatsapp_notificaciones')
-                .single();
-            
-            if(!configError && configData) {
-                numeroWhatsApp = configData.valor.replace(/[^0-9]/g, "");
-            }
+function mostrarDetallesBanco() {
+    const idx = document.getElementById('select-metodo-pago').value;
+    const caja = document.getElementById('caja-banco-detalle');
+    if(!caja) return;
+    if(idx === "" || !cuentasDB[idx]) { caja.classList.add('hidden'); return; }
+    const c = cuentasDB[idx];
+    caja.classList.remove('hidden');
+    caja.innerHTML = `
+        <div><b>Banco:</b> ${c.banco || 'N/A'}</div>
+        <div><b>Titular:</b> ${c.titular || 'N/A'}</div>
+        <div><b>CI/RIF:</b> ${c.ci || 'N/A'}</div>
+        <div><b>Teléfono:</b> ${c.telefono || 'N/A'}</div>
+        ${c.detalles ? `<div class="italic text-stone-400 mt-1">${c.detalles}</div>` : ''}
+    `;
+}
 
-            let listaProductosTexto = "";
-            let subtotalGlobal = 0;
-            carritoVIP.forEach((item) => {
-                listaProductosTexto += `• ${item.titulo} ($${parseFloat(item.precio).toFixed(2)})\n`;
-                subtotalGlobal += parseFloat(item.precio) || 0;
-            });
+window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const codigoReferido = urlParams.get('ref');
 
-            const CONFIG_REF = "684908";
+    if (codigoReferido) {
+        localStorage.setItem('dunig_ref_code', codigoReferido);
+    }
 
-            const textoMensaje = `💎 *NUEVO PEDIDO -EL CACHAPÓN* 💎\n\n🛍️ *PRODUCTOS:*\n${listaProductosTexto}\n💵 *TOTAL:* $${subtotalGlobal.toFixed(2)}\n\n🏦 *PAGO:* ${cuentaActual.plataforma} - ${cuentaActual.banco}\n🔢 *REF:* ${transaccionRef}\n\n[SYS-VER:${CONFIG_REF}]`;
+    const refGuardado = localStorage.getItem('dunig_ref_code');
+    if (refGuardado) {
+        const badge = document.getElementById('badge-referido');
+        const textRef = document.getElementById('text-codigo-ref');
+        const displayRef = document.getElementById('display-codigo-referido');
+        const contenedorRef = document.getElementById('contenedor-ref-info');
+
+        if(badge) { badge.classList.remove('hidden'); badge.classList.add('flex'); }
+        if(textRef) textRef.innerText = refGuardado;
+        if(displayRef) displayRef.innerText = refGuardado;
+        if(contenedorRef) contenedorRef.classList.remove('hidden');
+    }
+
+    descargarCatalogoDeSupabase();
+    descargarAdicionalesDeSupabase();
+    lucide.createIcons();
+});
+
+async function finalizarOrdenWhatsApp() {
+            if(carrito.length === 0) { alert("Agrega productos primero."); return; }
+            const ref = document.getElementById('input-ref-pago').value.trim();
+            const idx = document.getElementById('select-metodo-pago').value;
+
+            if(idx === "" || !cuentasDB[idx]) { alert("Selecciona un método de pago."); return; }
+            if(!/^\d{12}$/.test(ref)) { alert("Inserta un número de referencia válido de exactamente 12 dígitos."); return; }
+
+            const codigoReferidoCliente = localStorage.getItem('dunig_ref_code') || 'NINGUNO';
+
+            const cuenta = cuentasDB[idx];
+            let total = carrito.reduce((a, b) => a + b.precio, 0);
+            let lista = carrito.map(i => `• ${i.titulo} ($${i.precio.toFixed(2)})`).join('\n');
+
+            let wsNum = "584120000000";
+            const { data } = await supabaseClient.from('ajustes_sistema').select('valor').eq('id', 'whatsapp_notificaciones').single();
+            if(data && data.valor) wsNum = data.valor.replace(/[^0-9]/g, "");
+
+            const mensaje = `🍔 *PEDIDO VIP -CASA DE LAS PAPAS* 🍔\n\n${lista}\n\n💵 *TOTAL:* $${total.toFixed(2)}\n🏦 *PAGO:* ${cuenta.plataforma} (${cuenta.banco})\n🔢 *REF:* ${ref}\n🎁 *REF. CLIENTE:* ${codigoReferidoCliente}`;
 
             await supabaseClient.from('ordenes_vip').insert([{
-                productos: carritoVIP.map(item => item.titulo).join(', '),
-                total: subtotalGlobal,
-                referencia: transaccionRef,
-                estado: "Pendiente"
+                productos: carrito.map(i => i.titulo).join(', '),
+                total: total,
+                referencia: ref,
+                estado: "Pendiente",
+                codigo_referido: codigoReferidoCliente
             }]);
 
-            const urlWhatsApp = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${encodeURIComponent(textoMensaje)}`;
-            
-            carritoVIP = [];
-            document.getElementById('contador-carrito-global').innerText = "0";
-            document.getElementById('carrito-input-referencia').value = "";
-            document.getElementById('caja-detalles-pago-extendida').classList.add('hidden');
-            document.getElementById('carrito-selector-pago').value = "";
-            
-            irAPantallaVitrina();
-            window.open(urlWhatsApp, '_blank');
+            carrito = [];
+            document.getElementById('contador-carrito-badge').innerText = "0";
+            document.getElementById('input-ref-pago').value = "";
+            localStorage.removeItem('dunig_ref_code');
+            cambiarPantalla('vitrina');
+            window.open(`https://api.whatsapp.com/send?phone=${wsNum}&text=${encodeURIComponent(mensaje)}`, '_blank');
         }
 
-        window.addEventListener('DOMContentLoaded', () => { 
-            descargarCatalogoDeSupabase(); 
-            descargarAdicionalesDeSupabase(); 
-            lucide.createIcons(); 
-        });
-
-        async function descargarAdicionalesDeSupabase() {
-            const { data, error } = await supabaseClient.from('adicionales').select('*');
-            if (!error && data) {
-                window.listaAdicionales = data;
-            } else {
-                console.error("Error al cargar adicionales:", error);
-            }
-        }
-
-        function renderizarAdicionales() {
-            const contenedor = document.getElementById('contenedor-adicionales');
-            if (!contenedor || !window.listaAdicionales || window.listaAdicionales.length === 0) return;
-
-            contenedor.innerHTML = `
-                <details class="group bg-stone-900 border border-stone-800 rounded-xl overflow-hidden my-4">
-                    <summary class="list-none p-4 text-[10px] font-bold text-stone-400 cursor-pointer flex justify-between items-center hover:text-amber-400">
-                        <span>SELECCIONAR ADICIONALES</span>
-                        <i data-lucide="chevron-down" class="w-4 h-4 group-open:rotate-180 transition-transform"></i>
-                    </summary>
-                    <div class="p-3 border-t border-stone-800 space-y-2">
-                        ${window.listaAdicionales.map(ad => `
-                            <label class="flex items-center gap-3 cursor-pointer p-2 hover:bg-stone-800 rounded-lg">
-                                <input type="checkbox" class="check-adicional w-4 h-4 accent-amber-500" data-nombre="${ad.nombre}" data-precio="${ad.precio}">
-                                <span class="text-xs text-white font-medium">${ad.nombre}</span>
-                                <span class="text-xs text-amber-400 font-mono ml-auto">+$${parseFloat(ad.precio).toFixed(2)}</span>
-                            </label>
-                        `).join('')}
-                    </div>
-                </details>`;
+        window.addEventListener('DOMContentLoaded', () => {
+            descargarCatalogoDeSupabase();
+            descargarAdicionalesDeSupabase();
             lucide.createIcons();
-        }
+        });
     </script>
 </body>
 </html>
