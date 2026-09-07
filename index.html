@@ -987,6 +987,7 @@
 
     const mensaje = `🍔 *PEDIDO VIP - CASA DE LAS PAPAS* 🍔\n\n${lista}\n\n📦 *Subtotal:* $${subtotalProductos.toFixed(2)}\n🛵 *Delivery (${distanciaCalculadaKm.toFixed(2)} km):* $${costoDeliveryKm.toFixed(2)}\n💵 *TOTAL A PAGAR:* $${totalGeneral.toFixed(2)}\n📍 *Ubicación GPS:* ${linkGoogleMaps}\n🏦 *PAGO:* ${cuenta.plataforma} (${cuenta.banco})\n🔢 *REF:* ${ref}\n🎁 *REF. CLIENTE:* ${codigoReferidoCliente}`;
 
+    // Estructura adaptada estrictamente a las columnas existentes en la tabla ordenes_vip
     const datosOrdenPendiente = {
         productos: carrito.map(i => i.titulo).join(', '),
         total: totalGeneral,
@@ -994,7 +995,7 @@
         referencia: ref,
         referencia_bancaria: ref,
         estado: "Pendiente",
-        codigo_referido: codigoReferidoCliente,
+        owner_instagram: codigoReferidoCliente, // Mapeado correctamente a la columna real de la base de datos
         coordenadas_gps: `${gpsClienteLat},${gpsClienteLng}`,
         costo_delivery: costoDeliveryKm
     };
@@ -1003,7 +1004,9 @@
 
     if (error) {
         console.error("Error al registrar en Supabase:", error);
-        alert("Hubo un problema guardando la orden en la base de datos, pero continuaremos con el envío a WhatsApp.");
+        alert("Hubo un problema guardando la orden en la base de datos: " + error.message);
+    } else {
+        console.log("Orden guardada exitosamente en Supabase.");
     }
 
     carrito = [];
