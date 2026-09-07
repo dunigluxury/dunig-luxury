@@ -8,7 +8,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght=400;700;900&family=Plus+Jakarta+Sans:wght=200;300;400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;700&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: radial-gradient(circle at 50% 0%, #1a1216 0%, #0a0507 100%); background-color: #050204; line-height: 1.25; }
         .font-futurista { font-family: 'Orbitron', sans-serif; }
         .glow-gold { box-shadow: 0 0 25px rgba(229, 193, 88, 0.15); }
@@ -46,17 +46,16 @@
             </div>
             
             <div class="flex items-center gap-3">
-                <a href="index.html" class="p-3 rounded-xl border border-stone-800 text-stone-400 hover:text-white transition-all text-xs font-bold uppercase tracking-wider font-futurista bg-stone-900/30 flex items-center gap-2 cursor-pointer">
-                    <a href="https://dunigluxury.github.io/dunig-luxury/" target="_blank" class="flex items-center gap-2 ...">
-    <i data-lucide="eye" class="w-4 h-4 text-amber-500"></i> Ver Vitrina
-</a>
+                <a href="https://dunigluxury.github.io/dunig-luxury/" target="_blank" class="p-3 rounded-xl border border-stone-800 text-stone-400 hover:text-white transition-all text-xs font-bold uppercase tracking-wider font-futurista bg-stone-900/30 flex items-center gap-2 cursor-pointer">
+                    <i data-lucide="eye" class="w-4 h-4 text-amber-500"></i> Ver Vitrina
+                </a>
                 <button onclick="ejecutarLogout()" class="p-3 rounded-xl border border-red-900/30 text-red-400 hover:text-red-300 transition-all text-xs font-bold uppercase tracking-wider font-futurista bg-stone-900/30 flex items-center gap-2 cursor-pointer">
                     <i data-lucide="log-out" class="w-4 h-4"></i> Salir
                 </button>
                 <div id="contenedor-instagram" class="hidden flex items-center justify-center bg-stone-950/90 border border-stone-800 p-2 rounded-xl w-40 h-10">
-    <span class="text-xs text-amber-400 font-bold">@</span>
-    <span id="owner-instagram-display" class="text-xs font-bold text-white ml-2">luxury_store</span>
-</div>
+                    <span class="text-xs text-amber-400 font-bold">@</span>
+                    <span id="owner-instagram-display" class="text-xs font-bold text-white ml-2">luxury_store</span>
+                </div>
             </div>
         </div>
     </header>
@@ -82,23 +81,23 @@
                 </div>
                 <div id="lista-categorias" class="space-y-1.5 max-h-40 overflow-y-auto"></div>
             </div>
-<!-- Formulario de Adicionales -->
-<div class="glass-panel p-6 rounded-2xl space-y-4 shadow-2xl mt-6">
-    <div class="flex items-center gap-2 text-amber-400 border-b border-stone-800/60 pb-3">
-        <i data-lucide="plus-circle" class="w-4 h-4"></i>
-        <h3 class="font-futurista font-black text-xs uppercase tracking-[0.2em] text-white">Adicionales</h3>
-    </div>
-    <div class="space-y-2">
-        <input type="text" id="add-nombre" placeholder="Nombre (Ej: Extra Salsa)" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
-        <input type="number" id="add-precio" placeholder="Precio ($)" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
-        <button onclick="guardarAdicional()" class="w-full bg-stone-900 border border-stone-800 text-amber-400 font-futurista font-bold p-3 rounded-xl text-xs uppercase tracking-widest cursor-pointer hover:bg-stone-800">Inyectar Adicional</button>
-    </div>
 
-</div>
-<div class="border-t border-stone-900 pt-4 mt-4">
-    <h4 class="font-futurista font-bold text-[10px] uppercase text-amber-400/80 tracking-wider mb-2">Adicionales Registrados</h4>
-    <div id="lista-adicionales" class="space-y-1.5 max-h-40 overflow-y-auto"></div>
-</div>
+            <!-- Formulario de Adicionales -->
+            <div class="glass-panel p-6 rounded-2xl space-y-4 shadow-2xl mt-6">
+                <div class="flex items-center gap-2 text-amber-400 border-b border-stone-800/60 pb-3">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <h3 class="font-futurista font-black text-xs uppercase tracking-[0.2em] text-white">Adicionales</h3>
+                </div>
+                <div class="space-y-2">
+                    <input type="text" id="add-nombre" placeholder="Nombre (Ej: Extra Salsa)" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
+                    <input type="number" id="add-precio" placeholder="Precio ($)" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
+                    <button onclick="guardarAdicional()" class="w-full bg-stone-900 border border-stone-800 text-amber-400 font-futurista font-bold p-3 rounded-xl text-xs uppercase tracking-widest cursor-pointer hover:bg-stone-800">Inyectar Adicional</button>
+                </div>
+            </div>
+            <div class="border-t border-stone-900 pt-4 mt-4">
+                <h4 class="font-futurista font-bold text-[10px] uppercase text-amber-400/80 tracking-wider mb-2">Adicionales Registrados</h4>
+                <div id="lista-adicionales" class="space-y-1.5 max-h-40 overflow-y-auto"></div>
+            </div>
 
             <div class="glass-panel p-6 rounded-2xl space-y-4 shadow-2xl">
                 <div class="flex items-center gap-2 text-amber-400 border-b border-stone-800/60 pb-3">
@@ -113,6 +112,9 @@
                         <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Banco o Plataforma</label>
                         <select id="pago-plataforma" onchange="alternarCamposPago()" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none focus:border-amber-500/30">
                             <option value="pago_movil">Pago Móvil</option>
+                            <option value="zelle">Zelle</option>
+                            <option value="nequi">Nequi</option>
+                            <option value="efectivo">Efectivo</option>
                         </select>
                     </div>
 
@@ -163,7 +165,7 @@
                         <label class="text-[9px] uppercase text-stone-400 font-bold">Categoría</label>
                         <select id="prod-categoria" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-stone-400 p-3.5 rounded-xl focus:outline-none"></select>
                     </div>
-                    <div class="space-y-1">
+                    <div class="space-y-1 md:col-span-2">
                         <label class="text-[9px] uppercase text-stone-400 font-bold">Precio ($)</label>
                         <input type="number" id="prod-precio" step="0.01" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
                     </div>
@@ -257,120 +259,110 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxeHRiZGVnY2tlYXVmbmxmcWZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3ODc3NjgsImV4cCI6MjEwNDM2Mzc2OH0.62QheHDSsV-N9S1n_18_uP2_evxwiNS9kZQX2vLGMC8"; 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Lógica de seguridad integrada
-        async function verificarAcceso() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) {
-                // Si no hay sesión, redirigir a login
-                window.location.href = "login.html"; 
-                return null;
-            }
-            return session.user.email;
-        }
-
-
         let baseProductos = [];
-let categoriasDB = []; // Empezamos vacío, Supabase lo llenará
-let filtroInstagram = "luxury_store";
-let fotosSliderArray = Array(5).fill("");
-let listaCuentas = [];
+        let categoriasDB = []; 
+        let filtroInstagram = "luxury_store";
+        let fotosSliderArray = Array(5).fill("");
+        let listaCuentas = [];
 
         // VERIFICACIÓN DE SESIÓN AL CARGAR
-window.addEventListener('DOMContentLoaded', async () => { 
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (session) {
-        document.getElementById('auth-modal').classList.add('hidden');
-    }
-    
-    // Carga de datos inicial
-    await descargarCategoriasDesdeSupabase(); 
-    await descargarAdicionales(); // Integrado
-    descargarCatalogoDeSupabase(); 
-    alternarCamposPago(); 
-    descargarCuentasPago(); 
-    renderizerInputsMatrizFotos(); 
-    lucide.createIcons(); 
-});
+        window.addEventListener('DOMContentLoaded', async () => { 
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                document.getElementById('auth-modal').classList.remove('hidden');
+            } else {
+                document.getElementById('auth-modal').classList.add('hidden');
+            }
+            
+            await descargarCategoriasDesdeSupabase(); 
+            await descargarAdicionales(); 
+            descargarCatalogoDeSupabase(); 
+            alternarCamposPago(); 
+            descargarCuentasPago(); 
+            renderizerInputsMatrizFotos(); 
+            lucide.createIcons(); 
+        });
 
-// AUTENTICACIÓN
-async function ejecutarLogin() {
-    const email = document.getElementById('auth-email').value;
-    const password = document.getElementById('auth-pass').value;
+        // AUTENTICACIÓN
+        async function ejecutarLogin() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-pass').value;
 
-    const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email: email,
-        password: password,
-    });
-
-    if (error) {
-        alert("Acceso denegado: " + error.message);
-    } else {
-        document.getElementById('auth-modal').classList.add('hidden');
-    }
-}
-
-async function ejecutarLogout() {
-    await supabaseClient.auth.signOut();
-    location.reload();
-}
-
-// GESTIÓN DE ADICIONALES
-async function guardarAdicional() {
-    const nombre = document.getElementById('add-nombre').value.trim();
-    const precio = parseFloat(document.getElementById('add-precio').value);
-
-    if (!nombre || isNaN(precio)) {
-        alert("Por favor, ingresa un nombre y un precio válido.");
-        return;
-    }
-
-    const { error } = await supabaseClient
-        .from('adicionales')
-        .insert([{ 
-            nombre: nombre, 
-            precio: precio, 
-            instagram_dueno: filtroInstagram 
-        }]);
-
-    if (error) {
-        alert("Error al guardar adicional: " + error.message);
-    } else {
-        alert("Adicional registrado con éxito.");
-        document.getElementById('add-nombre').value = "";
-        document.getElementById('add-precio').value = "";
-        descargarAdicionales(); // Recarga la tabla
-    }
-}
-
-async function descargarAdicionales() {
-    const { data, error } = await supabaseClient
-        .from('adicionales')
-        .select('*')
-        .eq('instagram_dueno', filtroInstagram);
-
-    if (!error && data) {
-        const lista = document.getElementById('lista-adicionales');
-        if (lista) {
-            lista.innerHTML = "";
-            data.forEach(a => {
-                lista.innerHTML += `
-                    <div class="bg-stone-950/60 p-3 rounded-xl text-xs border border-stone-900 text-stone-400 flex justify-between items-center">
-                        <span>${a.nombre} - <span class="text-amber-400">$${a.precio}</span></span>
-                        <button onclick="eliminarAdicional(${a.id})" class="text-red-500 hover:text-red-300 ml-2 font-bold">✕</button>
-                    </div>`;
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password,
             });
-        }
-    }
-}
 
-async function eliminarAdicional(id) {
-    const { error } = await supabaseClient.from('adicionales').delete().eq('id', id);
-    if (!error) {
-        descargarAdicionales();
-    } else {
-        alert("Error al eliminar: " + error.message);
-    }
-}
+            if (error) {
+                alert("Acceso denegado: " + error.message);
+            } else {
+                document.getElementById('auth-modal').classList.add('hidden');
+                location.reload();
+            }
+        }
+
+        async function ejecutarLogout() {
+            await supabaseClient.auth.signOut();
+            location.reload();
+        }
+
+        // GESTIÓN DE ADICIONALES
+        async function guardarAdicional() {
+            const nombre = document.getElementById('add-nombre').value.trim();
+            const precio = parseFloat(document.getElementById('add-precio').value);
+
+            if (!nombre || isNaN(precio)) {
+                alert("Por favor, ingresa un nombre y un precio válido.");
+                return;
+            }
+
+            const { error } = await supabaseClient
+                .from('adicionales')
+                .insert([{ 
+                    nombre: nombre, 
+                    precio: precio, 
+                    instagram_dueno: filtroInstagram 
+                }]);
+
+            if (error) {
+                alert("Error al guardar adicional: " + error.message);
+            } else {
+                alert("Adicional registrado con éxito.");
+                document.getElementById('add-nombre').value = "";
+                document.getElementById('add-precio').value = "";
+                descargarAdicionales(); 
+            }
+        }
+
+        async function descargarAdicionales() {
+            const { data, error } = await supabaseClient
+                .from('adicionales')
+                .select('*')
+                .eq('instagram_dueno', filtroInstagram);
+
+            if (!error && data) {
+                const lista = document.getElementById('lista-adicionales');
+                if (lista) {
+                    lista.innerHTML = "";
+                    data.forEach(a => {
+                        lista.innerHTML += `
+                            <div class="bg-stone-950/60 p-3 rounded-xl text-xs border border-stone-900 text-stone-400 flex justify-between items-center">
+                                <span>${a.nombre} - <span class="text-amber-400">$${a.precio}</span></span>
+                                <button onclick="eliminarAdicional(${a.id})" class="text-red-500 hover:text-red-300 ml-2 font-bold">✕</button>
+                            </div>`;
+                    });
+                }
+            }
+        }
+
+        async function eliminarAdicional(id) {
+            const { error } = await supabaseClient.from('adicionales').delete().eq('id', id);
+            if (!error) {
+                descargarAdicionales();
+            } else {
+                alert("Error al eliminar: " + error.message);
+            }
+        }
 
         // CONTROL NAV DEL PANEL
         function cambiarSeccionPanel(target) {
@@ -398,14 +390,9 @@ async function eliminarAdicional(id) {
             }
         }
 
-        function cambiarDuenoDeCanal() {
-            const val = document.getElementById('owner-instagram-input').value.trim().toLowerCase();
-            if(val) { filtroInstagram = val; descargarCatalogoDeSupabase(); }
-        }
-
         function renderizarTablaProductosBackend() {
             const tbody = document.getElementById('tabla-productos-body'); if(!tbody) return; tbody.innerHTML = "";
-            if(baseProductos.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-stone-600 font-mono">No hay elementos registrados para este canal.</td></tr>`; return; }
+            if(baseProductos.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-stone-600 font-mono">No hay elementos registrados para este canal.</td></tr>`; return; }
             
             baseProductos.forEach(p => {
                 tbody.innerHTML += `<tr class="border-b border-stone-900/40 hover:bg-stone-900/20 transition-colors">
@@ -421,44 +408,42 @@ async function eliminarAdicional(id) {
         }
 
         async function inyectarProductoASupabase() {
-    const idEdicion = document.getElementById('prod-id-edicion').value;
-    const t = document.getElementById('prod-titulo').value.trim();
-    const c = document.getElementById('prod-categoria').value;
-    const p = parseFloat(document.getElementById('prod-precio').value);
-    const d = document.getElementById('prod-descripcion').value.trim();
+            const idEdicion = document.getElementById('prod-id-edicion').value;
+            const t = document.getElementById('prod-titulo').value.trim();
+            const c = document.getElementById('prod-categoria').value;
+            const p = parseFloat(document.getElementById('prod-precio').value);
+            const d = document.getElementById('prod-descripcion').value.trim();
 
-    // Hemos quitado "isNaN(s)" de la validación
-    if (!t || isNaN(p)) { alert("Complete todos los campos requeridos."); return; }
-    const sliderValidos = fotosSliderArray.filter(f => f !== "");
+            if (!t || isNaN(p)) { alert("Complete todos los campos requeridos."); return; }
+            const sliderValidos = fotosSliderArray.filter(f => f !== "");
 
-    // Hemos quitado "stock: s" del payload
-    const payload = {
-        titulo: t, 
-        categoria: c || "General", 
-        descripcion: d, 
-        precio: p, 
-        instagram_dueno: filtroInstagram, 
-        imagen_url: sliderValidos[0] || "",
-        imagenes_slider: JSON.stringify(sliderValidos)
-    };
+            const payload = {
+                titulo: t, 
+                categoria: c || "General", 
+                descripcion: d, 
+                precio: p, 
+                instagram_dueno: filtroInstagram, 
+                imagen_url: sliderValidos[0] || "",
+                imagenes_slider: JSON.stringify(sliderValidos)
+            };
 
-    let error;
-    if (idEdicion) { 
-        const res = await supabaseClient.from('productos').update(payload).eq('id', idEdicion); 
-        error = res.error;
-    } else { 
-        const res = await supabaseClient.from('productos').insert([payload]); 
-        error = res.error;
-    }
+            let error;
+            if (idEdicion) { 
+                const res = await supabaseClient.from('productos').update(payload).eq('id', idEdicion); 
+                error = res.error;
+            } else { 
+                const res = await supabaseClient.from('productos').insert([payload]); 
+                error = res.error;
+            }
 
-    if (error) {
-        alert("Error de sincronización: " + error.message);
-    } else {
-        alert("Sincronizado con éxito."); 
-        limpiarFormularioCompleto(); 
-        descargarCatalogoDeSupabase();
-    }
-}
+            if (error) {
+                alert("Error de sincronización: " + error.message);
+            } else {
+                alert("Sincronizado con éxito."); 
+                limpiarFormularioCompleto(); 
+                descargarCatalogoDeSupabase();
+            }
+        }
 
         function prepararEdicionProducto(idProducto) {
             const prod = baseProductos.find(p => p.id === idProducto); if(!prod) return;
@@ -466,7 +451,6 @@ async function eliminarAdicional(id) {
             document.getElementById('prod-titulo').value = prod.titulo;
             document.getElementById('prod-categoria').value = prod.categoria;
             document.getElementById('prod-precio').value = prod.precio;
-            document.getElementById('prod-stock').value = prod.stock;
             document.getElementById('prod-descripcion').value = prod.descripcion || "";
             
             fotosSliderArray = Array(5).fill("");
@@ -490,7 +474,6 @@ async function eliminarAdicional(id) {
             document.getElementById('prod-id-edicion').value = ""; 
             document.getElementById('prod-titulo').value = "";
             document.getElementById('prod-precio').value = ""; 
-            document.getElementById('prod-stock').value = ""; 
             document.getElementById('prod-descripcion').value = "";
             fotosSliderArray = Array(5).fill("");
             document.getElementById('form-titulo-accion').innerText = "Materializador de Productos";
@@ -536,59 +519,70 @@ async function eliminarAdicional(id) {
         function actualizarContadoresMedia() {
             document.getElementById('contador-fotos-cargadas').innerText = `${fotosSliderArray.filter(f=>f!=="").length} / 5`;
         }
- // 1. Renderizar con botón de eliminar
-function renderizarCategorias() {
-    const select = document.getElementById('prod-categoria'), 
-          lista = document.getElementById('lista-categorias');
-    if(!select || !lista) return; 
-    
-    select.innerHTML = ""; 
-    lista.innerHTML = "";
-    
-    categoriasDB.forEach(c => {
-        select.innerHTML += `<option value="${c}">${c}</option>`;
-        lista.innerHTML += `
-            <div class="bg-stone-950/60 p-3 rounded-xl text-xs border border-stone-900 text-stone-400 flex justify-between items-center">
-                <span>${c}</span>
-                <button onclick="eliminarCategoria('${c}')" class="text-red-500 hover:text-red-300 ml-2 font-bold">✕</button>
-            </div>`;
-    });
-}
 
-// 2. Agregar nueva categoría persistente
-async function agregarCategoria() { 
-    const inp = document.getElementById('cat-nombre'); 
-    const nom = inp.value.trim(); 
-    
-    if(nom && !categoriasDB.includes(nom)) { 
-        const { error } = await supabaseClient
-            .from('categorias')
-            .insert([{ nombre: nom, instagram_dueno: filtroInstagram }]);
-            
-        if (!error) {
-            inp.value = ""; 
-            await descargarCategoriasDesdeSupabase(); // Recarga y renderiza
-        } else {
-            alert("Error al guardar: " + error.message);
+        // GESTIÓN DE CATEGORÍAS
+        async function descargarCategoriasDesdeSupabase() {
+            const { data, error } = await supabaseClient
+                .from('categorias')
+                .select('*')
+                .eq('instagram_dueno', filtroInstagram);
+            if (!error && data) {
+                categoriasDB = data.map(c => c.nombre);
+                renderizarCategorias();
+            }
         }
-    }
-}
 
-// 3. Nueva función para eliminar
-async function eliminarCategoria(nombre) {
-    const { error } = await supabaseClient
-        .from('categorias')
-        .delete()
-        .eq('nombre', nombre)
-        .eq('instagram_dueno', filtroInstagram);
+        function renderizarCategorias() {
+            const select = document.getElementById('prod-categoria'), 
+                  lista = document.getElementById('lista-categorias');
+            if(!select || !lista) return; 
+            
+            select.innerHTML = ""; 
+            lista.innerHTML = "";
+            
+            categoriasDB.forEach(c => {
+                select.innerHTML += `<option value="${c}">${c}</option>`;
+                lista.innerHTML += `
+                    <div class="bg-stone-950/60 p-3 rounded-xl text-xs border border-stone-900 text-stone-400 flex justify-between items-center">
+                        <span>${c}</span>
+                        <button onclick="eliminarCategoria('${c}')" class="text-red-500 hover:text-red-300 ml-2 font-bold">✕</button>
+                    </div>`;
+            });
+        }
 
-    if (!error) {
-        await descargarCategoriasDesdeSupabase(); // Recarga y renderiza
-    } else {
-        alert("Error al eliminar: " + error.message);
-    }
-}
+        async function agregarCategoria() { 
+            const inp = document.getElementById('cat-nombre'); 
+            const nom = inp.value.trim(); 
+            
+            if(nom && !categoriasDB.includes(nom)) { 
+                const { error } = await supabaseClient
+                    .from('categorias')
+                    .insert([{ nombre: nom, instagram_dueno: filtroInstagram }]);
+                    
+                if (!error) {
+                    inp.value = ""; 
+                    await descargarCategoriasDesdeSupabase(); 
+                } else {
+                    alert("Error al guardar: " + error.message);
+                }
+            }
+        }
 
+        async function eliminarCategoria(nombre) {
+            const { error } = await supabaseClient
+                .from('categorias')
+                .delete()
+                .eq('nombre', nombre)
+                .eq('instagram_dueno', filtroInstagram);
+
+            if (!error) {
+                await descargarCategoriasDesdeSupabase(); 
+            } else {
+                alert("Error al eliminar: " + error.message);
+            }
+        }
+
+        // MÉTODOS DE PAGO
         function alternarCamposPago() {
             const plataforma = document.getElementById('pago-plataforma').value;
             const wrapper = document.getElementById('wrapper-campos-dinamicos');
@@ -759,116 +753,103 @@ async function eliminarCategoria(nombre) {
             }
         }
 
-        // A. CORRECCIÓN: Función completa y bien cerrada
-// A. CORRECCIÓN: Función completa, limpia y filtrada por owner_instagram
-async function descargarHistorialDeOrdenes() {
-    const { data, error } = await supabaseClient
-        .from('ordenes_vip')
-        .select('*')
-        .eq('owner_instagram', filtroInstagram) // Filtra correctamente por el canal actual
-        .order('created_at', { ascending: false });
+        // ÓRDENES VIP Y ESTADOS
+        async function descargarHistorialDeOrdenes() {
+            const { data, error } = await supabaseClient
+                .from('ordenes_vip')
+                .select('*')
+                .eq('owner_instagram', filtroInstagram) 
+                .order('created_at', { ascending: false });
 
-    if (!error && data) {
-        const tbody = document.getElementById('tabla-ordenes-body'); 
-        if (!tbody) return;
-        
-        tbody.innerHTML = "";
-        
-        if (data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-stone-600 font-mono">No hay órdenes VIP registradas para este canal.</td></tr>`;
-            return;
+            if (!error && data) {
+                const tbody = document.getElementById('tabla-ordenes-body'); 
+                if (!tbody) return;
+                
+                tbody.innerHTML = "";
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-stone-600 font-mono">No hay órdenes VIP registradas para este canal.</td></tr>`;
+                    return;
+                }
+
+                data.forEach(o => {
+                    const fechaFormateada = o.created_at ? new Date(o.created_at).toLocaleDateString() : 'N/A';
+                    const estadoActual = (o.estado || 'pendiente').toLowerCase();
+                    const montoFinal = o.total !== null && o.total !== undefined ? o.total : (o.monto_total || 0);
+                    const refFinal = o.referencia || o.referencia_bancaria || 'N/A';
+                    
+                    tbody.innerHTML += `
+                        <tr class="border-b border-stone-900/40 hover:bg-stone-900/10 transition-colors">
+                            <td class="p-3 font-mono text-amber-400 font-bold">#${o.id}</td>
+                            <td class="p-3 text-stone-400">${fechaFormateada}</td>
+                            <td class="p-3 text-white truncate max-w-xs">${o.productos || 'Sin detalles'}</td>
+                            <td class="p-3 font-mono font-bold text-stone-200">$${parseFloat(montoFinal).toFixed(2)}</td>
+                            <td class="p-3 font-mono text-stone-500">${refFinal}</td>
+                            <td class="p-3 text-right">
+                                <select 
+                                    onchange="actualizarEstadoOrden(${o.id}, this.value)" 
+                                    class="bg-stone-950 border border-stone-700 text-[10px] px-2 py-1 rounded-md font-bold uppercase cursor-pointer outline-none transition-colors 
+                                    ${estadoActual === 'verificado' ? 'text-green-500 border-green-900/50' : 
+                                      estadoActual === 'cancelado' ? 'text-red-500 border-red-900/50' : 
+                                      'text-amber-400 border-stone-700'}"
+                                >
+                                    <option value="pendiente" ${estadoActual === 'pendiente' || estadoActual === 'pendient' ? 'selected' : ''}>Pendiente</option>
+                                    <option value="verificado" ${estadoActual === 'verificado' ? 'selected' : ''}>Verificado</option>
+                                    <option value="cancelado" ${estadoActual === 'cancelado' ? 'selected' : ''}>Cancelado</option>
+                                </select>
+                            </td>
+                        </tr>`;
+                });
+            } else if (error) {
+                console.error("Error al descargar órdenes:", error.message);
+                alert("Error al cargar las órdenes: " + error.message);
+            }
         }
 
-        data.forEach(o => {
-            const fechaFormateada = o.created_at ? new Date(o.created_at).toLocaleDateString() : 'N/A';
-            const estadoActual = (o.estado || 'pendiente').toLowerCase();
-            const montoFinal = o.total !== null && o.total !== undefined ? o.total : (o.monto_total || 0);
-            const refFinal = o.referencia || o.referencia_bancaria || 'N/A';
-            
-            tbody.innerHTML += `
-                <tr class="border-b border-stone-900/40 hover:bg-stone-900/10 transition-colors">
-                    <td class="p-3 font-mono text-amber-400 font-bold">#${o.id}</td>
-                    <td class="p-3 text-stone-400">${fechaFormateada}</td>
-                    <td class="p-3 text-white truncate max-w-xs">${o.productos || 'Sin detalles'}</td>
-                    <td class="p-3 font-mono font-bold text-stone-200">$${parseFloat(montoFinal).toFixed(2)}</td>
-                    <td class="p-3 font-mono text-stone-500">${refFinal}</td>
-                    <td class="p-3 text-right">
-                        <select 
-                            onchange="actualizarEstadoOrden(${o.id}, this.value)" 
-                            class="bg-stone-950 border border-stone-700 text-[10px] px-2 py-1 rounded-md font-bold uppercase cursor-pointer outline-none transition-colors 
-                            ${estadoActual === 'verificado' ? 'text-green-500 border-green-900/50' : 
-                              estadoActual === 'cancelado' ? 'text-red-500 border-red-900/50' : 
-                              'text-amber-400 border-stone-700'}"
-                        >
-                            <option value="pendiente" ${estadoActual === 'pendiente' || estadoActual === 'pendient' ? 'selected' : ''}>Pendiente</option>
-                            <option value="verificado" ${estadoActual === 'verificado' ? 'selected' : ''}>Verificado</option>
-                            <option value="cancelado" ${estadoActual === 'cancelado' ? 'selected' : ''}>Cancelado</option>
-                        </select>
-                    </td>
-                </tr>`;
-        });
-    } else if (error) {
-        console.error("Error al descargar órdenes:", error.message);
-        alert("Error al cargar las órdenes: " + error.message);
-    }
-}
+        async function actualizarEstadoOrden(id, nuevoEstado) {
+            const { error } = await supabaseClient
+                .from('ordenes_vip')
+                .update({ estado: nuevoEstado })
+                .eq('id', id);
 
-// Función para guardar adicionales
-async function guardarAdicional() {
-    const nombre = document.getElementById('add-nombre').value.trim();
-    const precio = parseFloat(document.getElementById('add-precio').value);
+            if (error) {
+                alert("Error al actualizar estado: " + error.message);
+            } else {
+                descargarHistorialDeOrdenes();
+            }
+        }
 
-    if (!nombre || isNaN(precio)) {
-        alert("Por favor, ingresa un nombre y un precio válido.");
-        return;
-    }
+        // CONFIGURACIÓN WHATSAPP EXTRAS
+        async function descargarAjusteWhatsApp() {
+            const { data, error } = await supabaseClient
+                .from('configuraciones')
+                .select('whatsapp')
+                .eq('instagram_dueno', filtroInstagram)
+                .single();
 
-    const { error } = await supabaseClient
-        .from('adicionales')
-        .insert([{ 
-            nombre: nombre, 
-            precio: precio, 
-            instagram_dueno: filtroInstagram 
-        }]);
+            if (!error && data) {
+                const input = document.getElementById('config-whatsapp-num');
+                if (input) input.value = data.whatsapp || '';
+            }
+        }
 
-    if (error) {
-        alert("Error al guardar adicional: " + error.message);
-    } else {
-        alert("Adicional registrado con éxito.");
-        document.getElementById('add-nombre').value = "";
-        document.getElementById('add-precio').value = "";
-    }
-}
-// Descargar y mostrar adicionales
-async function descargarAdicionales() {
-    const { data, error } = await supabaseClient
-        .from('adicionales')
-        .select('*')
-        .eq('instagram_dueno', filtroInstagram);
+        async function guardarAjusteWhatsAppEnSupabase() {
+            const numero = document.getElementById('config-whatsapp-num').value.trim();
+            if (!numero) {
+                alert("Por favor ingresa un número de WhatsApp válido.");
+                return;
+            }
 
-    if (!error && data) {
-        const lista = document.getElementById('lista-adicionales');
-        lista.innerHTML = "";
-        data.forEach(a => {
-            lista.innerHTML += `
-                <div class="bg-stone-950/60 p-3 rounded-xl text-xs border border-stone-900 text-stone-400 flex justify-between items-center">
-                    <span>${a.nombre} - <span class="text-amber-400">$${a.precio}</span></span>
-                    <button onclick="eliminarAdicional(${a.id})" class="text-red-500 hover:text-red-300 ml-2 font-bold">✕</button>
-                </div>`;
-        });
-    }
-}
+            const { error } = await supabaseClient
+                .from('configuraciones')
+                .upsert({ instagram_dueno: filtroInstagram, whatsapp: numero }, { onConflict: 'instagram_dueno' });
 
-// Eliminar adicional
-async function eliminarAdicional(id) {
-    const { error } = await supabaseClient.from('adicionales').delete().eq('id', id);
-    if (!error) {
-        descargarAdicionales();
-    } else {
-        alert("Error al eliminar: " + error.message);
-    }
-}
-
+            if (error) {
+                alert("Error al guardar WhatsApp: " + error.message);
+            } else {
+                alert("Canal WhatsApp sincronizado con éxito.");
+            }
+        }
     </script>
 </body>
 </html>
