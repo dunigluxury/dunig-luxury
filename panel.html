@@ -47,7 +47,7 @@
             
             <div class="flex items-center gap-3">
                 <a href="index.html" class="p-3 rounded-xl border border-stone-800 text-stone-400 hover:text-white transition-all text-xs font-bold uppercase tracking-wider font-futurista bg-stone-900/30 flex items-center gap-2 cursor-pointer">
-                    <a href="https://dunigluxury.github.io/dunig-luxury/" target="_blank" class="flex items-center gap-2 ...">
+                    <a href="https://dunigluxury.github.io/d-unigluxury/" target="_blank" class="flex items-center gap-2 ...">
     <i data-lucide="eye" class="w-4 h-4 text-amber-500"></i> Ver Vitrina
 </a>
                 <button onclick="ejecutarLogout()" class="p-3 rounded-xl border border-red-900/30 text-red-400 hover:text-red-300 transition-all text-xs font-bold uppercase tracking-wider font-futurista bg-stone-900/30 flex items-center gap-2 cursor-pointer">
@@ -253,8 +253,8 @@
     <footer class="border-t border-stone-950 bg-black/60 p-4 text-center text-[10px] text-stone-600 font-mono tracking-widest mt-12">© 2026 D'UNIG LUXURY PANEL. TODOS LOS DERECHOS RESERVADOS.</footer>
 
     <script>
-        const SUPABASE_URL = "https://xikiwlmxhnrymwmbsyug.supabase.co"; 
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpa2l3bG14aG5yeW13bWJzeXVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0NDg3NTMsImV4cCI6MjEwMTAyNDc1M30.1HkgasBvA763iO6u0FnEhOIiCoTkBLJ8O8fL1WpGeDM"; 
+        const SUPABASE_URL = "https://vcymfspywjabnbddbruh.supabase.co"; 
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjeW1mc3B5d2phYm5iZGRicnVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2Njg1MjIsImV4cCI6MjEwMDI0NDUyMn0.bXamCrThn-oGgK_6Ol2w3cSoxUd0pJDHW0_UkPqGEuA"; 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Lógica de seguridad integrada
@@ -764,7 +764,6 @@ async function descargarHistorialDeOrdenes() {
     const { data, error } = await supabaseClient
         .from('ordenes_vip')
         .select('*')
-        .eq('owner_instagram', filtroInstagram) // Usando la columna correcta de tu esquema
         .order('created_at', { ascending: false });
 
     if (!error && data) {
@@ -772,43 +771,33 @@ async function descargarHistorialDeOrdenes() {
         if (!tbody) return;
         
         tbody.innerHTML = "";
-        
-        if (data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-stone-600 font-mono">No hay órdenes VIP registradas para este canal.</td></tr>`;
-            return;
-        }
-
         data.forEach(o => {
-            const fechaFormateada = o.created_at ? new Date(o.created_at).toLocaleDateString() : 'N/A';
-            const estadoActual = (o.estado || 'pendiente').toLowerCase();
-            const montoFinal = o.total !== null && o.total !== undefined ? o.total : (o.monto_total || 0);
-            const refFinal = o.referencia || o.referencia_bancaria || 'N/A';
+            const fechaFormateada = new Date(o.created_at).toLocaleDateString();
             
-            tbody.innerHTML += `
-                <tr class="border-b border-stone-900/40 hover:bg-stone-900/10 transition-colors">
-                    <td class="p-3 font-mono text-amber-400 font-bold">#${o.id}</td>
-                    <td class="p-3 text-stone-400">${fechaFormateada}</td>
-                    <td class="p-3 text-white truncate max-w-xs">${o.productos || 'Sin detalles'}</td>
-                    <td class="p-3 font-mono font-bold text-stone-200">$${parseFloat(montoFinal).toFixed(2)}</td>
-                    <td class="p-3 font-mono text-stone-500">${refFinal}</td>
-                    <td class="p-3 text-right">
-                        <select 
-                            onchange="actualizarEstadoOrden(${o.id}, this.value)" 
-                            class="bg-stone-950 border border-stone-700 text-[10px] px-2 py-1 rounded-md font-bold uppercase cursor-pointer outline-none transition-colors 
-                            ${estadoActual === 'verificado' ? 'text-green-500 border-green-900/50' : 
-                              estadoActual === 'cancelado' ? 'text-red-500 border-red-900/50' : 
-                              'text-amber-400 border-stone-700'}"
-                        >
-                            <option value="pendiente" ${estadoActual === 'pendiente' || estadoActual === 'pendient' ? 'selected' : ''}>Pendiente</option>
-                            <option value="verificado" ${estadoActual === 'verificado' ? 'selected' : ''}>Verificado</option>
-                            <option value="cancelado" ${estadoActual === 'cancelado' ? 'selected' : ''}>Cancelado</option>
-                        </select>
-                    </td>
-                </tr>`;
+            tbody.innerHTML += `<tr class="border-b border-stone-900/40 hover:bg-stone-900/10 transition-colors">
+                <td class="p-3 font-mono text-amber-400 font-bold">#${o.id}</td>
+                <td class="p-3 text-stone-400">${fechaFormateada}</td>
+                <td class="p-3 text-white truncate max-w-xs">${o.productos}</td>
+                <td class="p-3 font-mono font-bold text-stone-200">$${parseFloat(o.total || 0).toFixed(2)}</td>
+                <td class="p-3 font-mono text-stone-500">${o.referencia || 'N/A'}</td>
+                // ... dentro del forEach de descargarHistorialDeOrdenes ...
+<td class="p-3 text-right">
+    <select 
+        onchange="actualizarEstadoOrden(${o.id}, this.value)" 
+        class="bg-stone-950 border border-stone-700 text-[10px] px-2 py-1 rounded-md font-bold uppercase cursor-pointer outline-none transition-colors 
+        ${o.estado === 'verificado' ? 'text-green-500 border-green-900/50' : 
+          o.estado === 'cancelado' ? 'text-red-500 border-red-900/50' : 
+          'text-amber-400 border-stone-700'}"
+    >
+        <option value="pendiente" ${o.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
+        <option value="verificado" ${o.estado === 'verificado' ? 'selected' : ''}>Verificado</option>
+        <option value="cancelado" ${o.estado === 'cancelado' ? 'selected' : ''}>Cancelado</option>
+    </select>
+</td>
+            </tr>`;
         });
     } else if (error) {
         console.error("Error al descargar órdenes:", error.message);
-        alert("Error al cargar las órdenes VIP: " + error.message);
     }
 }
 
