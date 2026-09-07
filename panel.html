@@ -35,42 +35,32 @@
         </div>
     </div>
 
-    <header class="bg-black/90 backdrop-blur-xl border-b border-stone-900 sticky top-0 z-50 px-4">
-    <!-- max-w-5xl y mx-auto evitan que los elementos se estiren demasiado a los extremos -->
-    <div class="max-w-5xl mx-auto h-20 flex items-center justify-between">
-        
-        <!-- Logo / Título del Panel -->
-        <div class="flex items-center gap-3">
-            <div class="border border-amber-500/30 p-2 rounded-xl bg-stone-950">
-                <i data-lucide="shield-check" class="w-5 h-5 text-amber-400"></i>
+    <header class="bg-black/40 backdrop-blur-xl border-b border-stone-900/80 sticky top-0 z-40 px-4">
+        <div class="max-w-7xl mx-auto h-24 flex items-center justify-between relative z-10">
+            <div class="flex items-center space-x-4">
+                <div class="border border-amber-500/30 p-3 rounded-xl bg-stone-950/80 glow-gold"><i data-lucide="terminal" class="w-7 h-7 text-amber-400"></i></div>
+                <div>
+                    <h1 class="text-2xl font-black tracking-[0.2em] text-white font-futurista">Vendaval<span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-500">house</span></h1>
+                    <p class="text-[9px] text-amber-500/70 uppercase tracking-[0.3em] font-bold font-futurista">PANEL DE CONTROL</p>
+                </div>
             </div>
-            <div>
-                <h1 class="text-base sm:text-lg font-black tracking-widest text-white font-futurista uppercase">
-                   Vendaval<span class="text-amber-400">house</span>
-                </h1>
-                <p class="text-[7px] text-amber-500/70 uppercase tracking-[0.2em] font-bold font-futurista">
-                    PANEL DE CONTROL
-                </p>
+            
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="p-3 rounded-xl border border-stone-800 text-stone-400 hover:text-white transition-all text-xs font-bold uppercase tracking-wider font-futurista bg-stone-900/30 flex items-center gap-2 cursor-pointer">
+                    <a href="https://dunigluxury.github.io/dunig-luxury/" target="_blank" class="flex items-center gap-2 ...">
+    <i data-lucide="eye" class="w-4 h-4 text-amber-500"></i> Ver Vitrina
+</a>
+                <button onclick="ejecutarLogout()" class="p-3 rounded-xl border border-red-900/30 text-red-400 hover:text-red-300 transition-all text-xs font-bold uppercase tracking-wider font-futurista bg-stone-900/30 flex items-center gap-2 cursor-pointer">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> Salir
+                </button>
+                <div id="contenedor-instagram" class="hidden flex items-center justify-center bg-stone-950/90 border border-stone-800 p-2 rounded-xl w-40 h-10">
+    <span class="text-xs text-amber-400 font-bold">@</span>
+    <span id="owner-instagram-display" class="text-xs font-bold text-white ml-2">luxury_store</span>
+</div>
             </div>
         </div>
+    </header>
 
-        <!-- Botones Reducidos y más Cercanos al Centro -->
-        <div class="flex items-center gap-2">
-            <!-- Botón Ver Vitrina -->
-            <button onclick="cambiarPantalla('vitrina')" class="bg-stone-950 border border-amber-500/30 hover:border-amber-500/60 px-3 py-2 rounded-xl flex items-center gap-1.5 text-[11px] font-futurista uppercase font-bold text-amber-400 cursor-pointer transition-all">
-                <i data-lucide="eye" class="w-3.5 h-3.5"></i>
-                <span class="hidden sm:inline">Ver </span>Vitrina
-            </button>
-
-            <!-- Botón Salir -->
-            <button onclick="cambiarPantalla('login')" class="bg-stone-950 border border-red-500/30 hover:border-red-500/60 px-3 py-2 rounded-xl flex items-center gap-1.5 text-[11px] font-futurista uppercase font-bold text-red-400 cursor-pointer transition-all">
-                <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
-                <span>Salir</span>
-            </button>
-        </div>
-
-    </div>
-</header>
     <div class="max-w-7xl w-full mx-auto px-4 mt-8 relative z-10">
         <div class="grid grid-cols-2 md:grid-cols-3 gap-3 bg-stone-950/80 p-1.5 rounded-xl border border-stone-900 w-full">
             <button id="tab-btn-principal" onclick="cambiarSeccionPanel('principal')" class="py-3 text-center text-[11px] uppercase tracking-widest font-futurista font-black rounded-lg bg-gradient-to-r from-amber-500 to-amber-400 text-black shadow-lg cursor-pointer transition-all">Gestión General</button>
@@ -770,12 +760,10 @@ async function eliminarCategoria(nombre) {
         }
 
         // A. CORRECCIÓN: Función completa y bien cerrada
-// A. CORRECCIÓN: Función completa, limpia y filtrada por owner_instagram
 async function descargarHistorialDeOrdenes() {
     const { data, error } = await supabaseClient
         .from('ordenes_vip')
         .select('*')
-        .eq('owner_instagram', filtroInstagram) // Filtra correctamente por el canal actual
         .order('created_at', { ascending: false });
 
     if (!error && data) {
@@ -783,43 +771,96 @@ async function descargarHistorialDeOrdenes() {
         if (!tbody) return;
         
         tbody.innerHTML = "";
-        
-        if (data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-stone-600 font-mono">No hay órdenes VIP registradas para este canal.</td></tr>`;
-            return;
-        }
-
         data.forEach(o => {
-            const fechaFormateada = o.created_at ? new Date(o.created_at).toLocaleDateString() : 'N/A';
-            const estadoActual = (o.estado || 'pendiente').toLowerCase();
-            const montoFinal = o.total !== null && o.total !== undefined ? o.total : (o.monto_total || 0);
-            const refFinal = o.referencia || o.referencia_bancaria || 'N/A';
+            const fechaFormateada = new Date(o.created_at).toLocaleDateString();
             
-            tbody.innerHTML += `
-                <tr class="border-b border-stone-900/40 hover:bg-stone-900/10 transition-colors">
-                    <td class="p-3 font-mono text-amber-400 font-bold">#${o.id}</td>
-                    <td class="p-3 text-stone-400">${fechaFormateada}</td>
-                    <td class="p-3 text-white truncate max-w-xs">${o.productos || 'Sin detalles'}</td>
-                    <td class="p-3 font-mono font-bold text-stone-200">$${parseFloat(montoFinal).toFixed(2)}</td>
-                    <td class="p-3 font-mono text-stone-500">${refFinal}</td>
-                    <td class="p-3 text-right">
-                        <select 
-                            onchange="actualizarEstadoOrden(${o.id}, this.value)" 
-                            class="bg-stone-950 border border-stone-700 text-[10px] px-2 py-1 rounded-md font-bold uppercase cursor-pointer outline-none transition-colors 
-                            ${estadoActual === 'verificado' ? 'text-green-500 border-green-900/50' : 
-                              estadoActual === 'cancelado' ? 'text-red-500 border-red-900/50' : 
-                              'text-amber-400 border-stone-700'}"
-                        >
-                            <option value="pendiente" ${estadoActual === 'pendiente' || estadoActual === 'pendient' ? 'selected' : ''}>Pendiente</option>
-                            <option value="verificado" ${estadoActual === 'verificado' ? 'selected' : ''}>Verificado</option>
-                            <option value="cancelado" ${estadoActual === 'cancelado' ? 'selected' : ''}>Cancelado</option>
-                        </select>
-                    </td>
-                </tr>`;
+            tbody.innerHTML += `<tr class="border-b border-stone-900/40 hover:bg-stone-900/10 transition-colors">
+                <td class="p-3 font-mono text-amber-400 font-bold">#${o.id}</td>
+                <td class="p-3 text-stone-400">${fechaFormateada}</td>
+                <td class="p-3 text-white truncate max-w-xs">${o.productos}</td>
+                <td class="p-3 font-mono font-bold text-stone-200">$${parseFloat(o.total || 0).toFixed(2)}</td>
+                <td class="p-3 font-mono text-stone-500">${o.referencia || 'N/A'}</td>
+                // ... dentro del forEach de descargarHistorialDeOrdenes ...
+<td class="p-3 text-right">
+    <select 
+        onchange="actualizarEstadoOrden(${o.id}, this.value)" 
+        class="bg-stone-950 border border-stone-700 text-[10px] px-2 py-1 rounded-md font-bold uppercase cursor-pointer outline-none transition-colors 
+        ${o.estado === 'verificado' ? 'text-green-500 border-green-900/50' : 
+          o.estado === 'cancelado' ? 'text-red-500 border-red-900/50' : 
+          'text-amber-400 border-stone-700'}"
+    >
+        <option value="pendiente" ${o.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
+        <option value="verificado" ${o.estado === 'verificado' ? 'selected' : ''}>Verificado</option>
+        <option value="cancelado" ${o.estado === 'cancelado' ? 'selected' : ''}>Cancelado</option>
+    </select>
+</td>
+            </tr>`;
         });
     } else if (error) {
         console.error("Error al descargar órdenes:", error.message);
-        alert("Error al cargar las órdenes: " + error.message);
+    }
+}
+
+// B. Función para actualizar (Esta es la que hace el cambio en la BD)
+async function actualizarEstadoOrden(idOrden, nuevoEstado) {
+    const { error } = await supabaseClient
+        .from('ordenes_vip')
+        .update({ estado: nuevoEstado })
+        .eq('id', idOrden);
+
+    if (!error) {
+        await descargarHistorialDeOrdenes();
+    } else {
+        alert("Error al actualizar estado: " + error.message);
+    }
+}
+
+// C. Función para el WhatsApp (Esta ya la tenías bien)
+async function descargarAjusteWhatsApp() {
+    const { data, error } = await supabaseClient
+        .from('ajustes_sistema')
+        .select('valor')
+        .eq('id', 'whatsapp_notificaciones')
+        .single();
+    
+    if(!error && data) {
+        document.getElementById('config-whatsapp-num').value = data.valor;
+    }
+}
+
+        async function guardarAjusteWhatsAppEnSupabase() {
+            const num = document.getElementById('config-whatsapp-num').value.trim().replace(/[^0-9]/g, "");
+            if(!num || num.length < 10) { alert("Ingrese un número válido con código de país."); return; }
+
+            const { error } = await supabaseClient
+                .from('ajustes_sistema')
+                .upsert({ id: 'whatsapp_notificaciones', valor: num, updated_at: new Date().toISOString() });
+
+            if(!error) { alert("¡Canal WhatsApp guardado con éxito!"); } else { alert("Error al guardar: " + error.message); }
+        }
+// Cargar categorías reales desde Supabase
+async function descargarCategoriasDesdeSupabase() {
+    const { data, error } = await supabaseClient
+        .from('categorias')
+        .select('nombre')
+        .eq('instagram_dueno', filtroInstagram);
+
+    if (data) {
+        categoriasDB = data.map(c => c.nombre);
+        renderizarCategorias(); // Ahora renderiza lo que viene de la BD
+    }
+}
+
+// Guardar nueva categoría en Supabase
+async function guardarCategoriaEnSupabase(nombreCategoria) {
+    const { error } = await supabaseClient
+        .from('categorias')
+        .insert([{ nombre: nombreCategoria, instagram_dueno: filtroInstagram }]);
+
+    if (!error) {
+        await descargarCategoriasDesdeSupabase(); // Recarga todo al terminar
+    } else {
+        alert("Error al guardar: " + error.message);
     }
 }
 
