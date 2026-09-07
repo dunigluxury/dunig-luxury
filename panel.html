@@ -52,13 +52,13 @@
 
         <!-- Contenedor de Botones Centrados Verticalmente -->
         <div class="flex items-center gap-3">
-            <button class="border border-amber-500/30 hover:border-amber-500/60 px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs font-futurista uppercase font-bold text-amber-400 cursor-pointer transition-all bg-black/40">
-                <i data-lucide="eye" class="w-4 h-4"></i> Ver Vitrina
-            </button>
-            <button class="border border-red-500/30 hover:border-red-500/60 px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs font-futurista uppercase font-bold text-red-400 cursor-pointer transition-all bg-black/40">
-                <i data-lucide="log-out" class="w-4 h-4"></i> Salir
-            </button>
-        </div>
+    <button onclick="cambiarPantalla('vitrina')" class="border border-amber-500/30 hover:border-amber-500/60 px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs font-futurista uppercase font-bold text-amber-400 cursor-pointer transition-all bg-black/40 relative z-20">
+        <i data-lucide="eye" class="w-4 h-4"></i> Ver Vitrina
+    </button>
+    <button onclick="cerrarSesion()" class="border border-red-500/30 hover:border-red-500/60 px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs font-futurista uppercase font-bold text-red-400 cursor-pointer transition-all bg-black/40 relative z-20">
+        <i data-lucide="log-out" class="w-4 h-4"></i> Salir
+    </button>
+</div>
 
     </div>
 </header>
