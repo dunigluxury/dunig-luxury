@@ -36,40 +36,32 @@
     </div>
 
     <header class="bg-black/80 backdrop-blur-xl border-b border-stone-900 sticky top-0 z-50 px-4">
-    <div class="max-w-7xl mx-auto h-20 flex items-center justify-between">
-        
-        <!-- Logo / Título del Panel (Alineado al centro verticalmente) -->
-        <div class="flex items-center gap-3">
-            <div class="border border-amber-500/30 p-2.5 rounded-2xl bg-stone-950 shadow-[0_0_20px_rgba(229,193,88,0.15)] glow-gold">
-                <i data-lucide="shield-check" class="w-6 h-6 text-amber-400"></i>
+        <div class="max-w-7xl mx-auto h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="cambiarPantalla('vitrina')">
+                <div class="border border-amber-500/30 p-2.5 rounded-2xl bg-stone-950 shadow-[0_0_20px_rgba(229,193,88,0.15)] glow-gold">
+                    <i data-lucide="cpu" class="w-6 h-6 text-amber-400"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-black tracking-widest text-white font-futurista">
+                       Vendaval<span class="text-amber-400">house</span>
+                    </h1>
+                    <p class="text-[8px] text-amber-500/70 uppercase tracking-[0.25em] font-bold font-futurista">
+                        MERIDA VENEZUELA
+                    </p>
+                </div>
             </div>
-            <div>
-                <h1 class="text-lg font-black tracking-widest text-white font-futurista uppercase">
-                   Vendaval<span class="text-amber-400">house</span>
-                </h1>
-                <p class="text-[8px] text-amber-500/70 uppercase tracking-[0.25em] font-bold font-futurista">
-                    PANEL DE CONTROL
-                </p>
+
+            <div class="flex items-center gap-3">
+                <button onclick="cambiarPantalla('simulador3d')" class="hidden sm:flex bg-stone-900 border border-amber-500/30 hover:border-amber-500/60 px-4 py-2 rounded-xl items-center gap-2 text-xs font-futurista uppercase font-bold text-amber-400 cursor-pointer transition-all">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                </button>
+                <button onclick="cambiarPantalla('carrito')" class="bg-stone-900 border border-amber-500/30 p-2.5 rounded-xl flex items-center gap-2 cursor-pointer hover:border-amber-500/60">
+                    <i data-lucide="shopping-cart" class="w-4 h-4 text-amber-400"></i>
+                    <span id="contador-carrito-badge" class="bg-amber-500 text-black font-mono text-[10px] font-black px-1.5 py-0.5 rounded-md">0</span>
+                </button>
             </div>
         </div>
-
-        <!-- Botones de Acción (Vitrina y Salir alineados y funcionales) -->
-        <div class="flex items-center gap-2 sm:gap-3">
-            <!-- Botón Ver Vitrina -->
-            <button onclick="cambiarPantalla('vitrina')" class="bg-stone-900 border border-amber-500/30 hover:border-amber-500/60 px-3 sm:px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs font-futurista uppercase font-bold text-amber-400 cursor-pointer transition-all">
-                <i data-lucide="eye" class="w-4 h-4"></i>
-                <span class="hidden sm:inline">Ver </span>Vitrina
-            </button>
-
-            <!-- Botón Salir (Lleva al login o vista de acceso) -->
-            <button onclick="cambiarPantalla('login')" class="bg-stone-900 border border-red-500/30 hover:border-red-500/60 px-3 sm:px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs font-futurista uppercase font-bold text-red-400 cursor-pointer transition-all">
-                <i data-lucide="log-out" class="w-4 h-4"></i>
-                <span>Salir</span>
-            </button>
-        </div>
-
-    </div>
-</header>
+    </header>
 
     <div class="max-w-7xl w-full mx-auto px-4 mt-8 relative z-10">
         <div class="grid grid-cols-2 md:grid-cols-3 gap-3 bg-stone-950/80 p-1.5 rounded-xl border border-stone-900 w-full">
