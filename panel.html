@@ -760,10 +760,12 @@ async function eliminarCategoria(nombre) {
         }
 
         // A. CORRECCIÓN: Función completa y bien cerrada
+// A. CORRECCIÓN: Función completa, limpia y filtrada por owner_instagram
 async function descargarHistorialDeOrdenes() {
     const { data, error } = await supabaseClient
         .from('ordenes_vip')
         .select('*')
+        .eq('owner_instagram', filtroInstagram) // Filtra correctamente por el canal actual
         .order('created_at', { ascending: false });
 
     if (!error && data) {
@@ -771,96 +773,43 @@ async function descargarHistorialDeOrdenes() {
         if (!tbody) return;
         
         tbody.innerHTML = "";
+        
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-stone-600 font-mono">No hay órdenes VIP registradas para este canal.</td></tr>`;
+            return;
+        }
+
         data.forEach(o => {
-            const fechaFormateada = new Date(o.created_at).toLocaleDateString();
+            const fechaFormateada = o.created_at ? new Date(o.created_at).toLocaleDateString() : 'N/A';
+            const estadoActual = (o.estado || 'pendiente').toLowerCase();
+            const montoFinal = o.total !== null && o.total !== undefined ? o.total : (o.monto_total || 0);
+            const refFinal = o.referencia || o.referencia_bancaria || 'N/A';
             
-            tbody.innerHTML += `<tr class="border-b border-stone-900/40 hover:bg-stone-900/10 transition-colors">
-                <td class="p-3 font-mono text-amber-400 font-bold">#${o.id}</td>
-                <td class="p-3 text-stone-400">${fechaFormateada}</td>
-                <td class="p-3 text-white truncate max-w-xs">${o.productos}</td>
-                <td class="p-3 font-mono font-bold text-stone-200">$${parseFloat(o.total || 0).toFixed(2)}</td>
-                <td class="p-3 font-mono text-stone-500">${o.referencia || 'N/A'}</td>
-                // ... dentro del forEach de descargarHistorialDeOrdenes ...
-<td class="p-3 text-right">
-    <select 
-        onchange="actualizarEstadoOrden(${o.id}, this.value)" 
-        class="bg-stone-950 border border-stone-700 text-[10px] px-2 py-1 rounded-md font-bold uppercase cursor-pointer outline-none transition-colors 
-        ${o.estado === 'verificado' ? 'text-green-500 border-green-900/50' : 
-          o.estado === 'cancelado' ? 'text-red-500 border-red-900/50' : 
-          'text-amber-400 border-stone-700'}"
-    >
-        <option value="pendiente" ${o.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
-        <option value="verificado" ${o.estado === 'verificado' ? 'selected' : ''}>Verificado</option>
-        <option value="cancelado" ${o.estado === 'cancelado' ? 'selected' : ''}>Cancelado</option>
-    </select>
-</td>
-            </tr>`;
+            tbody.innerHTML += `
+                <tr class="border-b border-stone-900/40 hover:bg-stone-900/10 transition-colors">
+                    <td class="p-3 font-mono text-amber-400 font-bold">#${o.id}</td>
+                    <td class="p-3 text-stone-400">${fechaFormateada}</td>
+                    <td class="p-3 text-white truncate max-w-xs">${o.productos || 'Sin detalles'}</td>
+                    <td class="p-3 font-mono font-bold text-stone-200">$${parseFloat(montoFinal).toFixed(2)}</td>
+                    <td class="p-3 font-mono text-stone-500">${refFinal}</td>
+                    <td class="p-3 text-right">
+                        <select 
+                            onchange="actualizarEstadoOrden(${o.id}, this.value)" 
+                            class="bg-stone-950 border border-stone-700 text-[10px] px-2 py-1 rounded-md font-bold uppercase cursor-pointer outline-none transition-colors 
+                            ${estadoActual === 'verificado' ? 'text-green-500 border-green-900/50' : 
+                              estadoActual === 'cancelado' ? 'text-red-500 border-red-900/50' : 
+                              'text-amber-400 border-stone-700'}"
+                        >
+                            <option value="pendiente" ${estadoActual === 'pendiente' || estadoActual === 'pendient' ? 'selected' : ''}>Pendiente</option>
+                            <option value="verificado" ${estadoActual === 'verificado' ? 'selected' : ''}>Verificado</option>
+                            <option value="cancelado" ${estadoActual === 'cancelado' ? 'selected' : ''}>Cancelado</option>
+                        </select>
+                    </td>
+                </tr>`;
         });
     } else if (error) {
         console.error("Error al descargar órdenes:", error.message);
-    }
-}
-
-// B. Función para actualizar (Esta es la que hace el cambio en la BD)
-async function actualizarEstadoOrden(idOrden, nuevoEstado) {
-    const { error } = await supabaseClient
-        .from('ordenes_vip')
-        .update({ estado: nuevoEstado })
-        .eq('id', idOrden);
-
-    if (!error) {
-        await descargarHistorialDeOrdenes();
-    } else {
-        alert("Error al actualizar estado: " + error.message);
-    }
-}
-
-// C. Función para el WhatsApp (Esta ya la tenías bien)
-async function descargarAjusteWhatsApp() {
-    const { data, error } = await supabaseClient
-        .from('ajustes_sistema')
-        .select('valor')
-        .eq('id', 'whatsapp_notificaciones')
-        .single();
-    
-    if(!error && data) {
-        document.getElementById('config-whatsapp-num').value = data.valor;
-    }
-}
-
-        async function guardarAjusteWhatsAppEnSupabase() {
-            const num = document.getElementById('config-whatsapp-num').value.trim().replace(/[^0-9]/g, "");
-            if(!num || num.length < 10) { alert("Ingrese un número válido con código de país."); return; }
-
-            const { error } = await supabaseClient
-                .from('ajustes_sistema')
-                .upsert({ id: 'whatsapp_notificaciones', valor: num, updated_at: new Date().toISOString() });
-
-            if(!error) { alert("¡Canal WhatsApp guardado con éxito!"); } else { alert("Error al guardar: " + error.message); }
-        }
-// Cargar categorías reales desde Supabase
-async function descargarCategoriasDesdeSupabase() {
-    const { data, error } = await supabaseClient
-        .from('categorias')
-        .select('nombre')
-        .eq('instagram_dueno', filtroInstagram);
-
-    if (data) {
-        categoriasDB = data.map(c => c.nombre);
-        renderizarCategorias(); // Ahora renderiza lo que viene de la BD
-    }
-}
-
-// Guardar nueva categoría en Supabase
-async function guardarCategoriaEnSupabase(nombreCategoria) {
-    const { error } = await supabaseClient
-        .from('categorias')
-        .insert([{ nombre: nombreCategoria, instagram_dueno: filtroInstagram }]);
-
-    if (!error) {
-        await descargarCategoriasDesdeSupabase(); // Recarga todo al terminar
-    } else {
-        alert("Error al guardar: " + error.message);
+        alert("Error al cargar las órdenes: " + error.message);
     }
 }
 
