@@ -764,57 +764,48 @@
         }
 
         // ÓRDENES VIP Y ESTADOS
-        async function descargarHistorialDeOrdenes() {
-            const { data, error } = await supabaseClient
-                .from('ordenes_vip')
-                .select('*')
-                .eq('owner_instagram', filtroInstagram) 
-                .order('created_at', { ascending: false });
+        async function cargarOrdenesVIP() {
+    try {
+        const contenedor = document.getElementById('tabla-ordenes-vip-cuerpo'); // Asegúrate que este sea el ID de tu <tbody>
+        if (contenedor) contenedor.innerHTML = `<tr><td colspan="6" class="text-center text-xs text-amber-400 p-4">Cargando órdenes...</td></tr>`;
 
-            if (!error && data) {
-                const tbody = document.getElementById('tabla-ordenes-body'); 
-                if (!tbody) return;
-                
-                tbody.innerHTML = "";
-                
-                if (data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-stone-600 font-mono">No hay órdenes VIP registradas para este canal.</td></tr>`;
-                    return;
-                }
+        // Petición a Supabase usando la tabla correcta
+        const { data, error } = await supabaseClient
+            .from('ordenes_vip')
+            .select('*')
+            .order('created_at', { ascending: false });
 
-                data.forEach(o => {
-                    const fechaFormateada = o.created_at ? new Date(o.created_at).toLocaleDateString() : 'N/A';
-                    const estadoActual = (o.estado || 'pendiente').toLowerCase();
-                    const montoFinal = o.total !== null && o.total !== undefined ? o.total : (o.monto_total || 0);
-                    const refFinal = o.referencia || o.referencia_bancaria || 'N/A';
-                    
-                    tbody.innerHTML += `
-                        <tr class="border-b border-stone-900/40 hover:bg-stone-900/10 transition-colors">
-                            <td class="p-3 font-mono text-amber-400 font-bold">#${o.id}</td>
-                            <td class="p-3 text-stone-400">${fechaFormateada}</td>
-                            <td class="p-3 text-white truncate max-w-xs">${o.productos || 'Sin detalles'}</td>
-                            <td class="p-3 font-mono font-bold text-stone-200">$${parseFloat(montoFinal).toFixed(2)}</td>
-                            <td class="p-3 font-mono text-stone-500">${refFinal}</td>
-                            <td class="p-3 text-right">
-                                <select 
-                                    onchange="actualizarEstadoOrden(${o.id}, this.value)" 
-                                    class="bg-stone-950 border border-stone-700 text-[10px] px-2 py-1 rounded-md font-bold uppercase cursor-pointer outline-none transition-colors 
-                                    ${estadoActual === 'verificado' ? 'text-green-500 border-green-900/50' : 
-                                      estadoActual === 'cancelado' ? 'text-red-500 border-red-900/50' : 
-                                      'text-amber-400 border-stone-700'}"
-                                >
-                                    <option value="pendiente" ${estadoActual === 'pendiente' || estadoActual === 'pendient' ? 'selected' : ''}>Pendiente</option>
-                                    <option value="verificado" ${estadoActual === 'verificado' ? 'selected' : ''}>Verificado</option>
-                                    <option value="cancelado" ${estadoActual === 'cancelado' ? 'selected' : ''}>Cancelado</option>
-                                </select>
-                            </td>
-                        </tr>`;
-                });
-            } else if (error) {
-                console.error("Error al descargar órdenes:", error.message);
-                alert("Error al cargar las órdenes: " + error.message);
-            }
+        if (error) {
+            console.error('Error al cargar órdenes:', error.message);
+            return;
         }
+
+        if (!data || data.length === 0) {
+            if (contenedor) contenedor.innerHTML = `<tr><td colspan="6" class="text-center text-xs text-stone-500 p-4">No hay órdenes VIP registradas.</td></tr>`;
+            return;
+        }
+
+        let html = '';
+        data.forEach(orden => {
+            // Mapeamos usando los nombres exactos de tus columnas
+            html += `
+                <tr class="border-b border-stone-900 text-xs text-stone-300">
+                    <td class="p-3 font-mono text-amber-400">#${orden.id}</td>
+                    <td class="p-3">${new Date(orden.created_at).toLocaleDateString()}</td>
+                    <td class="p-3 truncate max-w-xs">${orden.productos || 'N/A'}</td>
+                    <td class="p-3 font-mono text-white">$${orden.total || orden.monto_total || '0.00'}</td>
+                    <td class="p-3 font-mono text-amber-500">${orden.referencia || orden.referencia_bancaria || 'S/R'}</td>
+                    <td class="p-3"><span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded text-[10px] uppercase">${orden.estado || 'Pendiente'}</span></td>
+                </tr>
+            `;
+        });
+
+        if (contenedor) contenedor.innerHTML = html;
+
+    } catch (err) {
+        console.error('Error inesperado:', err);
+    }
+}
 
         async function actualizarEstadoOrden(id, nuevoEstado) {
             const { error } = await supabaseClient
