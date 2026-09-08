@@ -86,6 +86,31 @@
                 </button>
             </div>
         </div>
+
+        <!-- Barra de Búsqueda y Filtro Integrada -->
+        <div class="w-full max-w-5xl mx-auto px-0 my-4">
+            <div class="relative flex items-center bg-stone-950 border border-stone-800 rounded-2xl p-2 shadow-xl">
+                <!-- Ícono de Lupa -->
+                <div class="pl-3 pr-2 text-amber-500">
+                    <i data-lucide="search" class="w-5 h-5"></i>
+                </div>
+                
+                <!-- Input de Búsqueda -->
+                <input 
+                    type="text" 
+                    id="input-buscador-vitrina" 
+                    placeholder="Buscar productos por nombre..." 
+                    oninput="filtrarProductosVitrina()"
+                    class="w-full bg-transparent text-white text-xs sm:text-sm focus:outline-none font-futurista placeholder:text-stone-600 px-2 py-2"
+                >
+                
+                <!-- Botón de limpiar búsqueda -->
+                <button onclick="limpiarBuscadorVitrina()" class="p-2 text-stone-500 hover:text-white transition-colors cursor-pointer">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+
         <div id="grid-productos-vitrina" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </main>
 
@@ -404,6 +429,33 @@
             }
             lucide.createIcons();
         }
+
+        // --- Funciones del Buscador Integradas ---
+        function filtrarProductosVitrina() {
+            const textoBusqueda = document.getElementById('input-buscador-vitrina').value.toLowerCase();
+            
+            // Selecciona todas las tarjetas de productos generadas en la vitrina
+            const tarjetasProductos = document.querySelectorAll('#grid-productos-vitrina > div'); 
+
+            tarjetasProductos.forEach(tarjeta => {
+                const textoTarjeta = tarjeta.innerText.toLowerCase();
+
+                if (textoTarjeta.includes(textoBusqueda)) {
+                    tarjeta.style.display = 'flex'; 
+                } else {
+                    tarjeta.style.display = 'none';
+                }
+            });
+        }
+
+        function limpiarBuscadorVitrina() {
+            const input = document.getElementById('input-buscador-vitrina');
+            if (input) {
+                input.value = '';
+                filtrarProductosVitrina();
+            }
+        }
+        // ----------------------------------------
 
         function verDetalleDeProducto(idProducto) {
             productoSeleccionado = baseProductos.find(p => p.id === idProducto); 
@@ -960,62 +1012,61 @@
         });
 
         async function finalizarOrdenWhatsApp() {
-    if(carrito.length === 0) { alert("Agrega productos primero."); return; }
-    
-    if(gpsClienteLat === null || gpsClienteLng === null) {
-        alert("Por favor permite o selecciona tu ubicación GPS en el mapa para continuar con la entrega.");
-        return;
-    }
+            if(carrito.length === 0) { alert("Agrega productos primero."); return; }
+            
+            if(gpsClienteLat === null || gpsClienteLng === null) {
+                alert("Por favor permite o selecciona tu ubicación GPS en el mapa para continuar con la entrega.");
+                return;
+            }
 
-    const ref = document.getElementById('input-ref-pago').value.trim();
-    const idx = document.getElementById('select-metodo-pago').value;
+            const ref = document.getElementById('input-ref-pago').value.trim();
+            const idx = document.getElementById('select-metodo-pago').value;
 
-    if(idx === "" || !cuentasDB[idx]) { alert("Selecciona un método de pago."); return; }
-    if(!/^\d{12}$/.test(ref)) { alert("Inserta un número de referencia válido de exactamente 12 dígitos."); return; }
+            if(idx === "" || !cuentasDB[idx]) { alert("Selecciona un método de pago."); return; }
+            if(!/^\d{12}$/.test(ref)) { alert("Inserta un número de referencia válido de exactamente 12 dígitos."); return; }
 
-    const codigoReferidoCliente = localStorage.getItem('dunig_ref_code') || 'NINGUNO';
-    const cuenta = cuentasDB[idx];
-    
-    let subtotalProductos = carrito.reduce((a, b) => a + b.precio, 0);
-    let totalGeneral = subtotalProductos + costoDeliveryKm;
-    let lista = carrito.map(i => `• ${i.titulo} ($${i.precio.toFixed(2)})`).join('\n');
-    const linkGoogleMaps = `https://maps.google.com/?q=${gpsClienteLat},${gpsClienteLng}`;
+            const codigoReferidoCliente = localStorage.getItem('dunig_ref_code') || 'NINGUNO';
+            const cuenta = cuentasDB[idx];
+            
+            let subtotalProductos = carrito.reduce((a, b) => a + b.precio, 0);
+            let totalGeneral = subtotalProductos + costoDeliveryKm;
+            let lista = carrito.map(i => `• ${i.titulo} ($${i.precio.toFixed(2)})`).join('\n');
+            const linkGoogleMaps = `https://maps.google.com/?q=${gpsClienteLat},${gpsClienteLng}`;
 
-    let wsNum = "584120000000";
-    const { data } = await supabaseClient.from('ajustes_sistema').select('valor').eq('id', 'whatsapp_notificaciones').single();
-    if(data && data.valor) wsNum = data.valor.replace(/[^0-9]/g, "");
+            let wsNum = "584120000000";
+            const { data } = await supabaseClient.from('ajustes_sistema').select('valor').eq('id', 'whatsapp_notificaciones').single();
+            if(data && data.valor) wsNum = data.valor.replace(/[^0-9]/g, "");
 
-    const mensaje = `🍔 *PEDIDO VIP - CASA DE LAS PAPAS* 🍔\n\n${lista}\n\n📦 *Subtotal:* $${subtotalProductos.toFixed(2)}\n🛵 *Delivery (${distanciaCalculadaKm.toFixed(2)} km):* $${costoDeliveryKm.toFixed(2)}\n💵 *TOTAL A PAGAR:* $${totalGeneral.toFixed(2)}\n📍 *Ubicación GPS:* ${linkGoogleMaps}\n🏦 *PAGO:* ${cuenta.plataforma} (${cuenta.banco})\n🔢 *REF:* ${ref}\n🎁 *REF. CLIENTE:* ${codigoReferidoCliente}`;
+            const mensaje = `🍔 *PEDIDO VIP - CASA DE LAS PAPAS* 🍔\n\n${lista}\n\n📦 *Subtotal:* $${subtotalProductos.toFixed(2)}\n🛵 *Delivery (${distanciaCalculadaKm.toFixed(2)} km):* $${costoDeliveryKm.toFixed(2)}\n💵 *TOTAL A PAGAR:* $${totalGeneral.toFixed(2)}\n📍 *Ubicación GPS:* ${linkGoogleMaps}\n🏦 *PAGO:* ${cuenta.plataforma} (${cuenta.banco})\n🔢 *REF:* ${ref}\n🎁 *REF. CLIENTE:* ${codigoReferidoCliente}`;
 
-    // Estructura adaptada estrictamente a las columnas existentes en la tabla ordenes_vip
-    const datosOrdenPendiente = {
-        productos: carrito.map(i => i.titulo).join(', '),
-        total: totalGeneral,
-        monto_total: totalGeneral,
-        referencia: ref,
-        referencia_bancaria: ref,
-        estado: "Pendiente",
-        owner_instagram: codigoReferidoCliente, // Mapeado correctamente a la columna real de la base de datos
-        coordenadas_gps: `${gpsClienteLat},${gpsClienteLng}`,
-        costo_delivery: costoDeliveryKm
-    };
+            const datosOrdenPendiente = {
+                productos: carrito.map(i => i.titulo).join(', '),
+                total: totalGeneral,
+                monto_total: totalGeneral,
+                referencia: ref,
+                referencia_bancaria: ref,
+                estado: "Pendiente",
+                owner_instagram: codigoReferidoCliente,
+                coordenadas_gps: `${gpsClienteLat},${gpsClienteLng}`,
+                costo_delivery: costoDeliveryKm
+            };
 
-    const { error } = await supabaseClient.from('ordenes_vip').insert([datosOrdenPendiente]); 
+            const { error } = await supabaseClient.from('ordenes_vip').insert([datosOrdenPendiente]); 
 
-    if (error) {
-        console.error("Error al registrar en Supabase:", error);
-        alert("Hubo un problema guardando la orden en la base de datos: " + error.message);
-    } else {
-        console.log("Orden guardada exitosamente en Supabase.");
-    }
+            if (error) {
+                console.error("Error al registrar en Supabase:", error);
+                alert("Hubo un problema guardando la orden en la base de datos: " + error.message);
+            } else {
+                console.log("Orden guardada exitosamente en Supabase.");
+            }
 
-    carrito = [];
-    document.getElementById('contador-carrito-badge').innerText = "0";
-    document.getElementById('input-ref-pago').value = "";
-    localStorage.removeItem('dunig_ref_code');
-    cambiarPantalla('vitrina');
-    window.open(`https://api.whatsapp.com/send?phone=${wsNum}&text=${encodeURIComponent(mensaje)}`, '_blank');
-}
+            carrito = [];
+            document.getElementById('contador-carrito-badge').innerText = "0";
+            document.getElementById('input-ref-pago').value = "";
+            localStorage.removeItem('dunig_ref_code');
+            cambiarPantalla('vitrina');
+            window.open(`https://api.whatsapp.com/send?phone=${wsNum}&text=${encodeURIComponent(mensaje)}`, '_blank');
+        }
     </script>
 </body>
 </html>
