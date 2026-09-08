@@ -826,10 +826,10 @@
 
             const iconoLocal = L.divIcon({
                 className: 'custom-local-icon',
-                html: '<div style="background:#f59e0b; width:16px; height:16px; border-radius:50%; border:2px solid #000; box-shadow: 0 0 10px #f59e0b;" title="Casa de las Papas"></div>',
+                html: '<div style="background:#f59e0b; width:16px; height:16px; border-radius:50%; border:2px solid #000; box-shadow: 0 0 10px #f59e0b;" title="Vendaval house"></div>',
                 iconSize: [16, 16]
             });
-            L.marker([LOCAL_LAT, LOCAL_LNG], { icon: iconoLocal }).addTo(mapaDelivery).bindPopup("<b>CASA DE LAS PAPAS</b><br>Punto de Salida");
+            L.marker([LOCAL_LAT, LOCAL_LNG], { icon: iconoLocal }).addTo(mapaDelivery).bindPopup("<b>Vendaval house</b><br>Punto de Salida");
 
             marcadorCliente = L.marker([LOCAL_LAT, LOCAL_LNG], { draggable: true }).addTo(mapaDelivery);
 
