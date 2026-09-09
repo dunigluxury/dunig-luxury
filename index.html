@@ -255,19 +255,13 @@
             <div class="space-y-3 pt-6 border-t border-stone-900">
                 <div class="flex justify-between items-center">
                     <label class="text-[10px] uppercase text-amber-400 font-bold tracking-widest block font-futurista flex items-center gap-2">
-                        <i data-lucide="map-pin" class="w-4 h-4"></i> Ubicación de Entrega en el Mapa (Obligatorio)
+                        <i data-lucide="map-pin" class="w-4 h-4"></i> Ubicación de Entrega GPS (Obligatorio)
                     </label>
                 </div>
-                <p class="text-xs text-stone-400">Mueve el mapa para colocar el pin central 📍 exactamente en el lugar de entrega (ideal si compras desde el exterior para un familiar).</p>
+                <p class="text-xs text-stone-400">Presiona el botón inferior para capturar tu GPS actual, bloquear el mapa y trazar la ruta exacta de entrega.</p>
                 
-                <!-- NUEVO MAPA INTERACTIVO CON PIN FIJO AL CENTRO -->
-                <div style="position: relative; width: 100%; height: 350px; border-radius: 12px; overflow: hidden; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1);">
-                    <div id="mapa-delivery" style="width: 100%; height: 100%;"></div>
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); pointer-events: none; z-index: 1000;">
-                        <span style="font-size: 35px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">📍</span>
-                    </div>
-                </div>
-
+                <div id="mapa-delivery" class="w-full h-64 rounded-2xl border border-stone-800 relative z-10 bg-stone-950"></div>
+                
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center text-xs font-mono bg-stone-900 p-4 rounded-xl border border-stone-800">
                     <div>
                         <span class="text-stone-400 block text-[9px] uppercase font-futurista">Distancia calculada:</span>
@@ -278,12 +272,11 @@
                         <span id="display-costo-km" class="text-amber-400 font-black text-base">$0.00</span>
                     </div>
                     <div class="text-right">
-                        <button type="button" id="btn-usar-ubicacion" class="w-full sm:w-auto bg-amber-500 hover:bg-amber-400 text-black font-futurista font-black px-4 py-2.5 rounded-xl text-[10px] tracking-wider uppercase flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer">
-                            <i data-lucide="check" class="w-3.5 h-3.5"></i> Confirmar Ubicación 📍
+                        <button type="button" onclick="obtenerUbicacionGPSActual()" class="w-full sm:w-auto bg-amber-500 hover:bg-amber-400 text-black font-futurista font-black px-4 py-2.5 rounded-xl text-[10px] tracking-wider uppercase flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer">
+                            <i data-lucide="locate-fixed" class="w-3.5 h-3.5"></i> 📍 Usar mi GPS actual
                         </button>
                     </div>
                 </div>
-                <p id="coordenadas-seleccionadas" style="font-size: 11px; color: #10b981; text-align: center;" class="font-mono"></p>
             </div>
         </section>
 
@@ -374,6 +367,8 @@
         let scene, camera, renderer, hamburguesaGrupo;
 
         let mapaDelivery = null;
+        let marcadorCliente = null;
+        let lineaRutaDelivery = null;
         let costoDeliveryKm = 0;
         let distanciaCalculadaKm = 0;
         let gpsClienteLat = null;
@@ -382,7 +377,6 @@
         const LOCAL_LNG = -71.1418;
         let TARIFA_POR_KM = 0.80; 
 
-        // Diccionario dinámico que se llenará con los datos de Supabase (tabla cuentas_pago)
         let datosDePago = {};
 
         async function cargarCuentasPagoSupabase() {
@@ -950,17 +944,14 @@
             cambiarPantalla('vitrina');
         }
 
-        // --- MAPA INTERACTIVO CON PIN FIJO AL CENTRO ---
         function inicializarMapaDelivery() {
             const contenedorMapa = document.getElementById('mapa-delivery');
             if (!contenedorMapa || mapaDelivery) return;
 
-            // Inicializar mapa centrado en el local por defecto
             mapaDelivery = L.map('mapa-delivery', { attributionControl: false }).setView([LOCAL_LAT, LOCAL_LNG], 14);
 
             L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '' }).addTo(mapaDelivery);
 
-            // Marcador del local comercial
             const iconoLocal = L.divIcon({
                 className: 'custom-local-icon',
                 html: '<div style="background:#f59e0b; width:16px; height:16px; border-radius:50%; border:2px solid #000; box-shadow: 0 0 10px #f59e0b;" title="Casa de las Papas"></div>',
@@ -968,26 +959,46 @@
             });
             L.marker([LOCAL_LAT, LOCAL_LNG], { icon: iconoLocal }).addTo(mapaDelivery).bindPopup("<b>CASA DE LAS PAPAS</b><br>Punto de Salida");
 
-            // Inicializar coordenadas con el centro actual
-            let center = mapaDelivery.getCenter();
-            gpsClienteLat = center.lat;
-            gpsClienteLng = center.lng;
+            marcadorCliente = L.marker([LOCAL_LAT, LOCAL_LNG], { draggable: true }).addTo(mapaDelivery);
 
-            // Escuchar cuando el usuario mueve o arrastra el mapa para actualizar las coordenadas del pin central
-            mapaDelivery.on('move', () => {
-                const c = mapaDelivery.getCenter();
-                gpsClienteLat = c.lat;
-                gpsClienteLng = c.lng;
-            });
+            bloquearInteraccionMapa();
+            obtenerUbicacionGPSActual();
+        }
 
-            // Botón de confirmación de ubicación del mapa
-            document.getElementById('btn-usar-ubicacion').addEventListener('click', () => {
-                actualizarCoordenadasYTrazarRuta(gpsClienteLat, gpsClienteLng);
-                document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación fijada correctamente: Lat: ${gpsClienteLat.toFixed(5)}, Lng: ${gpsClienteLng.toFixed(5)}`;
-            });
+        function bloquearInteraccionMapa() {
+            if (!mapaDelivery) return;
+            mapaDelivery.dragging.disable();
+            mapaDelivery.touchZoom.disable();
+            mapaDelivery.doubleClickZoom.disable();
+            mapaDelivery.scrollWheelZoom.disable();
+            mapaDelivery.boxZoom.disable();
+            mapaDelivery.keyboard.disable();
+            if (mapaDelivery.tap) mapaDelivery.tap.disable();
+        }
 
-            // Calcular ruta inicial con el centro por defecto
-            actualizarCoordenadasYTrazarRuta(gpsClienteLat, gpsClienteLng);
+        function obtenerUbicacionGPSActual() {
+            if (!navigator.geolocation) {
+                alert("Tu navegador no soporta geolocalización.");
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    if (marcadorCliente && mapaDelivery) {
+                        marcadorCliente.setLatLng([lat, lng]);
+                        mapaDelivery.setView([lat, lng], 15);
+                        actualizarCoordenadasYTrazarRuta(lat, lng);
+                        bloquearInteraccionMapa();
+                    }
+                },
+                (error) => {
+                    console.warn("No se pudo obtener la ubicación GPS automática:", error.message);
+                    actualizarCoordenadasYTrazarRuta(LOCAL_LAT, LOCAL_LNG);
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
         }
 
         function actualizarCoordenadasYTrazarRuta(lat, lng) {
@@ -1004,9 +1015,9 @@
             document.getElementById('display-km').innerText = `${distanciaCalculadaKm.toFixed(2)} km`;
             document.getElementById('display-costo-km').innerText = `$${costoDeliveryKm.toFixed(2)}`;
 
-            if (window.lineaRutaDelivery) mapaDelivery.removeLayer(window.lineaRutaDelivery);
+            if (lineaRutaDelivery) mapaDelivery.removeLayer(lineaRutaDelivery);
             
-            window.lineaRutaDelivery = L.polyline([[LOCAL_LAT, LOCAL_LNG], [lat, lng]], {
+            lineaRutaDelivery = L.polyline([[LOCAL_LAT, LOCAL_LNG], [lat, lng]], {
                 color: '#e5c158',
                 weight: 4,
                 opacity: 0.8,
@@ -1064,7 +1075,6 @@
             }
         }
 
-        // --- GESTIÓN DINÁMICA DE CAMPOS Y DATOS DE PAGO DESDE SUPABASE ---
         function gestionarCamposPagoCart() {
             const metodo = document.getElementById('tipoMetodoPago').value;
             const contenedorRef = document.getElementById('contenedorReferenciaCart');
@@ -1126,7 +1136,7 @@
             if(carrito.length === 0) { alert("Agrega productos primero."); return; }
             
             if(gpsClienteLat === null || gpsClienteLng === null) {
-                alert("Por favor ubica el pin en el mapa para continuar con la entrega.");
+                alert("Por favor permite o selecciona tu ubicación GPS en el mapa para continuar con la entrega.");
                 return;
             }
 
