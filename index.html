@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CASA DE LAS PAPAS- Ecosistema Studio 3D & VIP</title>
+    <title>Vendaval house- Ecosistema Studio 3D & VIP</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -44,7 +44,7 @@
                 </div>
                 <div>
                     <h1 class="text-lg font-black tracking-widest text-white font-futurista">
-                       CASA DE LAS <span class="text-amber-400">PAPAS</span>
+                       Vendaval<span class="text-amber-400">house</span>
                     </h1>
                     <p class="text-[8px] text-amber-500/70 uppercase tracking-[0.25em] font-bold font-futurista">
                         MERIDA VENEZUELA
@@ -1174,7 +1174,7 @@
             if(data && data.valor) wsNum = data.valor.replace(/[^0-9]/g, "");
 
             let mensajeMesaExtra = metodo === 'efectivo' ? `🪑 *NÚMERO DE MESA:* ${numeroMesa}\n` : '';
-            const mensaje = `🍔 *PEDIDO VIP - CASA DE LAS PAPAS* 🍔\n\n${lista}\n\n📦 *Subtotal:* $${subtotalProductos.toFixed(2)}\n🛵 *Delivery (${distanciaCalculadaKm.toFixed(2)} km):* $${costoDeliveryKm.toFixed(2)}\n💵 *TOTAL A PAGAR:* $${totalGeneral.toFixed(2)}\n📍 *Ubicación GPS:* ${linkGoogleMaps}\n🏦 *MÉTODO DE PAGO:* ${metodo.toUpperCase()}\n${mensajeMesaExtra}🔢 *REF:* ${ref}\n🎁 *REF. CLIENTE:* ${codigoReferidoCliente}`;
+            const mensaje = `🍔 *PEDIDO VIP -Vendaval House* 🍔\n\n${lista}\n\n📦 *Subtotal:* $${subtotalProductos.toFixed(2)}\n🛵 *Delivery (${distanciaCalculadaKm.toFixed(2)} km):* $${costoDeliveryKm.toFixed(2)}\n💵 *TOTAL A PAGAR:* $${totalGeneral.toFixed(2)}\n📍 *Ubicación GPS:* ${linkGoogleMaps}\n🏦 *MÉTODO DE PAGO:* ${metodo.toUpperCase()}\n${mensajeMesaExtra}🔢 *REF:* ${ref}\n🎁 *REF. CLIENTE:* ${codigoReferidoCliente}`;
 
             const datosOrdenPendiente = {
                 productos: carrito.map(i => i.titulo).join(', '),
