@@ -59,7 +59,7 @@
                 </div>
 
                 <button onclick="cambiarPantalla('simulador3d')" class="hidden sm:flex bg-stone-900 border border-amber-500/30 hover:border-amber-500/60 px-4 py-2 rounded-xl items-center gap-2 text-xs font-futurista uppercase font-bold text-amber-400 cursor-pointer transition-all">
-                    <i data-lucide="sparkles" class="w-4 h-4"></i> 
+                    <i data-lucide="sparkles" class="w-4 h-4"></i> Simulador 3D
                 </button>
                 <button onclick="cambiarPantalla('carrito')" class="bg-stone-900 border border-amber-500/30 p-2.5 rounded-xl flex items-center gap-2 cursor-pointer hover:border-amber-500/60">
                     <i data-lucide="shopping-cart" class="w-4 h-4 text-amber-400"></i>
@@ -95,7 +95,7 @@
                 <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent flex flex-col justify-end p-6 md:p-8 space-y-2">
                     <span class="text-[10px] text-amber-400 font-futurista font-bold uppercase tracking-widest bg-amber-500/20 px-3 py-1 rounded-full border border-amber-500/30 w-max backdrop-blur-md">TU MEJOR OPCION VIP</span>
                     <h2 class="text-2xl md:text-4xl font-black text-white font-futurista tracking-wider uppercase drop-shadow-lg">
-                        REALIZA TU PEDIDO<span class="text-amber-400">"YA"</span>
+                        REALIZA TU PEDIDO<span class="text-amber-400"> "YA"</span>
                     </h2>
                     <p class="text-xs text-stone-300 max-w-xl">Arrastra ingredientes en tiempo real o explora nuestras especialidades certificadas.</p>
                 </div>
@@ -379,7 +379,7 @@
         <img id="lightbox-imagen-completa" src="" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl transition-transform duration-300">
     </div>
 
-    <footer class="border-t border-stone-950 bg-black/80 p-4 text-center text-[10px] text-stone-600 font-mono tracking-widest mt-12">© 2026 Casa de las papas & D'UNIG LUXURY ECOSISTEMA. TODOS LOS DERECHOS RESERVADOS.</footer>
+    <footer class="border-t border-stone-950 bg-black/80 p-4 text-center text-[10px] text-stone-600 font-mono tracking-widest mt-12">© 2026 Vendaval house & D'UNIG LUXURY ECOSISTEMA. TODOS LOS DERECHOS RESERVADOS.</footer>
 
     <script>
         const SUPABASE_URL = "https://rqxtbdegckeaufnlfqfs.supabase.co"; 
@@ -495,8 +495,6 @@
                     vistaVitrina.style.pointerEvents = "auto";
                     vistaVitrina.style.opacity = "1";
                 }
-                const avisoCerrado = document.getElementById('overlay-tienda-cerrada');
-                if (avisoCerrado) avisoCerrado.remove();
             } else {
                 if (puntoHeader) puntoHeader.className = "w-2 h-2 rounded-full bg-red-500";
                 if (textoHeader) {
@@ -507,15 +505,6 @@
                 if (tituloVitrina) tituloVitrina.textContent = "ESTADO DEL LOCAL: CERRADOS";
                 if (descVitrina) descVitrina.textContent = "Lo sentimos, nuestro horario de atención ha finalizado.";
                 if (iconoWrapper) iconoWrapper.className = "w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400";
-                if (vistaVitrina) {
-                    vistaVitrina.style.pointerEvents = "none";
-                    vistaVitrina.style.opacity = "0.5";
-                }
-                const bannerEstado = document.getElementById('banner-estado-tienda');
-                if (bannerEstado) {
-                    bannerEstado.style.pointerEvents = "auto";
-                    bannerEstado.style.opacity = "1";
-                }
             }
         }
 
@@ -973,62 +962,59 @@
         }
 
         function inicializarMapaDelivery() {
-    const contenedorMapa = document.getElementById('mapa-delivery');
-    if (!contenedorMapa || mapaDelivery) return;
+            const contenedorMapa = document.getElementById('mapa-delivery');
+            if (!contenedorMapa || mapaDelivery) return;
 
-    // Inicializamos el mapa con Leaflet y buen nivel de zoom para acercarse al detalle
-    mapaDelivery = L.map('mapa-delivery', { 
-        attributionControl: false,
-        maxZoom: 20,
-        minZoom: 3
-    }).setView([LOCAL_LAT, LOCAL_LNG], 17);
+            mapaDelivery = L.map('mapa-delivery', { 
+                attributionControl: false,
+                maxZoom: 20,
+                minZoom: 3
+            }).setView([LOCAL_LAT, LOCAL_LNG], 17);
 
-    // Capa de Satélite de Alta Resolución (Esri World Imagery)
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 20,
-        maxNativeZoom: 19,
-        attribution: 'Tiles &copy; Esri'
-    }).addTo(mapaDelivery);
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 20,
+                maxNativeZoom: 19,
+                attribution: 'Tiles &copy; Esri'
+            }).addTo(mapaDelivery);
 
-    // Capa superpuesta con nombres de calles y referencias sobre el satélite
-    L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 20,
-        maxNativeZoom: 19,
-        opacity: 0.8
-    }).addTo(mapaDelivery);
+            L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 20,
+                maxNativeZoom: 19,
+                opacity: 0.8
+            }).addTo(mapaDelivery);
 
-    // Marcador visual para el local principal
-    const iconoLocal = L.divIcon({
-        className: 'custom-local-icon',
-        html: '<div style="background:#f59e0b; width:16px; height:16px; border-radius:50%; border:2px solid #000; box-shadow: 0 0 12px #f59e0b;" title="Vendaval House"></div>',
-        iconSize: [16, 16]
-    });
-    L.marker([LOCAL_LAT, LOCAL_LNG], { icon: iconoLocal }).addTo(mapaDelivery).bindPopup("<b>VENDAVAL HOUSE</b><br>Punto de Salida");
+            const iconoLocal = L.divIcon({
+                className: 'custom-local-icon',
+                html: '<div style="background:#f59e0b; width:16px; height:16px; border-radius:50%; border:2px solid #000; box-shadow: 0 0 12px #f59e0b;" title="Vendaval House"></div>',
+                iconSize: [16, 16]
+            });
+            L.marker([LOCAL_LAT, LOCAL_LNG], { icon: iconoLocal }).addTo(mapaDelivery).bindPopup("<b>VENDAVAL HOUSE</b><br>Punto de Salida");
 
-    let center = mapaDelivery.getCenter();
-    gpsClienteLat = center.lat;
-    gpsClienteLng = center.lng;
+            let center = mapaDelivery.getCenter();
+            gpsClienteLat = center.lat;
+            gpsClienteLng = center.lng;
 
-    mapaDelivery.on('move', () => {
-        const c = mapaDelivery.getCenter();
-        gpsClienteLat = c.lat;
-        gpsClienteLng = c.lng;
-    });
+            mapaDelivery.on('move', () => {
+                const c = mapaDelivery.getCenter();
+                gpsClienteLat = c.lat;
+                gpsClienteLng = c.lng;
+            });
 
-    document.getElementById('btn-usar-ubicacion').addEventListener('click', () => {
-        actualizarCoordenadasYTrazarRuta(gpsClienteLat, gpsClienteLng);
-        document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación fijada: Lat: ${gpsClienteLat.toFixed(5)}, Lng: ${gpsClienteLng.toFixed(5)}`;
-    });
+            document.getElementById('btn-usar-ubicacion').addEventListener('click', () => {
+                actualizarCoordenadasYTrazarRuta(gpsClienteLat, gpsClienteLng);
+                document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación fijada: Lat: ${gpsClienteLat.toFixed(5)}, Lng: ${gpsClienteLng.toFixed(5)}`;
+            });
 
-    const btnGps = document.getElementById('btn-centrar-gps');
-    if(btnGps) {
-        btnGps.addEventListener('click', () => {
-            centrarEnUbicacionActual();
-        });
-    }
+            const btnGps = document.getElementById('btn-centrar-gps');
+            if(btnGps) {
+                btnGps.addEventListener('click', () => {
+                    centrarEnUbicacionActual();
+                });
+            }
 
-    actualizarCoordenadasYTrazarRuta(gpsClienteLat, gpsClienteLng);
-}
+            actualizarCoordenadasYTrazarRuta(gpsClienteLat, gpsClienteLng);
+        }
+
         function centrarEnPuntoLocal() {
             if(mapaDelivery) {
                 mapaDelivery.setView([LOCAL_LAT, LOCAL_LNG], 15);
