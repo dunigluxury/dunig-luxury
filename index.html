@@ -976,20 +976,24 @@
             const contenedorMapa = document.getElementById('mapa-delivery');
             if (!contenedorMapa || mapaDelivery) return;
 
-            // Inicializamos el mapa con Leaflet y buen nivel de zoom
             mapaDelivery = L.map('mapa-delivery', { 
                 attributionControl: false,
-                maxZoom: 19,
+                maxZoom: 20,
                 minZoom: 3
             }).setView([LOCAL_LAT, LOCAL_LNG], 17);
 
-            // Capa de Calles (OpenStreetMap) optimizada para ver claramente nombres de calles y direcciones
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '&copy; OpenStreetMap contributors'
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 20,
+                maxNativeZoom: 19,
+                attribution: 'Tiles &copy; Esri'
             }).addTo(mapaDelivery);
 
-            // Marcador visual para el local principal
+            L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 20,
+                maxNativeZoom: 19,
+                opacity: 0.8
+            }).addTo(mapaDelivery);
+
             const iconoLocal = L.divIcon({
                 className: 'custom-local-icon',
                 html: '<div style="background:#f59e0b; width:16px; height:16px; border-radius:50%; border:2px solid #000; box-shadow: 0 0 12px #f59e0b;" title="Vendaval House"></div>',
