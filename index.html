@@ -51,7 +51,7 @@
                        Vendaval<span class="text-amber-400">House</span>
                     </h1>
                     <p class="text-[8px] text-amber-500/70 uppercase tracking-[0.25em] font-bold font-futurista">
-                        HVX5+QM5, MÉRIDA 5101
+                        MERIDA VENEZUELA (HVX5+QM5)
                     </p>
                 </div>
             </div>
@@ -63,7 +63,7 @@
                 </div>
 
                 <button onclick="cambiarPantalla('simulador3d')" class="hidden sm:flex bg-stone-900 border border-amber-500/30 hover:border-amber-500/60 px-4 py-2 rounded-xl items-center gap-2 text-xs font-futurista uppercase font-bold text-amber-400 cursor-pointer transition-all">
-                    <i data-lucide="sparkles" class="w-4 h-4"></i> 
+                    <i data-lucide="sparkles" class="w-4 h-4"></i> Simulador 3D
                 </button>
                 <button onclick="cambiarPantalla('carrito')" class="bg-stone-900 border border-amber-500/30 p-2.5 rounded-xl flex items-center gap-2 cursor-pointer hover:border-amber-500/60">
                     <i data-lucide="shopping-cart" class="w-4 h-4 text-amber-400"></i>
@@ -266,7 +266,7 @@
                     <div id="google-map-container" class="relative w-full h-1/2 md:h-2/3 bg-neutral-800 flex items-center justify-center z-10">
                         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); z-index: 1000; pointer-events: none; font-size: 35px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">📍</div>
                         
-                        <button type="button" onclick="centrarEnMiGPS()" class="absolute top-4 right-4 z-[1000] bg-neutral-800/90 hover:bg-neutral-700 p-3 rounded-full shadow-lg border border-neutral-700 cursor-pointer">
+                        <button type="button" onclick="centrarEnMiGPS()" class="absolute top-4 right-4 z-[1000] bg-neutral-800/90 hover:bg-neutral-700 p-3 rounded-full shadow-lg border border-neutral-700 cursor-pointer" title="Centrar en mi ubicación GPS">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </button>
                     </div>
@@ -287,8 +287,8 @@
                             <div onclick="irAVendavalHouse()" class="flex items-center space-x-4 p-3 hover:bg-neutral-800 rounded-xl transition cursor-pointer border border-neutral-800">
                                 <div class="bg-neutral-800 p-3 rounded-full text-neutral-300">🏢</div>
                                 <div>
-                                    <h4 class="font-semibold text-sm">Vendaval House (HVX5+QM5)</h4>
-                                    <p class="text-xs text-neutral-400">Mérida 5101, Venezuela</p>
+                                    <h4 class="font-semibold text-sm">Vendaval House (Local Principal)</h4>
+                                    <p class="text-xs text-neutral-400">Mérida, Venezuela (HVX5+QM5)</p>
                                 </div>
                             </div>
                         </div>
@@ -379,7 +379,7 @@
         <img id="lightbox-imagen-completa" src="" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl transition-transform duration-300">
     </div>
 
-    <footer class="border-t border-stone-950 bg-black/80 p-4 text-center text-[10px] text-stone-600 font-mono tracking-widest mt-12">© 2026 Vendaval House (HVX5+QM5, Mérida 5101) & D'UNIG LUXURY ECOSISTEMA. TODOS LOS DERECHOS RESERVADOS.</footer>
+    <footer class="border-t border-stone-950 bg-black/80 p-4 text-center text-[10px] text-stone-600 font-mono tracking-widest mt-12">© 2026 Vendaval House (HVX5+QM5) & D'UNIG LUXURY ECOSISTEMA. TODOS LOS DERECHOS RESERVADOS.</footer>
 
     <script>
         const SUPABASE_URL = "https://rqxtbdegckeaufnlfqfs.supabase.co"; 
@@ -396,11 +396,12 @@
 
         let scene, camera, renderer, hamburguesaGrupo;
 
+        // Variables de Google Maps ajustadas exactamente a Vendaval House (HVX5+QM5, Mérida, Venezuela)
         let map;
         let gpsClienteLat = 8.5959;  
         let gpsClienteLng = -71.1416;
-        const LOCAL_LAT = 8.5959;  // Coordenada exacta actualizada de Vendaval House (HVX5+QM5, Mérida 5101)
-        const LOCAL_LNG = -71.1416; // Coordenada exacta actualizada de Vendaval House (HVX5+QM5, Mérida 5101)
+        const LOCAL_LAT = 8.5959;  
+        const LOCAL_LNG = -71.1416;
         let TARIFA_POR_KM = 0.80; 
         let distanciaCalculadaKm = 0;
         let costoDeliveryKm = 0;
@@ -1228,7 +1229,7 @@
             if(data && data.valor) wsNum = data.valor.replace(/[^0-9]/g, "");
 
             let mensajeMesaExtra = metodo === 'efectivo' ? `🪑 *NÚMERO DE MESA:* ${numeroMesa}\n` : '';
-            const mensaje = `🍔 *PEDIDO VIP - Vendaval House* 🍔\n📍 *Ubicación Local:* HVX5+QM5, Mérida 5101\n\n${lista}\n\n📦 *Subtotal:* $${subtotalProductos.toFixed(2)}\n🛵 *Delivery (${distanciaCalculadaKm.toFixed(2)} km):* $${costoDeliveryKm.toFixed(2)}\n💵 *TOTAL A PAGAR:* $${totalGeneral.toFixed(2)}\n📍 *Ubicación Google Maps Entregas:* ${linkGoogleMaps}\n🏦 *MÉTODO DE PAGO:* ${metodo.toUpperCase()}\n${mensajeMesaExtra}🔢 *REF:* ${ref}\n🎁 *REF. CLIENTE:* ${codigoReferidoCliente}`;
+            const mensaje = `🏢 *PEDIDO VIP - Vendaval House* (HVX5+QM5)\n\n${lista}\n\n📦 *Subtotal:* $${subtotalProductos.toFixed(2)}\n🛵 *Delivery (${distanciaCalculadaKm.toFixed(2)} km):* $${costoDeliveryKm.toFixed(2)}\n💵 *TOTAL A PAGAR:* $${totalGeneral.toFixed(2)}\n📍 *Ubicación Google Maps:* ${linkGoogleMaps}\n🏦 *MÉTODO DE PAGO:* ${metodo.toUpperCase()}\n${mensajeMesaExtra}🔢 *REF:* ${ref}\n🎁 *REF. CLIENTE:* ${codigoReferidoCliente}`;
 
             const datosOrdenPendiente = {
                 productos: carrito.map(i => i.titulo).join(', '),
