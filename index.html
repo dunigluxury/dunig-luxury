@@ -976,20 +976,25 @@
     const contenedorMapa = document.getElementById('mapa-delivery');
     if (!contenedorMapa || mapaDelivery) return;
 
-    // Inicializamos el mapa con Leaflet permitiendo un zoom ultra cercano (hasta el nivel 19-20 para ver cada esquina)
+    // Inicializamos el mapa con Leaflet y buen nivel de zoom para acercarse al detalle
     mapaDelivery = L.map('mapa-delivery', { 
         attributionControl: false,
         maxZoom: 20,
         minZoom: 3
-    }).setView([LOCAL_LAT, LOCAL_LNG], 17); // Vista centrada y cercana
+    }).setView([LOCAL_LAT, LOCAL_LNG], 17);
 
-    // Capa de plano vectorial/callejero de alta precisión (CartoDB Positron o OpenStreetMap estandar)
-    // Este estilo es limpio, tipo plano minimalista, ideal para ver esquinas y manzanas exactas.
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    // Capa de Satélite de Alta Resolución (Esri World Imagery)
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         maxZoom: 20,
         maxNativeZoom: 19,
-        subdomains: 'abcd',
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        attribution: 'Tiles &copy; Esri'
+    }).addTo(mapaDelivery);
+
+    // Capa superpuesta con nombres de calles y referencias sobre el satélite
+    L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 20,
+        maxNativeZoom: 19,
+        opacity: 0.8
     }).addTo(mapaDelivery);
 
     // Marcador visual para el local principal
