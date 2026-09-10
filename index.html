@@ -280,7 +280,7 @@
                                 <div class="bg-neutral-800 p-3 rounded-full text-emerald-400">📍</div>
                                 <div>
                                     <h4 class="font-semibold text-sm">Enviar tu ubicación actual</h4>
-                                    <p class="text-xs text-neutral-400">Centrar mapa en tu posición GPS</p>
+                                    <p class="text-xs text-neutral-400">Centrar mapa y confirmar posición GPS</p>
                                 </div>
                             </div>
 
@@ -1067,12 +1067,14 @@
                     (position) => {
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
+                        gpsClienteLat = lat;
+                        gpsClienteLng = lng;
                         if(map) {
                             map.setCenter({ lat, lng });
                             map.setZoom(17);
-                            fijarUbicacionActualMapa();
-                            document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación GPS actual fijada correctamente`;
                         }
+                        fijarUbicacionActualMapa();
+                        document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación GPS actual enviada y fijada correctamente`;
                     },
                     () => {
                         alert("No se pudo obtener tu ubicación GPS. Asegúrate de dar permisos.");
