@@ -972,30 +972,34 @@
             cambiarPantalla('vitrina');
         }
 
-        let mapaDelivery = null;
-let imagenOverlayLayer = null;
-
-function inicializarMapaDelivery() {
+        function inicializarMapaDelivery() {
     const contenedorMapa = document.getElementById('mapa-delivery');
     if (!contenedorMapa || mapaDelivery) return;
 
-    // 1. Configuramos un sistema de coordenadas plano para la imagen
-    mapaDelivery = L.map('mapa-delivery', {
-        crs: L.CRS.Simple, // Sistema plano para imágenes personalizadas
-        minZoom: -1,
-        maxZoom: 4,
-        attributionControl: false
+    // Inicializamos el mapa con Leaflet permitiendo un zoom ultra cercano (hasta el nivel 19-20 para ver cada esquina)
+    mapaDelivery = L.map('mapa-delivery', { 
+        attributionControl: false,
+        maxZoom: 20,
+        minZoom: 3
+    }).setView([LOCAL_LAT, LOCAL_LNG], 17); // Vista centrada y cercana
+
+    // Capa de plano vectorial/callejero de alta precisión (CartoDB Positron o OpenStreetMap estandar)
+    // Este estilo es limpio, tipo plano minimalista, ideal para ver esquinas y manzanas exactas.
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        maxZoom: 20,
+        maxNativeZoom: 19,
+        subdomains: 'abcd',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+    }).addTo(mapaDelivery);
+
+    // Marcador visual para el local principal
+    const iconoLocal = L.divIcon({
+        className: 'custom-local-icon',
+        html: '<div style="background:#f59e0b; width:16px; height:16px; border-radius:50%; border:2px solid #000; box-shadow: 0 0 12px #f59e0b;" title="Vendaval House"></div>',
+        iconSize: [16, 16]
     });
+    L.marker([LOCAL_LAT, LOCAL_LNG], { icon: iconoLocal }).addTo(mapaDelivery).bindPopup("<b>VENDAVAL HOUSE</b><br>Punto de Salida");
 
-    // 2. Coordenadas de los límites de tu imagen (ancho y alto en píxeles)
-    // Cambia la URL de abajo por el enlace de tu foto en máxima definición (ej: una foto de dron o plano)
-    const urlImagenHD = "https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=2000"; 
-    const bounds = [[0, 0], [1000, 1000]]; // Ajusta según las dimensiones de tu imagen
-
-    imagenOverlayLayer = L.imageOverlay(urlImagenHD, bounds).addTo(mapaDelivery);
-    mapaDelivery.fitBounds(bounds);
-
-    // Permitir mover el marcador central de entrega sobre tu imagen HD
     let center = mapaDelivery.getCenter();
     gpsClienteLat = center.lat;
     gpsClienteLng = center.lng;
@@ -1007,8 +1011,18 @@ function inicializarMapaDelivery() {
     });
 
     document.getElementById('btn-usar-ubicacion').addEventListener('click', () => {
-        document.getElementById('coordenadas-seleccionadas').innerText = `✓ Punto exacto fijado en el plano HD`;
+        actualizarCoordenadasYTrazarRuta(gpsClienteLat, gpsClienteLng);
+        document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación fijada: Lat: ${gpsClienteLat.toFixed(5)}, Lng: ${gpsClienteLng.toFixed(5)}`;
     });
+
+    const btnGps = document.getElementById('btn-centrar-gps');
+    if(btnGps) {
+        btnGps.addEventListener('click', () => {
+            centrarEnUbicacionActual();
+        });
+    }
+
+    actualizarCoordenadasYTrazarRuta(gpsClienteLat, gpsClienteLng);
 }
         function centrarEnPuntoLocal() {
             if(mapaDelivery) {
