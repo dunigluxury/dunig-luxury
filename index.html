@@ -111,6 +111,22 @@
             </div>
         </div>
 
+        <!-- SECCIÓN DE UBICACIÓN INTEGRADA CON GOOGLE MAPS -->
+        <div class="glass-panel p-6 md:p-8 rounded-3xl border border-amber-500/30 shadow-2xl space-y-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                    <i data-lucide="map-pin" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-black font-futurista text-white uppercase tracking-widest">Ubicación de Vendaval House</h3>
+                    <p class="text-xs text-stone-400">Encuéntranos fácilmente en Mérida, Venezuela[cite: 5].</p>
+                </div>
+            </div>
+            <div class="w-full h-80 rounded-2xl overflow-hidden border border-stone-800 shadow-inner">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3944.9643180475496!2d-71.1435486262717!3d8.599424295567946!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e6487003f637e0f%3A0x947b1d504bfefd2a!2sVendaval%20House!5e0!3m2!1ses-419!2sve!4v1789009777031!5m2!1ses-419!2sve" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            </div>
+        </div>
+
         <div class="w-full max-w-3xl mx-auto px-2">
             <div class="relative flex items-center bg-stone-950 border border-stone-800 rounded-2xl p-2 shadow-xl focus-within:border-amber-500/50 transition-colors">
                 <div class="pl-3 pr-2 text-amber-500">
@@ -401,8 +417,8 @@
         let distanciaCalculadaKm = 0;
         let gpsClienteLat = null;
         let gpsClienteLng = null;
-        const LOCAL_LAT = 8.599424295567946;  
-        const LOCAL_LNG = -71.1435486262717;
+        const LOCAL_LAT = 8.5897;  
+        const LOCAL_LNG = -71.1418;
         let TARIFA_POR_KM = 0.80; 
 
         let datosDePago = {};
@@ -976,28 +992,24 @@
             const contenedorMapa = document.getElementById('mapa-delivery');
             if (!contenedorMapa || mapaDelivery) return;
 
-            // Inicializamos el mapa con Leaflet usando las nuevas coordenadas exactas de Vendaval House
             mapaDelivery = L.map('mapa-delivery', { 
                 attributionControl: false,
                 maxZoom: 20,
                 minZoom: 3
             }).setView([LOCAL_LAT, LOCAL_LNG], 17);
 
-            // Capa de Satélite de Alta Resolución (Esri World Imagery)
             L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                 maxZoom: 20,
                 maxNativeZoom: 19,
                 attribution: 'Tiles &copy; Esri'
             }).addTo(mapaDelivery);
 
-            // Capa superpuesta con nombres de calles y referencias sobre el satélite
             L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
                 maxZoom: 20,
                 maxNativeZoom: 19,
                 opacity: 0.8
             }).addTo(mapaDelivery);
 
-            // Marcador visual para el local principal en la nueva ubicación
             const iconoLocal = L.divIcon({
                 className: 'custom-local-icon',
                 html: '<div style="background:#f59e0b; width:16px; height:16px; border-radius:50%; border:2px solid #000; box-shadow: 0 0 12px #f59e0b;" title="Vendaval House"></div>',
@@ -1032,7 +1044,7 @@
 
         function centrarEnPuntoLocal() {
             if(mapaDelivery) {
-                mapaDelivery.setView([LOCAL_LAT, LOCAL_LNG], 17);
+                mapaDelivery.setView([LOCAL_LAT, LOCAL_LNG], 15);
                 actualizarCoordenadasYTrazarRuta(LOCAL_LAT, LOCAL_LNG);
                 document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación fijada en Local Principal`;
             }
@@ -1044,7 +1056,7 @@
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
                     if(mapaDelivery) {
-                        mapaDelivery.setView([lat, lng], 17);
+                        mapaDelivery.setView([lat, lng], 16);
                         actualizarCoordenadasYTrazarRuta(lat, lng);
                         document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación GPS actual fijada correctamente`;
                     }
