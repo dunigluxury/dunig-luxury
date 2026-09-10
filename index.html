@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vendaval house- Ecosistema Studio 3D & VIP</title>
+    <title>Vendaval house - Ecosistema Studio 3D & VIP</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -91,7 +91,7 @@
 
         <div class="glass-panel rounded-3xl overflow-hidden border border-amber-500/30 shadow-2xl relative">
             <div class="w-full h-64 md:h-80 relative overflow-hidden bg-black">
-                <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGJrNnV3cnVzdWF2ZjZwOXI3b2U1cjk5ejM2cTh0YnpvZWlvbXplcyZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/3o7TKMYewttqjcp21y/giphy.gif" alt="Banner Animado Casa de las Papas" class="w-full h-full object-cover opacity-85 transform hover:scale-105 transition-transform duration-700">
+                <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGJrNnV3cnVzdWF2ZjZwOXI3b2U1cjk5ejM2cTh0YnpvZWlvbXplcyZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/3o7TKMYewttqjcp21y/giphy.gif" alt="Banner Animado" class="w-full h-full object-cover opacity-85 transform hover:scale-105 transition-transform duration-700">
                 <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent flex flex-col justify-end p-6 md:p-8 space-y-2">
                     <span class="text-[10px] text-amber-400 font-futurista font-bold uppercase tracking-widest bg-amber-500/20 px-3 py-1 rounded-full border border-amber-500/30 w-max backdrop-blur-md">TU MEJOR OPCION VIP</span>
                     <h2 class="text-2xl md:text-4xl font-black text-white font-futurista tracking-wider uppercase drop-shadow-lg">
@@ -260,42 +260,32 @@
                 </div>
                 <p class="text-xs text-stone-400">Mueve el mapa para colocar el pin central 📍 exactamente en el lugar de entrega (ideal si compras desde el exterior para un familiar).</p>
                 
-                <!-- CONTENEDOR INTEGRADO DEL MAPA Y PANELES -->
                 <div class="flex flex-col h-[500px] bg-neutral-900 text-white rounded-2xl overflow-hidden border border-neutral-800 shadow-2xl">
-                    <!-- Contenedor del Mapa con Botón GPS -->
                     <div class="relative w-full h-1/2 md:h-2/3 bg-neutral-800 flex items-center justify-center">
                         <div id="mapa-delivery" class="w-full h-full z-10"></div>
                         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); pointer-events: none; z-index: 1000;">
                             <span style="font-size: 35px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">📍</span>
                         </div>
-                        <!-- Botón flotante superior estilo GPS -->
                         <button type="button" id="btn-centrar-gps" class="absolute top-4 right-4 z-[1001] bg-neutral-800 hover:bg-neutral-700 p-3 rounded-full shadow-lg border border-neutral-700 cursor-pointer">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </button>
                     </div>
 
-                    <!-- Panel Inferior de Lugares Cercanos -->
                     <div class="w-full h-1/2 md:h-1/3 bg-neutral-900 rounded-t-3xl p-5 overflow-y-auto shadow-2xl border-t border-neutral-800">
                         <div class="w-12 h-1.5 bg-neutral-700 rounded-full mx-auto mb-4"></div>
                         <h3 class="text-neutral-400 text-sm font-medium mb-3">Lugares cercanos o Guardados</h3>
                         
                         <div class="space-y-3">
-                            <!-- Item 1: Ubicación Actual -->
                             <div onclick="centrarEnUbicacionActual()" class="flex items-center space-x-4 p-3 hover:bg-neutral-800 rounded-xl transition cursor-pointer border border-neutral-800">
-                                <div class="bg-neutral-800 p-3 rounded-full text-emerald-400">
-                                    📍
-                                </div>
+                                <div class="bg-neutral-800 p-3 rounded-full text-emerald-400">📍</div>
                                 <div>
                                     <h4 class="font-semibold text-sm">Enviar tu ubicación actual</h4>
                                     <p class="text-xs text-neutral-400">Centrar mapa en tu posición GPS</p>
                                 </div>
                             </div>
 
-                            <!-- Item 2: Dinámico desde Supabase / Local -->
                             <div onclick="centrarEnPuntoLocal()" class="flex items-center space-x-4 p-3 hover:bg-neutral-800 rounded-xl transition cursor-pointer border border-neutral-800">
-                                <div class="bg-neutral-800 p-3 rounded-full text-neutral-300">
-                                    🏢
-                                </div>
+                                <div class="bg-neutral-800 p-3 rounded-full text-neutral-300">🏢</div>
                                 <div>
                                     <h4 class="font-semibold text-sm">Vendaval House (Local Principal)</h4>
                                     <p class="text-xs text-neutral-400">Mérida, Venezuela</p>
@@ -337,7 +327,6 @@
             </div>
             
             <div class="space-y-3 pt-2 border-t border-stone-900">
-                <!-- SELECCIÓN DEL MÉTODO DE PAGO -->
                 <div class="space-y-1.5">
                     <label class="text-[9px] uppercase text-stone-400 font-bold tracking-widest block font-futurista">1. Selecciona Método de Pago</label>
                     <select id="tipoMetodoPago" onchange="gestionarCamposPagoCart()" class="w-full bg-stone-900 border border-stone-800 text-xs text-stone-300 p-3.5 rounded-xl focus:outline-none focus:border-amber-500/40 font-medium">
@@ -349,7 +338,6 @@
                     </select>
                 </div>
 
-                <!-- CONTENEDOR DINÁMICO DE DATOS DE PAGO -->
                 <div id="info-metodo-pago" class="hidden p-3 bg-stone-900 border border-amber-500/30 rounded-xl space-y-1 text-xs font-mono">
                     <div class="flex items-center justify-between text-amber-400 font-bold border-b border-stone-800 pb-1.5 mb-1">
                         <span id="titulo-metodo-pago">Datos de Pago</span>
@@ -358,15 +346,13 @@
                     <div id="detalle-datos-pago" class="text-stone-300 space-y-1"></div>
                 </div>
 
-                <!-- CASILLA DE NÚMERO DE MESA OBLIGATORIO (SOLO PARA EFECTIVO) -->
                 <div id="contenedorNumeroMesaCart" class="space-y-1.5 hidden">
                     <label class="text-[9px] uppercase text-amber-400 font-bold tracking-widest block font-futurista">2. Número de Mesa (Obligatorio)</label>
                     <input type="text" id="input-num-mesa" placeholder="Ej. Mesa 04" class="w-full bg-stone-900 border border-amber-500/40 text-xs text-white p-3.5 rounded-xl font-mono tracking-wider focus:outline-none focus:border-amber-400">
                 </div>
 
-                <!-- CASILLA DE REFERENCIA -->
                 <div id="contenedorReferenciaCart" class="space-y-1.5 hidden">
-                    <label class="text-[9px] uppercase text-stone-400 font-bold tracking-widest block font-futurista">2. Número de Referencia</label>
+                    <label class="text-[9px] uppercase text-amber-400 font-bold tracking-widest block font-futurista">2. Número de Referencia</label>
                     <input type="text" id="input-ref-pago" placeholder="Ingresa datos o código de referencia" class="w-full bg-stone-900 border border-stone-800 text-xs text-white p-3.5 rounded-xl font-mono tracking-wider">
                 </div>
 
@@ -986,18 +972,33 @@
             cambiarPantalla('vitrina');
         }
 
-        // --- MAPA INTERACTIVO Y PANELES LATERALES/INFERIORES ---
         function inicializarMapaDelivery() {
             const contenedorMapa = document.getElementById('mapa-delivery');
             if (!contenedorMapa || mapaDelivery) return;
 
-            mapaDelivery = L.map('mapa-delivery', { attributionControl: false }).setView([LOCAL_LAT, LOCAL_LNG], 14);
+            mapaDelivery = L.map('mapa-delivery', { 
+                attributionControl: false,
+                maxZoom: 20,
+                minZoom: 3
+            }).setView([LOCAL_LAT, LOCAL_LNG], 17);
 
-            L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '' }).addTo(mapaDelivery);
+            // Capa de Satélite de Alta Resolución (Esri World Imagery)
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 20,
+                maxNativeZoom: 19,
+                attribution: 'Tiles &copy; Esri'
+            }).addTo(mapaDelivery);
+
+            // Capa superpuesta con nombres de calles y referencias sobre el satélite
+            L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 20,
+                maxNativeZoom: 19,
+                opacity: 0.8
+            }).addTo(mapaDelivery);
 
             const iconoLocal = L.divIcon({
                 className: 'custom-local-icon',
-                html: '<div style="background:#f59e0b; width:16px; height:16px; border-radius:50%; border:2px solid #000; box-shadow: 0 0 10px #f59e0b;" title="Vendaval House"></div>',
+                html: '<div style="background:#f59e0b; width:16px; height:16px; border-radius:50%; border:2px solid #000; box-shadow: 0 0 12px #f59e0b;" title="Vendaval House"></div>',
                 iconSize: [16, 16]
             });
             L.marker([LOCAL_LAT, LOCAL_LNG], { icon: iconoLocal }).addTo(mapaDelivery).bindPopup("<b>VENDAVAL HOUSE</b><br>Punto de Salida");
@@ -1223,7 +1224,7 @@
             if(data && data.valor) wsNum = data.valor.replace(/[^0-9]/g, "");
 
             let mensajeMesaExtra = metodo === 'efectivo' ? `🪑 *NÚMERO DE MESA:* ${numeroMesa}\n` : '';
-            const mensaje = `🍔 *PEDIDO VIP -Vendaval House* 🍔\n\n${lista}\n\n📦 *Subtotal:* $${subtotalProductos.toFixed(2)}\n🛵 *Delivery (${distanciaCalculadaKm.toFixed(2)} km):* $${costoDeliveryKm.toFixed(2)}\n💵 *TOTAL A PAGAR:* $${totalGeneral.toFixed(2)}\n📍 *Ubicación GPS:* ${linkGoogleMaps}\n🏦 *MÉTODO DE PAGO:* ${metodo.toUpperCase()}\n${mensajeMesaExtra}🔢 *REF:* ${ref}\n🎁 *REF. CLIENTE:* ${codigoReferidoCliente}`;
+            const mensaje = `🍔 *PEDIDO VIP - Vendaval House* 🍔\n\n${lista}\n\n📦 *Subtotal:* $${subtotalProductos.toFixed(2)}\n🛵 *Delivery (${distanciaCalculadaKm.toFixed(2)} km):* $${costoDeliveryKm.toFixed(2)}\n💵 *TOTAL A PAGAR:* $${totalGeneral.toFixed(2)}\n📍 *Ubicación GPS:* ${linkGoogleMaps}\n🏦 *MÉTODO DE PAGO:* ${metodo.toUpperCase()}\n${mensajeMesaExtra}🔢 *REF:* ${ref}\n🎁 *REF. CLIENTE:* ${codigoReferidoCliente}`;
 
             const datosOrdenPendiente = {
                 productos: carrito.map(i => i.titulo).join(', '),
