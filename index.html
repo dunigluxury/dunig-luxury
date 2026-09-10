@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vendaval House - Ecosistema Studio 3D & VIP</title>
-    <!-- Tailwind CSS v4 CDN -->
+    <title>Vendaval house- Ecosistema Studio 3D & VIP</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Leaflet CSS & JS para Mapas Interactivos Satelitales -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <style>
@@ -38,7 +36,6 @@
 </head>
 <body class="text-stone-200 antialiased min-h-screen flex flex-col justify-between grid-bg relative">
 
-    <!-- HEADER PRINCIPAL -->
     <header class="bg-black/85 backdrop-blur-xl border-b border-stone-900 sticky top-0 z-50 px-4">
         <div class="max-w-7xl mx-auto h-20 flex items-center justify-between">
             <div class="flex items-center gap-3 cursor-pointer" onclick="cambiarPantalla('vitrina')">
@@ -72,7 +69,6 @@
         </div>
     </header>
 
-    <!-- VISTA 1: VITRINA / CATÁLOGO -->
     <main id="vista-vitrina" class="max-w-7xl w-full mx-auto px-4 py-8 flex-grow space-y-8 relative z-10">
         
         <div id="banner-estado-tienda" class="w-full bg-stone-950 border border-stone-800 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
@@ -95,7 +91,7 @@
 
         <div class="glass-panel rounded-3xl overflow-hidden border border-amber-500/30 shadow-2xl relative">
             <div class="w-full h-64 md:h-80 relative overflow-hidden bg-black">
-                <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1200" alt="Banner Tienda" class="w-full h-full object-cover opacity-85 transform hover:scale-105 transition-transform duration-700">
+                <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGJrNnV3cnVzdWF2ZjZwOXI3b2U1cjk5ejM2cTh0YnpvZWlvbXplcyZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/3o7TKMYewttqjcp21y/giphy.gif" alt="Banner Animado Casa de las Papas" class="w-full h-full object-cover opacity-85 transform hover:scale-105 transition-transform duration-700">
                 <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent flex flex-col justify-end p-6 md:p-8 space-y-2">
                     <span class="text-[10px] text-amber-400 font-futurista font-bold uppercase tracking-widest bg-amber-500/20 px-3 py-1 rounded-full border border-amber-500/30 w-max backdrop-blur-md">TU MEJOR OPCION VIP</span>
                     <h2 class="text-2xl md:text-4xl font-black text-white font-futurista tracking-wider uppercase drop-shadow-lg">
@@ -106,7 +102,8 @@
             </div>
             <div class="p-6 bg-black/90 flex flex-col sm:flex-row justify-between items-center gap-4 border-t border-stone-900">
                 <div class="flex items-center gap-3">
-                    <span class="text-xs text-stone-400 font-mono">Tasas oficiales y transacciones seguras con respaldo verificado</span>
+                    <img src="https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3d3dlYnBqbDUwenB4eHZoeGw4NW01dGxra2Nxczl1cWEyOXQ1cG53NSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/VEc68ccEaKVB31P9K5/giphy.gif" alt="Logo BCV" class="w-10 h-10 object-contain filter drop-shadow-[0_0_8px_rgba(234,179,8,0.4)]">
+                    <span class="text-xs text-stone-400 font-mono">Tasas oficiales y transacciones seguras al BCV</span>
                 </div>
                 <button onclick="cambiarPantalla('simulador3d')" class="bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-futurista font-black px-8 py-4 rounded-2xl text-xs uppercase tracking-widest flex items-center gap-3 shadow-xl cursor-pointer shrink-0">
                     <i data-lucide="sparkles" class="w-5 h-5"></i> CREAR MI HAMBURGUESA
@@ -114,7 +111,6 @@
             </div>
         </div>
 
-        <!-- BUSCADOR DE PRODUCTOS -->
         <div class="w-full max-w-3xl mx-auto px-2">
             <div class="relative flex items-center bg-stone-950 border border-stone-800 rounded-2xl p-2 shadow-xl focus-within:border-amber-500/50 transition-colors">
                 <div class="pl-3 pr-2 text-amber-500">
@@ -133,11 +129,9 @@
             </div>
         </div>
 
-        <!-- GRID DE PRODUCTOS -->
         <div id="grid-productos-vitrina" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </main>
 
-    <!-- VISTA 2: DETALLE DE PRODUCTO Y ADICIONALES -->
     <main id="vista-detalle" class="hidden max-w-7xl w-full mx-auto px-4 py-8 flex-grow relative z-10">
         <button onclick="cambiarPantalla('vitrina')" class="mb-6 flex items-center gap-2 text-xs font-futurista uppercase tracking-widest text-stone-400 hover:text-amber-400 font-bold cursor-pointer transition-colors">
             <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Catálogo
@@ -189,7 +183,6 @@
         </div>
     </main>
 
-    <!-- VISTA 3: SIMULADOR 3D DE HAMBURGUESAS -->
     <main id="vista-simulador3d" class="hidden max-w-7xl w-full mx-auto px-4 py-6 flex-grow space-y-6 relative z-10">
         <div class="flex justify-between items-center">
             <button onclick="cambiarPantalla('vitrina')" class="flex items-center gap-2 text-xs font-futurista uppercase tracking-widest text-stone-400 hover:text-amber-400 font-bold cursor-pointer transition-colors">
@@ -215,7 +208,7 @@
                         <span id="precio-total-3d" class="text-2xl font-mono text-amber-400 font-black">$1.00</span>
                     </div>
                     <button onclick="enviarCreacion3DAlCarrito()" class="bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-futurista font-black px-6 py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg cursor-pointer flex items-center gap-2">
-                        <i data-lucide="check-check" class="w-4 h-4"></i> CARGAR AL CARRITO 🛒 
+                        <i data-lucide="check-check" class="w-4 h-4"></i>CARGAR AL CARRITO 🛒 
                     </button>
                 </div>
             </div>
@@ -245,7 +238,6 @@
         </div>
     </main>
 
-    <!-- VISTA 4: CARRITO Y MAPA DE DELIVERY SATELITAL -->
     <main id="vista-carrito" class="hidden max-w-7xl w-full mx-auto px-4 py-8 flex-grow relative z-10 grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
         <section class="lg:col-span-3 glass-panel p-6 rounded-3xl space-y-4 shadow-2xl border border-stone-900/60">
             <div class="border-b border-stone-800 pb-3 mb-4 flex justify-between items-end">
@@ -268,43 +260,15 @@
                 </div>
                 <p class="text-xs text-stone-400">Mueve el mapa para colocar el pin central 📍 exactamente en el lugar de entrega (ideal si compras desde el exterior para un familiar).</p>
                 
-                <!-- MAPA LEAFLET SATELITAL INTEGRADO -->
-                <div class="flex flex-col h-[500px] bg-neutral-900 text-white rounded-2xl overflow-hidden border border-neutral-800 shadow-2xl">
-                    <div class="relative w-full h-1/2 md:h-2/3 bg-neutral-800 flex items-center justify-center">
-                        <div id="mapa-delivery" class="w-full h-full z-10"></div>
-                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); pointer-events: none; z-index: 1000;">
-                            <span style="font-size: 35px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">📍</span>
-                        </div>
-                        <button type="button" id="btn-centrar-gps" class="absolute top-4 right-4 z-[1001] bg-neutral-800 hover:bg-neutral-700 p-3 rounded-full shadow-lg border border-neutral-700 cursor-pointer">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        </button>
-                    </div>
-
-                    <div class="w-full h-1/2 md:h-1/3 bg-neutral-900 rounded-t-3xl p-5 overflow-y-auto shadow-2xl border-t border-neutral-800">
-                        <div class="w-12 h-1.5 bg-neutral-700 rounded-full mx-auto mb-4"></div>
-                        <h3 class="text-neutral-400 text-sm font-medium mb-3">Lugares cercanos o Guardados</h3>
-                        
-                        <div class="space-y-3">
-                            <div onclick="centrarEnUbicacionActual()" class="flex items-center space-x-4 p-3 hover:bg-neutral-800 rounded-xl transition cursor-pointer border border-neutral-800">
-                                <div class="bg-neutral-800 p-3 rounded-full text-emerald-400">📍</div>
-                                <div>
-                                    <h4 class="font-semibold text-sm">Enviar tu ubicación actual</h4>
-                                    <p class="text-xs text-neutral-400">Centrar mapa en tu posición GPS</p>
-                                </div>
-                            </div>
-
-                            <div onclick="centrarEnPuntoLocal()" class="flex items-center space-x-4 p-3 hover:bg-neutral-800 rounded-xl transition cursor-pointer border border-neutral-800">
-                                <div class="bg-neutral-800 p-3 rounded-full text-neutral-300">🏢</div>
-                                <div>
-                                    <h4 class="font-semibold text-sm">Vendaval House (Local Principal)</h4>
-                                    <p class="text-xs text-neutral-400">Mérida, Venezuela</p>
-                                </div>
-                            </div>
-                        </div>
+                <!-- NUEVO MAPA INTERACTIVO CON PIN FIJO AL CENTRO -->
+                <div style="position: relative; width: 100%; height: 350px; border-radius: 12px; overflow: hidden; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1);">
+                    <div id="mapa-delivery" style="width: 100%; height: 100%;"></div>
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); pointer-events: none; z-index: 1000;">
+                        <span style="font-size: 35px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">📍</span>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center text-xs font-mono bg-stone-900 p-4 rounded-xl border border-stone-800 mt-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center text-xs font-mono bg-stone-900 p-4 rounded-xl border border-stone-800">
                     <div>
                         <span class="text-stone-400 block text-[9px] uppercase font-futurista">Distancia calculada:</span>
                         <span id="display-km" class="text-white font-bold text-sm">0.00 km</span>
@@ -323,7 +287,6 @@
             </div>
         </section>
 
-        <!-- SECCIÓN DE PAGO Y FACTURACIÓN -->
         <section class="bg-stone-950/90 border border-stone-800 p-6 rounded-3xl shadow-2xl space-y-5">
             <div class="flex items-start gap-2.5 text-xs text-stone-300 bg-amber-500/5 border border-amber-500/10 p-3 rounded-xl">
                 <span class="bg-emerald-600 text-black font-black rounded-full w-4 h-4 flex items-center justify-center shrink-0 text-[10px] mt-0.5">✓</span>
@@ -337,6 +300,7 @@
             </div>
             
             <div class="space-y-3 pt-2 border-t border-stone-900">
+                <!-- SELECCIÓN DEL MÉTODO DE PAGO -->
                 <div class="space-y-1.5">
                     <label class="text-[9px] uppercase text-stone-400 font-bold tracking-widest block font-futurista">1. Selecciona Método de Pago</label>
                     <select id="tipoMetodoPago" onchange="gestionarCamposPagoCart()" class="w-full bg-stone-900 border border-stone-800 text-xs text-stone-300 p-3.5 rounded-xl focus:outline-none focus:border-amber-500/40 font-medium">
@@ -348,6 +312,7 @@
                     </select>
                 </div>
 
+                <!-- CONTENEDOR DINÁMICO DE DATOS DE PAGO -->
                 <div id="info-metodo-pago" class="hidden p-3 bg-stone-900 border border-amber-500/30 rounded-xl space-y-1 text-xs font-mono">
                     <div class="flex items-center justify-between text-amber-400 font-bold border-b border-stone-800 pb-1.5 mb-1">
                         <span id="titulo-metodo-pago">Datos de Pago</span>
@@ -356,13 +321,15 @@
                     <div id="detalle-datos-pago" class="text-stone-300 space-y-1"></div>
                 </div>
 
+                <!-- CASILLA DE NÚMERO DE MESA OBLIGATORIO (SOLO PARA EFECTIVO) -->
                 <div id="contenedorNumeroMesaCart" class="space-y-1.5 hidden">
                     <label class="text-[9px] uppercase text-amber-400 font-bold tracking-widest block font-futurista">2. Número de Mesa (Obligatorio)</label>
                     <input type="text" id="input-num-mesa" placeholder="Ej. Mesa 04" class="w-full bg-stone-900 border border-amber-500/40 text-xs text-white p-3.5 rounded-xl font-mono tracking-wider focus:outline-none focus:border-amber-400">
                 </div>
 
+                <!-- CASILLA DE REFERENCIA -->
                 <div id="contenedorReferenciaCart" class="space-y-1.5 hidden">
-                    <label class="text-[9px] uppercase text-amber-400 font-bold tracking-widest block font-futurista">2. Número de Referencia</label>
+                    <label class="text-[9px] uppercase text-stone-400 font-bold tracking-widest block font-futurista">2. Número de Referencia</label>
                     <input type="text" id="input-ref-pago" placeholder="Ingresa datos o código de referencia" class="w-full bg-stone-900 border border-stone-800 text-xs text-white p-3.5 rounded-xl font-mono tracking-wider">
                 </div>
 
@@ -378,12 +345,10 @@
         </section>
     </main>
 
-    <!-- BOTÓN FLOTANTE CUPONERA -->
     <a href="cuponera.html" class="btn-oro-flotante fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full flex items-center justify-center text-stone-950 shadow-2xl cursor-pointer" title="Ver Cuponera">
         <i data-lucide="ticket" class="w-7 h-7 stroke-[2.5]"></i>
     </a>
 
-    <!-- MODAL LIGHTBOX FOTOS -->
     <div id="modal-lightbox" class="hidden fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4 cursor-zoom-out" onclick="cerrarAmplificacion()">
         <button class="absolute top-6 right-6 text-stone-400 hover:text-white transition-colors cursor-pointer">
             <i data-lucide="x" class="w-8 h-8"></i>
@@ -391,10 +356,8 @@
         <img id="lightbox-imagen-completa" src="" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl transition-transform duration-300">
     </div>
 
-    <!-- FOOTER -->
-    <footer class="border-t border-stone-950 bg-black/80 p-4 text-center text-[10px] text-stone-600 font-mono tracking-widest mt-12">© 2026 Vendaval House & D'UNIG LUXURY ECOSISTEMA. TODOS LOS DERECHOS RESERVADOS.</footer>
+    <footer class="border-t border-stone-950 bg-black/80 p-4 text-center text-[10px] text-stone-600 font-mono tracking-widest mt-12">© 2026 Casa de las papas & D'UNIG LUXURY ECOSISTEMA. TODOS LOS DERECHOS RESERVADOS.</footer>
 
-    <!-- SCRIPT DE CONTROL GENERAL -->
     <script>
         const SUPABASE_URL = "https://rqxtbdegckeaufnlfqfs.supabase.co"; 
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxeHRiZGVnY2tlYXVmbmxmcWZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3ODc3NjgsImV4cCI6MjEwNDM2Mzc2OH0.62QheHDSsV-N9S1n_18_uP2_evxwiNS9kZQX2vLGMC8"; 
@@ -419,6 +382,7 @@
         const LOCAL_LNG = -71.1418;
         let TARIFA_POR_KM = 0.80; 
 
+        // Diccionario dinámico que se llenará con los datos de Supabase (tabla cuentas_pago)
         let datosDePago = {};
 
         async function cargarCuentasPagoSupabase() {
@@ -509,6 +473,8 @@
                     vistaVitrina.style.pointerEvents = "auto";
                     vistaVitrina.style.opacity = "1";
                 }
+                const avisoCerrado = document.getElementById('overlay-tienda-cerrada');
+                if (avisoCerrado) avisoCerrado.remove();
             } else {
                 if (puntoHeader) puntoHeader.className = "w-2 h-2 rounded-full bg-red-500";
                 if (textoHeader) {
@@ -519,6 +485,15 @@
                 if (tituloVitrina) tituloVitrina.textContent = "ESTADO DEL LOCAL: CERRADOS";
                 if (descVitrina) descVitrina.textContent = "Lo sentimos, nuestro horario de atención ha finalizado.";
                 if (iconoWrapper) iconoWrapper.className = "w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400";
+                if (vistaVitrina) {
+                    vistaVitrina.style.pointerEvents = "none";
+                    vistaVitrina.style.opacity = "0.5";
+                }
+                const bannerEstado = document.getElementById('banner-estado-tienda');
+                if (bannerEstado) {
+                    bannerEstado.style.pointerEvents = "auto";
+                    bannerEstado.style.opacity = "1";
+                }
             }
         }
 
@@ -975,84 +950,44 @@
             cambiarPantalla('vitrina');
         }
 
+        // --- MAPA INTERACTIVO CON PIN FIJO AL CENTRO ---
         function inicializarMapaDelivery() {
             const contenedorMapa = document.getElementById('mapa-delivery');
             if (!contenedorMapa || mapaDelivery) return;
 
-            mapaDelivery = L.map('mapa-delivery', { 
-                attributionControl: false,
-                maxZoom: 20,
-                minZoom: 3
-            }).setView([LOCAL_LAT, LOCAL_LNG], 17);
+            // Inicializar mapa centrado en el local por defecto
+            mapaDelivery = L.map('mapa-delivery', { attributionControl: false }).setView([LOCAL_LAT, LOCAL_LNG], 14);
 
-            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                maxZoom: 20,
-                maxNativeZoom: 19,
-                attribution: 'Tiles &copy; Esri'
-            }).addTo(mapaDelivery);
+            L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '' }).addTo(mapaDelivery);
 
-            L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-                maxZoom: 20,
-                maxNativeZoom: 19,
-                opacity: 0.8
-            }).addTo(mapaDelivery);
-
+            // Marcador del local comercial
             const iconoLocal = L.divIcon({
                 className: 'custom-local-icon',
-                html: '<div style="background:#f59e0b; width:16px; height:16px; border-radius:50%; border:2px solid #000; box-shadow: 0 0 12px #f59e0b;" title="Vendaval House"></div>',
+                html: '<div style="background:#f59e0b; width:16px; height:16px; border-radius:50%; border:2px solid #000; box-shadow: 0 0 10px #f59e0b;" title="Casa de las Papas"></div>',
                 iconSize: [16, 16]
             });
-            L.marker([LOCAL_LAT, LOCAL_LNG], { icon: iconoLocal }).addTo(mapaDelivery).bindPopup("<b>VENDAVAL HOUSE</b><br>Punto de Salida");
+            L.marker([LOCAL_LAT, LOCAL_LNG], { icon: iconoLocal }).addTo(mapaDelivery).bindPopup("<b>CASA DE LAS PAPAS</b><br>Punto de Salida");
 
+            // Inicializar coordenadas con el centro actual
             let center = mapaDelivery.getCenter();
             gpsClienteLat = center.lat;
             gpsClienteLng = center.lng;
 
+            // Escuchar cuando el usuario mueve o arrastra el mapa para actualizar las coordenadas del pin central
             mapaDelivery.on('move', () => {
                 const c = mapaDelivery.getCenter();
                 gpsClienteLat = c.lat;
                 gpsClienteLng = c.lng;
             });
 
+            // Botón de confirmación de ubicación del mapa
             document.getElementById('btn-usar-ubicacion').addEventListener('click', () => {
                 actualizarCoordenadasYTrazarRuta(gpsClienteLat, gpsClienteLng);
-                document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación fijada: Lat: ${gpsClienteLat.toFixed(5)}, Lng: ${gpsClienteLng.toFixed(5)}`;
+                document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación fijada correctamente: Lat: ${gpsClienteLat.toFixed(5)}, Lng: ${gpsClienteLng.toFixed(5)}`;
             });
 
-            const btnGps = document.getElementById('btn-centrar-gps');
-            if(btnGps) {
-                btnGps.addEventListener('click', () => {
-                    centrarEnUbicacionActual();
-                });
-            }
-
+            // Calcular ruta inicial con el centro por defecto
             actualizarCoordenadasYTrazarRuta(gpsClienteLat, gpsClienteLng);
-        }
-
-        function centrarEnPuntoLocal() {
-            if(mapaDelivery) {
-                mapaDelivery.setView([LOCAL_LAT, LOCAL_LNG], 15);
-                actualizarCoordenadasYTrazarRuta(LOCAL_LAT, LOCAL_LNG);
-                document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación fijada en Local Principal`;
-            }
-        }
-
-        function centrarEnUbicacionActual() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition((position) => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    if(mapaDelivery) {
-                        mapaDelivery.setView([lat, lng], 16);
-                        actualizarCoordenadasYTrazarRuta(lat, lng);
-                        document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación GPS actual fijada correctamente`;
-                    }
-                }, (error) => {
-                    alert("No se pudo obtener tu ubicación GPS actual. Verifica los permisos de tu navegador.");
-                }, { enableHighAccuracy: true });
-            } else {
-                alert("La geolocalización no es compatible con este navegador.");
-            }
         }
 
         function actualizarCoordenadasYTrazarRuta(lat, lng) {
@@ -1129,6 +1064,7 @@
             }
         }
 
+        // --- GESTIÓN DINÁMICA DE CAMPOS Y DATOS DE PAGO DESDE SUPABASE ---
         function gestionarCamposPagoCart() {
             const metodo = document.getElementById('tipoMetodoPago').value;
             const contenedorRef = document.getElementById('contenedorReferenciaCart');
@@ -1225,7 +1161,7 @@
             if(data && data.valor) wsNum = data.valor.replace(/[^0-9]/g, "");
 
             let mensajeMesaExtra = metodo === 'efectivo' ? `🪑 *NÚMERO DE MESA:* ${numeroMesa}\n` : '';
-            const mensaje = `🍔 *PEDIDO VIP - Vendaval House* 🍔\n\n${lista}\n\n📦 *Subtotal:* $${subtotalProductos.toFixed(2)}\n🛵 *Delivery (${distanciaCalculadaKm.toFixed(2)} km):* $${costoDeliveryKm.toFixed(2)}\n💵 *TOTAL A PAGAR:* $${totalGeneral.toFixed(2)}\n📍 *Ubicación GPS:* ${linkGoogleMaps}\n🏦 *MÉTODO DE PAGO:* ${metodo.toUpperCase()}\n${mensajeMesaExtra}🔢 *REF:* ${ref}\n🎁 *REF. CLIENTE:* ${codigoReferidoCliente}`;
+            const mensaje = `🍔 *PEDIDO VIP -Vendaval House* 🍔\n\n${lista}\n\n📦 *Subtotal:* $${subtotalProductos.toFixed(2)}\n🛵 *Delivery (${distanciaCalculadaKm.toFixed(2)} km):* $${costoDeliveryKm.toFixed(2)}\n💵 *TOTAL A PAGAR:* $${totalGeneral.toFixed(2)}\n📍 *Ubicación GPS:* ${linkGoogleMaps}\n🏦 *MÉTODO DE PAGO:* ${metodo.toUpperCase()}\n${mensajeMesaExtra}🔢 *REF:* ${ref}\n🎁 *REF. CLIENTE:* ${codigoReferidoCliente}`;
 
             const datosOrdenPendiente = {
                 productos: carrito.map(i => i.titulo).join(', '),
