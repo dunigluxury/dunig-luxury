@@ -51,7 +51,7 @@
                        Vendaval<span class="text-amber-400">House</span>
                     </h1>
                     <p class="text-[8px] text-amber-500/70 uppercase tracking-[0.25em] font-bold font-futurista">
-                        MERIDA VENEZUELA
+                        HVX5+QM5, MÉRIDA 5101
                     </p>
                 </div>
             </div>
@@ -280,15 +280,15 @@
                                 <div class="bg-neutral-800 p-3 rounded-full text-emerald-400">📍</div>
                                 <div>
                                     <h4 class="font-semibold text-sm">Enviar tu ubicación actual</h4>
-                                    <p class="text-xs text-neutral-400">Centrar mapa y confirmar posición GPS</p>
+                                    <p class="text-xs text-neutral-400">Centrar mapa en tu posición GPS</p>
                                 </div>
                             </div>
 
                             <div onclick="irAVendavalHouse()" class="flex items-center space-x-4 p-3 hover:bg-neutral-800 rounded-xl transition cursor-pointer border border-neutral-800">
                                 <div class="bg-neutral-800 p-3 rounded-full text-neutral-300">🏢</div>
                                 <div>
-                                    <h4 class="font-semibold text-sm">Vendaval House (Local Principal)</h4>
-                                    <p class="text-xs text-neutral-400">Mérida, Venezuela</p>
+                                    <h4 class="font-semibold text-sm">Vendaval House (HVX5+QM5)</h4>
+                                    <p class="text-xs text-neutral-400">Mérida 5101, Venezuela</p>
                                 </div>
                             </div>
                         </div>
@@ -379,7 +379,7 @@
         <img id="lightbox-imagen-completa" src="" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl transition-transform duration-300">
     </div>
 
-    <footer class="border-t border-stone-950 bg-black/80 p-4 text-center text-[10px] text-stone-600 font-mono tracking-widest mt-12">© 2026 Casa de las papas & D'UNIG LUXURY ECOSISTEMA. TODOS LOS DERECHOS RESERVADOS.</footer>
+    <footer class="border-t border-stone-950 bg-black/80 p-4 text-center text-[10px] text-stone-600 font-mono tracking-widest mt-12">© 2026 Vendaval House (HVX5+QM5, Mérida 5101) & D'UNIG LUXURY ECOSISTEMA. TODOS LOS DERECHOS RESERVADOS.</footer>
 
     <script>
         const SUPABASE_URL = "https://rqxtbdegckeaufnlfqfs.supabase.co"; 
@@ -399,8 +399,8 @@
         let map;
         let gpsClienteLat = 8.5959;  
         let gpsClienteLng = -71.1416;
-        const LOCAL_LAT = 8.5959;  
-        const LOCAL_LNG = -71.1416;
+        const LOCAL_LAT = 8.5959;  // Coordenada exacta actualizada de Vendaval House (HVX5+QM5, Mérida 5101)
+        const LOCAL_LNG = -71.1416; // Coordenada exacta actualizada de Vendaval House (HVX5+QM5, Mérida 5101)
         let TARIFA_POR_KM = 0.80; 
         let distanciaCalculadaKm = 0;
         let costoDeliveryKm = 0;
@@ -1022,7 +1022,7 @@
 
             map = new google.maps.Map(document.getElementById("google-map-container"), {
                 center: { lat: LOCAL_LAT, lng: LOCAL_LNG },
-                zoom: 15,
+                zoom: 16,
                 disableDefaultUI: true,
                 zoomControl: true,
                 styles: estilosMapaOscuroNaranja 
@@ -1067,14 +1067,12 @@
                     (position) => {
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
-                        gpsClienteLat = lat;
-                        gpsClienteLng = lng;
                         if(map) {
                             map.setCenter({ lat, lng });
                             map.setZoom(17);
+                            fijarUbicacionActualMapa();
+                            document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación GPS actual fijada correctamente`;
                         }
-                        fijarUbicacionActualMapa();
-                        document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación GPS actual enviada y fijada correctamente`;
                     },
                     () => {
                         alert("No se pudo obtener tu ubicación GPS. Asegúrate de dar permisos.");
@@ -1230,7 +1228,7 @@
             if(data && data.valor) wsNum = data.valor.replace(/[^0-9]/g, "");
 
             let mensajeMesaExtra = metodo === 'efectivo' ? `🪑 *NÚMERO DE MESA:* ${numeroMesa}\n` : '';
-            const mensaje = `🍔 *PEDIDO VIP - Vendaval House* 🍔\n\n${lista}\n\n📦 *Subtotal:* $${subtotalProductos.toFixed(2)}\n🛵 *Delivery (${distanciaCalculadaKm.toFixed(2)} km):* $${costoDeliveryKm.toFixed(2)}\n💵 *TOTAL A PAGAR:* $${totalGeneral.toFixed(2)}\n📍 *Ubicación Google Maps:* ${linkGoogleMaps}\n🏦 *MÉTODO DE PAGO:* ${metodo.toUpperCase()}\n${mensajeMesaExtra}🔢 *REF:* ${ref}\n🎁 *REF. CLIENTE:* ${codigoReferidoCliente}`;
+            const mensaje = `🍔 *PEDIDO VIP - Vendaval House* 🍔\n📍 *Ubicación Local:* HVX5+QM5, Mérida 5101\n\n${lista}\n\n📦 *Subtotal:* $${subtotalProductos.toFixed(2)}\n🛵 *Delivery (${distanciaCalculadaKm.toFixed(2)} km):* $${costoDeliveryKm.toFixed(2)}\n💵 *TOTAL A PAGAR:* $${totalGeneral.toFixed(2)}\n📍 *Ubicación Google Maps Entregas:* ${linkGoogleMaps}\n🏦 *MÉTODO DE PAGO:* ${metodo.toUpperCase()}\n${mensajeMesaExtra}🔢 *REF:* ${ref}\n🎁 *REF. CLIENTE:* ${codigoReferidoCliente}`;
 
             const datosOrdenPendiente = {
                 productos: carrito.map(i => i.titulo).join(', '),
