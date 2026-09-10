@@ -30,6 +30,25 @@
             box-shadow: 0 6px 25px rgba(223, 179, 71, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.8);
         }
         .leaflet-control-attribution { display: none !important; }
+        
+        /* Estilos para Pantalla Completa del Mapa */
+        #contenedor-mapa-wrapper.fullscreen-map {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 99999 !important;
+            border-radius: 0 !important;
+            background: #000 !important;
+        }
+        #contenedor-mapa-wrapper.fullscreen-map .map-view-container {
+            height: 85vh !important;
+        }
+        #contenedor-mapa-wrapper.fullscreen-map .map-sidebar-container {
+            height: 15vh !important;
+        }
+
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #e5c158; border-radius: 10px; }
     </style>
@@ -59,7 +78,7 @@
                 </div>
 
                 <button onclick="cambiarPantalla('simulador3d')" class="hidden sm:flex bg-stone-900 border border-amber-500/30 hover:border-amber-500/60 px-4 py-2 rounded-xl items-center gap-2 text-xs font-futurista uppercase font-bold text-amber-400 cursor-pointer transition-all">
-                    <i data-lucide="sparkles" class="w-4 h-4"></i> Simulador 3D
+                    <i data-lucide="sparkles" class="w-4 h-4"></i> 
                 </button>
                 <button onclick="cambiarPantalla('carrito')" class="bg-stone-900 border border-amber-500/30 p-2.5 rounded-xl flex items-center gap-2 cursor-pointer hover:border-amber-500/60">
                     <i data-lucide="shopping-cart" class="w-4 h-4 text-amber-400"></i>
@@ -95,7 +114,7 @@
                 <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent flex flex-col justify-end p-6 md:p-8 space-y-2">
                     <span class="text-[10px] text-amber-400 font-futurista font-bold uppercase tracking-widest bg-amber-500/20 px-3 py-1 rounded-full border border-amber-500/30 w-max backdrop-blur-md">TU MEJOR OPCION VIP</span>
                     <h2 class="text-2xl md:text-4xl font-black text-white font-futurista tracking-wider uppercase drop-shadow-lg">
-                        REALIZA TU PEDIDO<span class="text-amber-400"> "YA"</span>
+                        REALIZA TU PEDIDO<span class="text-amber-400">"YA"</span>
                     </h2>
                     <p class="text-xs text-stone-300 max-w-xl">Arrastra ingredientes en tiempo real o explora nuestras especialidades certificadas.</p>
                 </div>
@@ -260,8 +279,15 @@
                 </div>
                 <p class="text-xs text-stone-400">Mueve el mapa para colocar el pin central 📍 exactamente en el lugar de entrega (ideal si compras desde el exterior para un familiar).</p>
                 
-                <div class="flex flex-col h-[500px] bg-neutral-900 text-white rounded-2xl overflow-hidden border border-neutral-800 shadow-2xl">
-                    <div class="relative w-full h-1/2 md:h-2/3 bg-neutral-800 flex items-center justify-center">
+                <!-- Contenedor del Mapa con funcionalidad de Pantalla Completa tipo Google Maps -->
+                <div id="contenedor-mapa-wrapper" class="flex flex-col h-[500px] bg-neutral-900 text-white rounded-2xl overflow-hidden border border-neutral-800 shadow-2xl relative transition-all duration-300">
+                    
+                    <!-- Botón Flotante para Pantalla Completa del Mapa -->
+                    <button type="button" onclick="togglePantallaCompletaMapa()" id="btn-fullscreen-map" class="absolute top-4 left-4 z-[1001] bg-neutral-900/90 hover:bg-neutral-800 text-amber-400 p-2.5 rounded-xl shadow-xl border border-amber-500/40 cursor-pointer flex items-center gap-2 text-[10px] font-futurista uppercase tracking-wider backdrop-blur-md">
+                        <i data-lucide="maximize" class="w-4 h-4" id="icono-fullscreen-map"></i> <span id="texto-fullscreen-map">Ampliar Mapa</span>
+                    </button>
+
+                    <div class="relative w-full h-1/2 md:h-2/3 bg-neutral-800 flex items-center justify-center map-view-container">
                         <div id="mapa-delivery" class="w-full h-full z-10"></div>
                         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); pointer-events: none; z-index: 1000;">
                             <span style="font-size: 35px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">📍</span>
@@ -271,7 +297,7 @@
                         </button>
                     </div>
 
-                    <div class="w-full h-1/2 md:h-1/3 bg-neutral-900 rounded-t-3xl p-5 overflow-y-auto shadow-2xl border-t border-neutral-800">
+                    <div class="w-full h-1/2 md:h-1/3 bg-neutral-900 rounded-t-3xl p-5 overflow-y-auto shadow-2xl border-t border-neutral-800 map-sidebar-container">
                         <div class="w-12 h-1.5 bg-neutral-700 rounded-full mx-auto mb-4"></div>
                         <h3 class="text-neutral-400 text-sm font-medium mb-3">Lugares cercanos o Guardados</h3>
                         
@@ -379,7 +405,7 @@
         <img id="lightbox-imagen-completa" src="" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl transition-transform duration-300">
     </div>
 
-    <footer class="border-t border-stone-950 bg-black/80 p-4 text-center text-[10px] text-stone-600 font-mono tracking-widest mt-12">© 2026 Vendaval house & D'UNIG LUXURY ECOSISTEMA. TODOS LOS DERECHOS RESERVADOS.</footer>
+    <footer class="border-t border-stone-950 bg-black/80 p-4 text-center text-[10px] text-stone-600 font-mono tracking-widest mt-12">© 2026 Casa de las papas & D'UNIG LUXURY ECOSISTEMA. TODOS LOS DERECHOS RESERVADOS.</footer>
 
     <script>
         const SUPABASE_URL = "https://rqxtbdegckeaufnlfqfs.supabase.co"; 
@@ -495,6 +521,8 @@
                     vistaVitrina.style.pointerEvents = "auto";
                     vistaVitrina.style.opacity = "1";
                 }
+                const avisoCerrado = document.getElementById('overlay-tienda-cerrada');
+                if (avisoCerrado) avisoCerrado.remove();
             } else {
                 if (puntoHeader) puntoHeader.className = "w-2 h-2 rounded-full bg-red-500";
                 if (textoHeader) {
@@ -505,6 +533,15 @@
                 if (tituloVitrina) tituloVitrina.textContent = "ESTADO DEL LOCAL: CERRADOS";
                 if (descVitrina) descVitrina.textContent = "Lo sentimos, nuestro horario de atención ha finalizado.";
                 if (iconoWrapper) iconoWrapper.className = "w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400";
+                if (vistaVitrina) {
+                    vistaVitrina.style.pointerEvents = "none";
+                    vistaVitrina.style.opacity = "0.5";
+                }
+                const bannerEstado = document.getElementById('banner-estado-tienda');
+                if (bannerEstado) {
+                    bannerEstado.style.pointerEvents = "auto";
+                    bannerEstado.style.opacity = "1";
+                }
             }
         }
 
@@ -1003,6 +1040,10 @@
             document.getElementById('btn-usar-ubicacion').addEventListener('click', () => {
                 actualizarCoordenadasYTrazarRuta(gpsClienteLat, gpsClienteLng);
                 document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación fijada: Lat: ${gpsClienteLat.toFixed(5)}, Lng: ${gpsClienteLng.toFixed(5)}`;
+                // Si estaba en pantalla completa al confirmar, salir de ella automáticamente opcionalmente
+                if(document.getElementById('contenedor-mapa-wrapper').classList.contains('fullscreen-map')) {
+                    togglePantallaCompletaMapa();
+                }
             });
 
             const btnGps = document.getElementById('btn-centrar-gps');
@@ -1013,6 +1054,30 @@
             }
 
             actualizarCoordenadasYTrazarRuta(gpsClienteLat, gpsClienteLng);
+        }
+
+        // Función para alternar la pantalla completa del mapa estilo Google Maps
+        function togglePantallaCompletaMapa() {
+            const wrapper = document.getElementById('contenedor-mapa-wrapper');
+            const icono = document.getElementById('icono-fullscreen-map');
+            const texto = document.getElementById('texto-fullscreen-map');
+
+            wrapper.classList.toggle('fullscreen-map');
+            
+            if (wrapper.classList.contains('fullscreen-map')) {
+                icono.setAttribute('data-lucide', 'minimize');
+                texto.textContent = 'Minimizar Mapa';
+            } else {
+                icono.setAttribute('data-lucide', 'maximize');
+                texto.textContent = 'Ampliar Mapa';
+            }
+            lucide.createIcons();
+            
+            if (mapaDelivery) {
+                setTimeout(() => {
+                    mapaDelivery.invalidateSize();
+                }, 150);
+            }
         }
 
         function centrarEnPuntoLocal() {
