@@ -972,39 +972,30 @@
             cambiarPantalla('vitrina');
         }
 
-        function inicializarMapaDelivery() {
+        let mapaDelivery = null;
+let imagenOverlayLayer = null;
+
+function inicializarMapaDelivery() {
     const contenedorMapa = document.getElementById('mapa-delivery');
     if (!contenedorMapa || mapaDelivery) return;
 
-    // Inicializamos el mapa con Leaflet permitiendo un zoom ultra cercano (maxZoom: 22)
-    mapaDelivery = L.map('mapa-delivery', { 
-        attributionControl: false,
-        maxZoom: 22,
-        minZoom: 5
-    }).setView([LOCAL_LAT, LOCAL_LNG], 18); // Iniciamos más cerca de la zona
-
-    // Capa de Satélite de máxima resolución con soporte para zoom extendido
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 22,
-        maxNativeZoom: 19, // Fuerza a estirar las teselas al máximo nivel de acercamiento permitido
-        attribution: 'Tiles &copy; Esri'
-    }).addTo(mapaDelivery);
-
-    // Capa de nombres y calles superpuesta con soporte para el zoom extendido
-    L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 22,
-        maxNativeZoom: 19,
-        opacity: 0.8
-    }).addTo(mapaDelivery);
-
-    // Marcador visual para el local principal (Vendaval House)
-    const iconoLocal = L.divIcon({
-        className: 'custom-local-icon',
-        html: '<div style="background:#f59e0b; width:16px; height:16px; border-radius:50%; border:2px solid #000; box-shadow: 0 0 12px #f59e0b;" title="Vendaval House"></div>',
-        iconSize: [16, 16]
+    // 1. Configuramos un sistema de coordenadas plano para la imagen
+    mapaDelivery = L.map('mapa-delivery', {
+        crs: L.CRS.Simple, // Sistema plano para imágenes personalizadas
+        minZoom: -1,
+        maxZoom: 4,
+        attributionControl: false
     });
-    L.marker([LOCAL_LAT, LOCAL_LNG], { icon: iconoLocal }).addTo(mapaDelivery).bindPopup("<b>VENDAVAL HOUSE</b><br>Punto de Salida");
 
+    // 2. Coordenadas de los límites de tu imagen (ancho y alto en píxeles)
+    // Cambia la URL de abajo por el enlace de tu foto en máxima definición (ej: una foto de dron o plano)
+    const urlImagenHD = "https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=2000"; 
+    const bounds = [[0, 0], [1000, 1000]]; // Ajusta según las dimensiones de tu imagen
+
+    imagenOverlayLayer = L.imageOverlay(urlImagenHD, bounds).addTo(mapaDelivery);
+    mapaDelivery.fitBounds(bounds);
+
+    // Permitir mover el marcador central de entrega sobre tu imagen HD
     let center = mapaDelivery.getCenter();
     gpsClienteLat = center.lat;
     gpsClienteLng = center.lng;
@@ -1016,18 +1007,8 @@
     });
 
     document.getElementById('btn-usar-ubicacion').addEventListener('click', () => {
-        actualizarCoordenadasYTrazarRuta(gpsClienteLat, gpsClienteLng);
-        document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación fijada: Lat: ${gpsClienteLat.toFixed(5)}, Lng: ${gpsClienteLng.toFixed(5)}`;
+        document.getElementById('coordenadas-seleccionadas').innerText = `✓ Punto exacto fijado en el plano HD`;
     });
-
-    const btnGps = document.getElementById('btn-centrar-gps');
-    if(btnGps) {
-        btnGps.addEventListener('click', () => {
-            centrarEnUbicacionActual();
-        });
-    }
-
-    actualizarCoordenadasYTrazarRuta(gpsClienteLat, gpsClienteLng);
 }
         function centrarEnPuntoLocal() {
             if(mapaDelivery) {
