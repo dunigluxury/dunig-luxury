@@ -938,55 +938,69 @@
         }
 
         // FUNCIÓN ACTUALIZADA: Obtiene GPS, calcula distancia, valor del delivery y extrae el texto de la dirección
-        function obtenerDireccionGPSActual() {
-            if (navigator.geolocation) {
-                const textoDirEl = document.getElementById('texto-direccion-gps');
-                const contenedorDir = document.getElementById('contenedor-direccion-gps');
-                
-                contenedorDir.classList.remove('hidden');
-                textoDirEl.innerText = "Obteniendo coordenadas GPS y dirección exacta...";
+        function obtenerUbicacionGPS() {
+    const contenedorDireccion = document.getElementById('direccion-detectada'); // El cuadro donde dice "Obteniendo dirección exacta..."
+    
+    if (!navigator.geolocation) {
+        contenedorDireccion.innerText = "Error: Tu navegador no soporta geolocalización.";
+        return;
+    }
 
-                navigator.geolocation.getCurrentPosition(async (position) => {
-                    gpsClienteLat = position.coords.latitude;
-                    gpsClienteLng = position.coords.longitude;
+    contenedorDireccion.innerText = "Obteniendo dirección exacta...";
 
-                    // Calcular distancia y costo delivery
-                    distanciaCalculadaKm = calcularDistanciaEnKm(LOCAL_LAT, LOCAL_LNG, gpsClienteLat, gpsClienteLng);
-                    let costoCalculado = distanciaCalculadaKm * TARIFA_POR_KM;
-                    if (costoCalculado < 1.00 && distanciaCalculadaKm > 0.1) costoCalculado = 1.00; 
-                    if (distanciaCalculadaKm <= 0.1) costoCalculado = 0.00;
-                    costoDeliveryKm = parseFloat(costoCalculado.toFixed(2));
+    const opcionesGPS = {
+        enableHighAccuracy: true,
+        timeout: 10000, // 10 segundos máximo para evitar que se quede cargando infinito
+        maximumAge: 0
+    };
 
-                    document.getElementById('display-km').innerText = `${distanciaCalculadaKm.toFixed(2)} km`;
-                    document.getElementById('display-costo-km').innerText = `$${costoDeliveryKm.toFixed(2)}`;
-                    document.getElementById('coordenadas-seleccionadas').innerText = `✓ GPS Fijado Correctamente`;
+    navigator.geolocation.getCurrentPosition(
+        async (position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
 
-                    renderizarCarrito();
-
-                    // Intentar obtener la dirección legible mediante Nominatim (OpenStreetMap Reverse Geocoding)
-                    try {
-                        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${gpsClienteLat}&lon=${gpsClienteLng}&zoom=18&addressdetails=1`);
-                        const data = await response.json();
-                        if (data && data.display_name) {
-                            direccionTextoGPS = data.display_name;
-                            textoDirEl.innerText = direccionTextoGPS;
-                        } else {
-                            direccionTextoGPS = `Lat: ${gpsClienteLat.toFixed(5)}, Lng: ${gpsClienteLng.toFixed(5)}`;
-                            textoDirEl.innerText = direccionTextoGPS;
-                        }
-                    } catch (err) {
-                        direccionTextoGPS = `Lat: ${gpsClienteLat.toFixed(5)}, Lng: ${gpsClienteLng.toFixed(5)}`;
-                        textoDirEl.innerText = direccionTextoGPS;
+            try {
+                // Intentamos obtener la dirección legible (Geocodificación inversa)
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`, {
+                    headers: {
+                        'User-Agent': 'VendavalHouseApp/1.0'
                     }
-
-                }, (error) => {
-                    alert("No se pudo obtener tu ubicación GPS. Asegúrate de permitir el acceso a la ubicación en tu navegador.");
-                    textoDirEl.innerText = "Error al obtener la ubicación.";
-                }, { enableHighAccuracy: true });
-            } else {
-                alert("La geolocalización no es compatible con este navegador.");
+                });
+                
+                const data = await response.json();
+                
+                if (data && data.display_name) {
+                    // Si encuentra la dirección, la mostramos
+                    contenedorDireccion.innerText = data.display_name;
+                    // Aquí puedes guardar las coordenadas y dirección en tus variables de envío o Supabase
+                } else {
+                    throw new Error("No se encontró la dirección");
+                }
+            } catch (error) {
+                // Respaldo si falla el servicio de nombres: mostramos las coordenadas para no bloquear al cliente
+                contenedorDireccion.innerText = `Ubicación GPS aprox. Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`;
             }
-        }
+        },
+        (error) => {
+            // Manejo de errores de permisos o GPS apagado
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    contenedorDireccion.innerText = "Permiso de ubicación denegado. Actívelo en su navegador.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    contenedorDireccion.innerText = "Información de ubicación no disponible.";
+                    break;
+                case error.TIMEOUT:
+                    contenedorDireccion.innerText = "Tiempo de espera agotado. Intente de nuevo.";
+                    break;
+                default:
+                    contenedorDireccion.innerText = "Error desconocido al obtener la ubicación.";
+                    break;
+            }
+        },
+        opcionesGPS
+    );
+}
 
         function calcularDistanciaEnKm(lat1, lon1, lat2, lon2) {
             const R = 6371; 
