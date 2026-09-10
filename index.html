@@ -260,15 +260,52 @@
                 </div>
                 <p class="text-xs text-stone-400">Mueve el mapa para colocar el pin central 📍 exactamente en el lugar de entrega (ideal si compras desde el exterior para un familiar).</p>
                 
-                <!-- NUEVO MAPA INTERACTIVO CON PIN FIJO AL CENTRO -->
-                <div style="position: relative; width: 100%; height: 350px; border-radius: 12px; overflow: hidden; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1);">
-                    <div id="mapa-delivery" style="width: 100%; height: 100%;"></div>
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); pointer-events: none; z-index: 1000;">
-                        <span style="font-size: 35px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">📍</span>
+                <!-- CONTENEDOR INTEGRADO DEL MAPA Y PANELES -->
+                <div class="flex flex-col h-[500px] bg-neutral-900 text-white rounded-2xl overflow-hidden border border-neutral-800 shadow-2xl">
+                    <!-- Contenedor del Mapa con Botón GPS -->
+                    <div class="relative w-full h-1/2 md:h-2/3 bg-neutral-800 flex items-center justify-center">
+                        <div id="mapa-delivery" class="w-full h-full z-10"></div>
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); pointer-events: none; z-index: 1000;">
+                            <span style="font-size: 35px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">📍</span>
+                        </div>
+                        <!-- Botón flotante superior estilo GPS -->
+                        <button type="button" id="btn-centrar-gps" class="absolute top-4 right-4 z-[1001] bg-neutral-800 hover:bg-neutral-700 p-3 rounded-full shadow-lg border border-neutral-700 cursor-pointer">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </button>
+                    </div>
+
+                    <!-- Panel Inferior de Lugares Cercanos -->
+                    <div class="w-full h-1/2 md:h-1/3 bg-neutral-900 rounded-t-3xl p-5 overflow-y-auto shadow-2xl border-t border-neutral-800">
+                        <div class="w-12 h-1.5 bg-neutral-700 rounded-full mx-auto mb-4"></div>
+                        <h3 class="text-neutral-400 text-sm font-medium mb-3">Lugares cercanos o Guardados</h3>
+                        
+                        <div class="space-y-3">
+                            <!-- Item 1: Ubicación Actual -->
+                            <div onclick="centrarEnUbicacionActual()" class="flex items-center space-x-4 p-3 hover:bg-neutral-800 rounded-xl transition cursor-pointer border border-neutral-800">
+                                <div class="bg-neutral-800 p-3 rounded-full text-emerald-400">
+                                    📍
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-sm">Enviar tu ubicación actual</h4>
+                                    <p class="text-xs text-neutral-400">Centrar mapa en tu posición GPS</p>
+                                </div>
+                            </div>
+
+                            <!-- Item 2: Dinámico desde Supabase / Local -->
+                            <div onclick="centrarEnPuntoLocal()" class="flex items-center space-x-4 p-3 hover:bg-neutral-800 rounded-xl transition cursor-pointer border border-neutral-800">
+                                <div class="bg-neutral-800 p-3 rounded-full text-neutral-300">
+                                    🏢
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-sm">Vendaval House (Local Principal)</h4>
+                                    <p class="text-xs text-neutral-400">Mérida, Venezuela</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center text-xs font-mono bg-stone-900 p-4 rounded-xl border border-stone-800">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center text-xs font-mono bg-stone-900 p-4 rounded-xl border border-stone-800 mt-4">
                     <div>
                         <span class="text-stone-400 block text-[9px] uppercase font-futurista">Distancia calculada:</span>
                         <span id="display-km" class="text-white font-bold text-sm">0.00 km</span>
@@ -382,7 +419,6 @@
         const LOCAL_LNG = -71.1418;
         let TARIFA_POR_KM = 0.80; 
 
-        // Diccionario dinámico que se llenará con los datos de Supabase (tabla cuentas_pago)
         let datosDePago = {};
 
         async function cargarCuentasPagoSupabase() {
@@ -950,44 +986,71 @@
             cambiarPantalla('vitrina');
         }
 
-        // --- MAPA INTERACTIVO CON PIN FIJO AL CENTRO ---
+        // --- MAPA INTERACTIVO Y PANELES LATERALES/INFERIORES ---
         function inicializarMapaDelivery() {
             const contenedorMapa = document.getElementById('mapa-delivery');
             if (!contenedorMapa || mapaDelivery) return;
 
-            // Inicializar mapa centrado en el local por defecto
             mapaDelivery = L.map('mapa-delivery', { attributionControl: false }).setView([LOCAL_LAT, LOCAL_LNG], 14);
 
             L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '' }).addTo(mapaDelivery);
 
-            // Marcador del local comercial
             const iconoLocal = L.divIcon({
                 className: 'custom-local-icon',
-                html: '<div style="background:#f59e0b; width:16px; height:16px; border-radius:50%; border:2px solid #000; box-shadow: 0 0 10px #f59e0b;" title="Casa de las Papas"></div>',
+                html: '<div style="background:#f59e0b; width:16px; height:16px; border-radius:50%; border:2px solid #000; box-shadow: 0 0 10px #f59e0b;" title="Vendaval House"></div>',
                 iconSize: [16, 16]
             });
-            L.marker([LOCAL_LAT, LOCAL_LNG], { icon: iconoLocal }).addTo(mapaDelivery).bindPopup("<b>CASA DE LAS PAPAS</b><br>Punto de Salida");
+            L.marker([LOCAL_LAT, LOCAL_LNG], { icon: iconoLocal }).addTo(mapaDelivery).bindPopup("<b>VENDAVAL HOUSE</b><br>Punto de Salida");
 
-            // Inicializar coordenadas con el centro actual
             let center = mapaDelivery.getCenter();
             gpsClienteLat = center.lat;
             gpsClienteLng = center.lng;
 
-            // Escuchar cuando el usuario mueve o arrastra el mapa para actualizar las coordenadas del pin central
             mapaDelivery.on('move', () => {
                 const c = mapaDelivery.getCenter();
                 gpsClienteLat = c.lat;
                 gpsClienteLng = c.lng;
             });
 
-            // Botón de confirmación de ubicación del mapa
             document.getElementById('btn-usar-ubicacion').addEventListener('click', () => {
                 actualizarCoordenadasYTrazarRuta(gpsClienteLat, gpsClienteLng);
-                document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación fijada correctamente: Lat: ${gpsClienteLat.toFixed(5)}, Lng: ${gpsClienteLng.toFixed(5)}`;
+                document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación fijada: Lat: ${gpsClienteLat.toFixed(5)}, Lng: ${gpsClienteLng.toFixed(5)}`;
             });
 
-            // Calcular ruta inicial con el centro por defecto
+            const btnGps = document.getElementById('btn-centrar-gps');
+            if(btnGps) {
+                btnGps.addEventListener('click', () => {
+                    centrarEnUbicacionActual();
+                });
+            }
+
             actualizarCoordenadasYTrazarRuta(gpsClienteLat, gpsClienteLng);
+        }
+
+        function centrarEnPuntoLocal() {
+            if(mapaDelivery) {
+                mapaDelivery.setView([LOCAL_LAT, LOCAL_LNG], 15);
+                actualizarCoordenadasYTrazarRuta(LOCAL_LAT, LOCAL_LNG);
+                document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación fijada en Local Principal`;
+            }
+        }
+
+        function centrarEnUbicacionActual() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    if(mapaDelivery) {
+                        mapaDelivery.setView([lat, lng], 16);
+                        actualizarCoordenadasYTrazarRuta(lat, lng);
+                        document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación GPS actual fijada correctamente`;
+                    }
+                }, (error) => {
+                    alert("No se pudo obtener tu ubicación GPS actual. Verifica los permisos de tu navegador.");
+                }, { enableHighAccuracy: true });
+            } else {
+                alert("La geolocalización no es compatible con este navegador.");
+            }
         }
 
         function actualizarCoordenadasYTrazarRuta(lat, lng) {
@@ -1064,7 +1127,6 @@
             }
         }
 
-        // --- GESTIÓN DINÁMICA DE CAMPOS Y DATOS DE PAGO DESDE SUPABASE ---
         function gestionarCamposPagoCart() {
             const metodo = document.getElementById('tipoMetodoPago').value;
             const contenedorRef = document.getElementById('contenedorReferenciaCart');
