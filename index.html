@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vendaval house- Ecosistema Studio 3D & VIP</title>
+    <title>Vendaval house - Ecosistema Studio 3D & VIP</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -91,7 +91,7 @@
 
         <div class="glass-panel rounded-3xl overflow-hidden border border-amber-500/30 shadow-2xl relative">
             <div class="w-full h-64 md:h-80 relative overflow-hidden bg-black">
-                <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGJrNnV3cnVzdWF2ZjZwOXI3b2U1cjk5ejM2cTh0YnpvZWlvbXplcyZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/3o7TKMYewttqjcp21y/giphy.gif" alt="Banner Animado Casa de las Papas" class="w-full h-full object-cover opacity-85 transform hover:scale-105 transition-transform duration-700">
+                <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGJrNnV3cnVzdWF2ZjZwOXI3b2U1cjk5ejM2cTh0YnpvZWlvbXplcyZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/3o7TKMYewttqjcp21y/giphy.gif" alt="Banner Animado" class="w-full h-full object-cover opacity-85 transform hover:scale-105 transition-transform duration-700">
                 <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent flex flex-col justify-end p-6 md:p-8 space-y-2">
                     <span class="text-[10px] text-amber-400 font-futurista font-bold uppercase tracking-widest bg-amber-500/20 px-3 py-1 rounded-full border border-amber-500/30 w-max backdrop-blur-md">TU MEJOR OPCION VIP</span>
                     <h2 class="text-2xl md:text-4xl font-black text-white font-futurista tracking-wider uppercase drop-shadow-lg">
@@ -255,14 +255,47 @@
             <div class="space-y-3 pt-6 border-t border-stone-900">
                 <div class="flex justify-between items-center">
                     <label class="text-[10px] uppercase text-amber-400 font-bold tracking-widest block font-futurista flex items-center gap-2">
-                        <i data-lucide="map-pin" class="w-4 h-4"></i> Ubicación de Entrega GPS (Obligatorio)
+                        <i data-lucide="map-pin" class="w-4 h-4"></i> Ubicación de Entrega en el Mapa (Obligatorio)
                     </label>
                 </div>
-                <p class="text-xs text-stone-400">Presiona el botón inferior para capturar tu GPS actual, bloquear el mapa y trazar la ruta exacta de entrega.</p>
+                <p class="text-xs text-stone-400">Mueve el mapa para colocar el pin central 📍 exactamente en el lugar de entrega (ideal si compras desde el exterior para un familiar).</p>
                 
-                <div id="mapa-delivery" class="w-full h-64 rounded-2xl border border-stone-800 relative z-10 bg-stone-950"></div>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center text-xs font-mono bg-stone-900 p-4 rounded-xl border border-stone-800">
+                <div class="flex flex-col h-[500px] bg-neutral-900 text-white rounded-2xl overflow-hidden border border-neutral-800 shadow-2xl">
+                    <div class="relative w-full h-1/2 md:h-2/3 bg-neutral-800 flex items-center justify-center">
+                        <div id="mapa-delivery" class="w-full h-full z-10"></div>
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); pointer-events: none; z-index: 1000;">
+                            <span style="font-size: 35px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">📍</span>
+                        </div>
+                        <button type="button" id="btn-centrar-gps" class="absolute top-4 right-4 z-[1001] bg-neutral-800 hover:bg-neutral-700 p-3 rounded-full shadow-lg border border-neutral-700 cursor-pointer">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </button>
+                    </div>
+
+                    <div class="w-full h-1/2 md:h-1/3 bg-neutral-900 rounded-t-3xl p-5 overflow-y-auto shadow-2xl border-t border-neutral-800">
+                        <div class="w-12 h-1.5 bg-neutral-700 rounded-full mx-auto mb-4"></div>
+                        <h3 class="text-neutral-400 text-sm font-medium mb-3">Lugares cercanos o Guardados</h3>
+                        
+                        <div class="space-y-3">
+                            <div onclick="centrarEnUbicacionActual()" class="flex items-center space-x-4 p-3 hover:bg-neutral-800 rounded-xl transition cursor-pointer border border-neutral-800">
+                                <div class="bg-neutral-800 p-3 rounded-full text-emerald-400">📍</div>
+                                <div>
+                                    <h4 class="font-semibold text-sm">Enviar tu ubicación actual</h4>
+                                    <p class="text-xs text-neutral-400">Centrar mapa en tu posición GPS</p>
+                                </div>
+                            </div>
+
+                            <div onclick="centrarEnPuntoLocal()" class="flex items-center space-x-4 p-3 hover:bg-neutral-800 rounded-xl transition cursor-pointer border border-neutral-800">
+                                <div class="bg-neutral-800 p-3 rounded-full text-neutral-300">🏢</div>
+                                <div>
+                                    <h4 class="font-semibold text-sm">Vendaval House (Local Principal)</h4>
+                                    <p class="text-xs text-neutral-400">Mérida, Venezuela</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center text-xs font-mono bg-stone-900 p-4 rounded-xl border border-stone-800 mt-4">
                     <div>
                         <span class="text-stone-400 block text-[9px] uppercase font-futurista">Distancia calculada:</span>
                         <span id="display-km" class="text-white font-bold text-sm">0.00 km</span>
@@ -272,11 +305,12 @@
                         <span id="display-costo-km" class="text-amber-400 font-black text-base">$0.00</span>
                     </div>
                     <div class="text-right">
-                        <button type="button" onclick="obtenerUbicacionGPSActual()" class="w-full sm:w-auto bg-amber-500 hover:bg-amber-400 text-black font-futurista font-black px-4 py-2.5 rounded-xl text-[10px] tracking-wider uppercase flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer">
-                            <i data-lucide="locate-fixed" class="w-3.5 h-3.5"></i> 📍 Usar mi GPS actual
+                        <button type="button" id="btn-usar-ubicacion" class="w-full sm:w-auto bg-amber-500 hover:bg-amber-400 text-black font-futurista font-black px-4 py-2.5 rounded-xl text-[10px] tracking-wider uppercase flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer">
+                            <i data-lucide="check" class="w-3.5 h-3.5"></i> Confirmar Ubicación 📍
                         </button>
                     </div>
                 </div>
+                <p id="coordenadas-seleccionadas" style="font-size: 11px; color: #10b981; text-align: center;" class="font-mono"></p>
             </div>
         </section>
 
@@ -293,7 +327,6 @@
             </div>
             
             <div class="space-y-3 pt-2 border-t border-stone-900">
-                <!-- SELECCIÓN DEL MÉTODO DE PAGO -->
                 <div class="space-y-1.5">
                     <label class="text-[9px] uppercase text-stone-400 font-bold tracking-widest block font-futurista">1. Selecciona Método de Pago</label>
                     <select id="tipoMetodoPago" onchange="gestionarCamposPagoCart()" class="w-full bg-stone-900 border border-stone-800 text-xs text-stone-300 p-3.5 rounded-xl focus:outline-none focus:border-amber-500/40 font-medium">
@@ -305,7 +338,6 @@
                     </select>
                 </div>
 
-                <!-- CONTENEDOR DINÁMICO DE DATOS DE PAGO -->
                 <div id="info-metodo-pago" class="hidden p-3 bg-stone-900 border border-amber-500/30 rounded-xl space-y-1 text-xs font-mono">
                     <div class="flex items-center justify-between text-amber-400 font-bold border-b border-stone-800 pb-1.5 mb-1">
                         <span id="titulo-metodo-pago">Datos de Pago</span>
@@ -314,15 +346,13 @@
                     <div id="detalle-datos-pago" class="text-stone-300 space-y-1"></div>
                 </div>
 
-                <!-- CASILLA DE NÚMERO DE MESA OBLIGATORIO (SOLO PARA EFECTIVO) -->
                 <div id="contenedorNumeroMesaCart" class="space-y-1.5 hidden">
                     <label class="text-[9px] uppercase text-amber-400 font-bold tracking-widest block font-futurista">2. Número de Mesa (Obligatorio)</label>
                     <input type="text" id="input-num-mesa" placeholder="Ej. Mesa 04" class="w-full bg-stone-900 border border-amber-500/40 text-xs text-white p-3.5 rounded-xl font-mono tracking-wider focus:outline-none focus:border-amber-400">
                 </div>
 
-                <!-- CASILLA DE REFERENCIA -->
                 <div id="contenedorReferenciaCart" class="space-y-1.5 hidden">
-                    <label class="text-[9px] uppercase text-stone-400 font-bold tracking-widest block font-futurista">2. Número de Referencia</label>
+                    <label class="text-[9px] uppercase text-amber-400 font-bold tracking-widest block font-futurista">2. Número de Referencia</label>
                     <input type="text" id="input-ref-pago" placeholder="Ingresa datos o código de referencia" class="w-full bg-stone-900 border border-stone-800 text-xs text-white p-3.5 rounded-xl font-mono tracking-wider">
                 </div>
 
@@ -367,8 +397,6 @@
         let scene, camera, renderer, hamburguesaGrupo;
 
         let mapaDelivery = null;
-        let marcadorCliente = null;
-        let lineaRutaDelivery = null;
         let costoDeliveryKm = 0;
         let distanciaCalculadaKm = 0;
         let gpsClienteLat = null;
@@ -377,7 +405,6 @@
         const LOCAL_LNG = -71.1418;
         let TARIFA_POR_KM = 0.80; 
 
-        // Diccionario dinámico que se llenará con los datos de Supabase (tabla cuentas_pago)
         let datosDePago = {};
 
         async function cargarCuentasPagoSupabase() {
@@ -406,7 +433,6 @@
                 console.error("Error al cargar cuentas de pago desde Supabase:", err);
             }
 
-            // Fallback por defecto para efectivo si no viene en la tabla
             if (!datosDePago['efectivo']) {
                 datosDePago['efectivo'] = `
                     <p class="text-amber-400">💵 Pago en efectivo en mesa o local.</p>
@@ -956,51 +982,60 @@
 
             const iconoLocal = L.divIcon({
                 className: 'custom-local-icon',
-                html: '<div style="background:#f59e0b; width:16px; height:16px; border-radius:50%; border:2px solid #000; box-shadow: 0 0 10px #f59e0b;" title="Casa de las Papas"></div>',
+                html: '<div style="background:#f59e0b; width:16px; height:16px; border-radius:50%; border:2px solid #000; box-shadow: 0 0 10px #f59e0b;" title="Vendaval House"></div>',
                 iconSize: [16, 16]
             });
-            L.marker([LOCAL_LAT, LOCAL_LNG], { icon: iconoLocal }).addTo(mapaDelivery).bindPopup("<b>CASA DE LAS PAPAS</b><br>Punto de Salida");
+            L.marker([LOCAL_LAT, LOCAL_LNG], { icon: iconoLocal }).addTo(mapaDelivery).bindPopup("<b>VENDAVAL HOUSE</b><br>Punto de Salida");
 
-            marcadorCliente = L.marker([LOCAL_LAT, LOCAL_LNG], { draggable: true }).addTo(mapaDelivery);
+            let center = mapaDelivery.getCenter();
+            gpsClienteLat = center.lat;
+            gpsClienteLng = center.lng;
 
-            bloquearInteraccionMapa();
-            obtenerUbicacionGPSActual();
-        }
+            mapaDelivery.on('move', () => {
+                const c = mapaDelivery.getCenter();
+                gpsClienteLat = c.lat;
+                gpsClienteLng = c.lng;
+            });
 
-        function bloquearInteraccionMapa() {
-            if (!mapaDelivery) return;
-            mapaDelivery.dragging.disable();
-            mapaDelivery.touchZoom.disable();
-            mapaDelivery.doubleClickZoom.disable();
-            mapaDelivery.scrollWheelZoom.disable();
-            mapaDelivery.boxZoom.disable();
-            mapaDelivery.keyboard.disable();
-            if (mapaDelivery.tap) mapaDelivery.tap.disable();
-        }
+            document.getElementById('btn-usar-ubicacion').addEventListener('click', () => {
+                actualizarCoordenadasYTrazarRuta(gpsClienteLat, gpsClienteLng);
+                document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación fijada: Lat: ${gpsClienteLat.toFixed(5)}, Lng: ${gpsClienteLng.toFixed(5)}`;
+            });
 
-        function obtenerUbicacionGPSActual() {
-            if (!navigator.geolocation) {
-                alert("Tu navegador no soporta geolocalización.");
-                return;
+            const btnGps = document.getElementById('btn-centrar-gps');
+            if(btnGps) {
+                btnGps.addEventListener('click', () => {
+                    centrarEnUbicacionActual();
+                });
             }
 
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
+            actualizarCoordenadasYTrazarRuta(gpsClienteLat, gpsClienteLng);
+        }
+
+        function centrarEnPuntoLocal() {
+            if(mapaDelivery) {
+                mapaDelivery.setView([LOCAL_LAT, LOCAL_LNG], 15);
+                actualizarCoordenadasYTrazarRuta(LOCAL_LAT, LOCAL_LNG);
+                document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación fijada en Local Principal`;
+            }
+        }
+
+        function centrarEnUbicacionActual() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
-                    if (marcadorCliente && mapaDelivery) {
-                        marcadorCliente.setLatLng([lat, lng]);
-                        mapaDelivery.setView([lat, lng], 15);
+                    if(mapaDelivery) {
+                        mapaDelivery.setView([lat, lng], 16);
                         actualizarCoordenadasYTrazarRuta(lat, lng);
-                        bloquearInteraccionMapa();
+                        document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación GPS actual fijada correctamente`;
                     }
-                },
-                (error) => {
-                    console.warn("No se pudo obtener la ubicación GPS automática:", error.message);
-                    actualizarCoordenadasYTrazarRuta(LOCAL_LAT, LOCAL_LNG);
-                },
-                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-            );
+                }, (error) => {
+                    alert("No se pudo obtener tu ubicación GPS actual. Verifica los permisos de tu navegador.");
+                }, { enableHighAccuracy: true });
+            } else {
+                alert("La geolocalización no es compatible con este navegador.");
+            }
         }
 
         function actualizarCoordenadasYTrazarRuta(lat, lng) {
@@ -1017,9 +1052,9 @@
             document.getElementById('display-km').innerText = `${distanciaCalculadaKm.toFixed(2)} km`;
             document.getElementById('display-costo-km').innerText = `$${costoDeliveryKm.toFixed(2)}`;
 
-            if (lineaRutaDelivery) mapaDelivery.removeLayer(lineaRutaDelivery);
+            if (window.lineaRutaDelivery) mapaDelivery.removeLayer(window.lineaRutaDelivery);
             
-            lineaRutaDelivery = L.polyline([[LOCAL_LAT, LOCAL_LNG], [lat, lng]], {
+            window.lineaRutaDelivery = L.polyline([[LOCAL_LAT, LOCAL_LNG], [lat, lng]], {
                 color: '#e5c158',
                 weight: 4,
                 opacity: 0.8,
@@ -1077,7 +1112,6 @@
             }
         }
 
-        // --- GESTIÓN DINÁMICA DE CAMPOS Y DATOS DE PAGO DESDE SUPABASE ---
         function gestionarCamposPagoCart() {
             const metodo = document.getElementById('tipoMetodoPago').value;
             const contenedorRef = document.getElementById('contenedorReferenciaCart');
@@ -1139,7 +1173,7 @@
             if(carrito.length === 0) { alert("Agrega productos primero."); return; }
             
             if(gpsClienteLat === null || gpsClienteLng === null) {
-                alert("Por favor permite o selecciona tu ubicación GPS en el mapa para continuar con la entrega.");
+                alert("Por favor ubica el pin en el mapa para continuar con la entrega.");
                 return;
             }
 
@@ -1174,7 +1208,7 @@
             if(data && data.valor) wsNum = data.valor.replace(/[^0-9]/g, "");
 
             let mensajeMesaExtra = metodo === 'efectivo' ? `🪑 *NÚMERO DE MESA:* ${numeroMesa}\n` : '';
-            const mensaje = `🍔 *PEDIDO VIP -Vendaval House* 🍔\n\n${lista}\n\n📦 *Subtotal:* $${subtotalProductos.toFixed(2)}\n🛵 *Delivery (${distanciaCalculadaKm.toFixed(2)} km):* $${costoDeliveryKm.toFixed(2)}\n💵 *TOTAL A PAGAR:* $${totalGeneral.toFixed(2)}\n📍 *Ubicación GPS:* ${linkGoogleMaps}\n🏦 *MÉTODO DE PAGO:* ${metodo.toUpperCase()}\n${mensajeMesaExtra}🔢 *REF:* ${ref}\n🎁 *REF. CLIENTE:* ${codigoReferidoCliente}`;
+            const mensaje = `🍔 *PEDIDO VIP - Vendaval House* 🍔\n\n${lista}\n\n📦 *Subtotal:* $${subtotalProductos.toFixed(2)}\n🛵 *Delivery (${distanciaCalculadaKm.toFixed(2)} km):* $${costoDeliveryKm.toFixed(2)}\n💵 *TOTAL A PAGAR:* $${totalGeneral.toFixed(2)}\n📍 *Ubicación GPS:* ${linkGoogleMaps}\n🏦 *MÉTODO DE PAGO:* ${metodo.toUpperCase()}\n${mensajeMesaExtra}🔢 *REF:* ${ref}\n🎁 *REF. CLIENTE:* ${codigoReferidoCliente}`;
 
             const datosOrdenPendiente = {
                 productos: carrito.map(i => i.titulo).join(', '),
