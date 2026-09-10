@@ -976,19 +976,25 @@
     const contenedorMapa = document.getElementById('mapa-delivery');
     if (!contenedorMapa || mapaDelivery) return;
 
-    // Inicializamos el mapa con Leaflet
-    mapaDelivery = L.map('mapa-delivery', { attributionControl: false }).setView([LOCAL_LAT, LOCAL_LNG], 15);
+    // Inicializamos el mapa con Leaflet permitiendo un zoom ultra cercano (maxZoom: 22)
+    mapaDelivery = L.map('mapa-delivery', { 
+        attributionControl: false,
+        maxZoom: 22,
+        minZoom: 5
+    }).setView([LOCAL_LAT, LOCAL_LNG], 18); // Iniciamos más cerca de la zona
 
-    // Capa de Satélite Realista (Esri World Imagery) con etiquetas opcionales de calles para mayor precisión
+    // Capa de Satélite de máxima resolución con soporte para zoom extendido
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 19,
-        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+        maxZoom: 22,
+        maxNativeZoom: 19, // Fuerza a estirar las teselas al máximo nivel de acercamiento permitido
+        attribution: 'Tiles &copy; Esri'
     }).addTo(mapaDelivery);
 
-    // Opcional: Agregar una capa superficial con nombres de calles y referencias sobre el satélite
+    // Capa de nombres y calles superpuesta con soporte para el zoom extendido
     L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 19,
-        opacity: 0.75
+        maxZoom: 22,
+        maxNativeZoom: 19,
+        opacity: 0.8
     }).addTo(mapaDelivery);
 
     // Marcador visual para el local principal (Vendaval House)
