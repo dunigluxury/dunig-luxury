@@ -973,62 +973,55 @@
         }
 
         function inicializarMapaDelivery() {
-    const contenedorMapa = document.getElementById('mapa-delivery');
-    if (!contenedorMapa || mapaDelivery) return;
+            const contenedorMapa = document.getElementById('mapa-delivery');
+            if (!contenedorMapa || mapaDelivery) return;
 
-    // Inicializamos el mapa con Leaflet y buen nivel de zoom para acercarse al detalle
-    mapaDelivery = L.map('mapa-delivery', { 
-        attributionControl: false,
-        maxZoom: 20,
-        minZoom: 3
-    }).setView([LOCAL_LAT, LOCAL_LNG], 17);
+            // Inicializamos el mapa con Leaflet y buen nivel de zoom
+            mapaDelivery = L.map('mapa-delivery', { 
+                attributionControl: false,
+                maxZoom: 19,
+                minZoom: 3
+            }).setView([LOCAL_LAT, LOCAL_LNG], 17);
 
-    // Capa de Satélite de Alta Resolución (Esri World Imagery)
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 20,
-        maxNativeZoom: 19,
-        attribution: 'Tiles &copy; Esri'
-    }).addTo(mapaDelivery);
+            // Capa de Calles (OpenStreetMap) optimizada para ver claramente nombres de calles y direcciones
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(mapaDelivery);
 
-    // Capa superpuesta con nombres de calles y referencias sobre el satélite
-    L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 20,
-        maxNativeZoom: 19,
-        opacity: 0.8
-    }).addTo(mapaDelivery);
+            // Marcador visual para el local principal
+            const iconoLocal = L.divIcon({
+                className: 'custom-local-icon',
+                html: '<div style="background:#f59e0b; width:16px; height:16px; border-radius:50%; border:2px solid #000; box-shadow: 0 0 12px #f59e0b;" title="Vendaval House"></div>',
+                iconSize: [16, 16]
+            });
+            L.marker([LOCAL_LAT, LOCAL_LNG], { icon: iconoLocal }).addTo(mapaDelivery).bindPopup("<b>VENDAVAL HOUSE</b><br>Punto de Salida");
 
-    // Marcador visual para el local principal
-    const iconoLocal = L.divIcon({
-        className: 'custom-local-icon',
-        html: '<div style="background:#f59e0b; width:16px; height:16px; border-radius:50%; border:2px solid #000; box-shadow: 0 0 12px #f59e0b;" title="Vendaval House"></div>',
-        iconSize: [16, 16]
-    });
-    L.marker([LOCAL_LAT, LOCAL_LNG], { icon: iconoLocal }).addTo(mapaDelivery).bindPopup("<b>VENDAVAL HOUSE</b><br>Punto de Salida");
+            let center = mapaDelivery.getCenter();
+            gpsClienteLat = center.lat;
+            gpsClienteLng = center.lng;
 
-    let center = mapaDelivery.getCenter();
-    gpsClienteLat = center.lat;
-    gpsClienteLng = center.lng;
+            mapaDelivery.on('move', () => {
+                const c = mapaDelivery.getCenter();
+                gpsClienteLat = c.lat;
+                gpsClienteLng = c.lng;
+            });
 
-    mapaDelivery.on('move', () => {
-        const c = mapaDelivery.getCenter();
-        gpsClienteLat = c.lat;
-        gpsClienteLng = c.lng;
-    });
+            document.getElementById('btn-usar-ubicacion').addEventListener('click', () => {
+                actualizarCoordenadasYTrazarRuta(gpsClienteLat, gpsClienteLng);
+                document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación fijada: Lat: ${gpsClienteLat.toFixed(5)}, Lng: ${gpsClienteLng.toFixed(5)}`;
+            });
 
-    document.getElementById('btn-usar-ubicacion').addEventListener('click', () => {
-        actualizarCoordenadasYTrazarRuta(gpsClienteLat, gpsClienteLng);
-        document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación fijada: Lat: ${gpsClienteLat.toFixed(5)}, Lng: ${gpsClienteLng.toFixed(5)}`;
-    });
+            const btnGps = document.getElementById('btn-centrar-gps');
+            if(btnGps) {
+                btnGps.addEventListener('click', () => {
+                    centrarEnUbicacionActual();
+                });
+            }
 
-    const btnGps = document.getElementById('btn-centrar-gps');
-    if(btnGps) {
-        btnGps.addEventListener('click', () => {
-            centrarEnUbicacionActual();
-        });
-    }
+            actualizarCoordenadasYTrazarRuta(gpsClienteLat, gpsClienteLng);
+        }
 
-    actualizarCoordenadasYTrazarRuta(gpsClienteLat, gpsClienteLng);
-}
         function centrarEnPuntoLocal() {
             if(mapaDelivery) {
                 mapaDelivery.setView([LOCAL_LAT, LOCAL_LNG], 15);
