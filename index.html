@@ -62,6 +62,10 @@
                     <span id="texto-estado-header" class="text-emerald-400 uppercase tracking-widest">Abierto</span>
                 </div>
 
+                <button onclick="cambiarPantalla('rastreo')" class="bg-stone-900 border border-amber-500/30 hover:border-amber-500/60 px-3.5 py-2 rounded-xl flex items-center gap-2 text-xs font-futurista uppercase font-bold text-amber-400 cursor-pointer transition-all shadow-lg" title="Rastreo GPS Motorizados">
+                    <i data-lucide="navigation" class="w-4 h-4 animate-pulse"></i> <span class="hidden md:inline">Rastreo Delivery</span>
+                </button>
+
                 <button onclick="cambiarPantalla('simulador3d')" class="hidden sm:flex bg-stone-900 border border-amber-500/30 hover:border-amber-500/60 px-4 py-2 rounded-xl items-center gap-2 text-xs font-futurista uppercase font-bold text-amber-400 cursor-pointer transition-all">
                     <i data-lucide="sparkles" class="w-4 h-4"></i> 
                 </button>
@@ -132,6 +136,77 @@
         </div>
 
         <div id="grid-productos-vitrina" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </main>
+
+    <!-- VISTA: RASTREO EN TIEMPO REAL DE MOTORIZADOS -->
+    <main id="vista-rastreo" class="hidden max-w-7xl w-full mx-auto px-4 py-6 flex-grow flex flex-col relative z-10 space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-stone-950 border border-stone-800 p-4 rounded-2xl shadow-xl">
+            <div class="flex items-center gap-3">
+                <button onclick="cambiarPantalla('vitrina')" class="bg-stone-900 border border-stone-800 p-2.5 rounded-xl hover:border-amber-500/50 text-stone-400 hover:text-white transition-colors cursor-pointer">
+                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                </button>
+                <div>
+                    <h2 class="text-sm font-black font-futurista text-white uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="navigation" class="w-4 h-4 text-amber-400"></i> Centro de Monitoreo & Delivery en Vivo
+                    </h2>
+                    <p class="text-[11px] text-stone-400">Ruta interactiva desde Vendaval House hasta el punto de entrega del cliente.</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+                <select id="select-ordenes-activas" onchange="seleccionarOrdenRastreo()" class="w-full sm:w-64 bg-stone-900 border border-amber-500/40 text-xs text-amber-400 font-mono p-2.5 rounded-xl focus:outline-none">
+                    <option value="">Selecciona orden en curso...</option>
+                </select>
+                <button onclick="reiniciarAnimacionMotorizado()" class="bg-amber-500 hover:bg-amber-400 text-black font-futurista font-black px-4 py-2.5 rounded-xl text-[10px] tracking-wider uppercase shrink-0 transition-all cursor-pointer">
+                    Simular Motorizado 🛵
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-grow">
+            <div class="lg:col-span-3 bg-neutral-900 rounded-3xl overflow-hidden border border-stone-800 shadow-2xl relative min-h-[500px] flex flex-col">
+                <div id="map-rastreo-container" class="w-full h-full flex-grow relative bg-neutral-950"></div>
+                <div class="absolute bottom-4 left-4 right-4 sm:right-auto bg-black/85 backdrop-blur-md border border-amber-500/30 p-4 rounded-2xl shadow-2xl flex items-center gap-4 z-20">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                        <i data-lucide="bike" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-amber-400 font-futurista uppercase font-bold">Estado del Repartidor</div>
+                        <div id="texto-estado-repartidor" class="text-xs text-white font-bold">En camino al destino...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel p-6 rounded-3xl space-y-5 shadow-2xl flex flex-col justify-between">
+                <div class="space-y-4">
+                    <h3 class="text-xs font-black font-futurista text-white uppercase tracking-widest border-b border-stone-800 pb-3">Detalles de Ruta</h3>
+                    <div class="space-y-3 text-xs font-mono">
+                        <div class="bg-stone-900/80 p-3 rounded-xl border border-stone-800">
+                            <span class="text-stone-400 block text-[9px] uppercase font-futurista">Origen (Local):</span>
+                            <span class="text-white font-bold">Vendaval House (Mérida)</span>
+                        </div>
+                        <div class="bg-stone-900/80 p-3 rounded-xl border border-stone-800">
+                            <span class="text-stone-400 block text-[9px] uppercase font-futurista">Destino (Cliente):</span>
+                            <span id="info-destino-texto" class="text-amber-400 font-bold">Seleccione orden arriba</span>
+                        </div>
+                        <div class="bg-stone-900/80 p-3 rounded-xl border border-stone-800">
+                            <span class="text-stone-400 block text-[9px] uppercase font-futurista">Distancia Estimada:</span>
+                            <span id="info-distancia-ruta" class="text-white font-bold">-- km</span>
+                        </div>
+                        <div class="bg-stone-900/80 p-3 rounded-xl border border-stone-800">
+                            <span class="text-stone-400 block text-[9px] uppercase font-futurista">Tiempo Estimado:</span>
+                            <span id="info-tiempo-ruta" class="text-emerald-400 font-bold">-- mins</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-amber-500/5 border border-amber-500/20 p-4 rounded-2xl text-[11px] text-stone-300 space-y-2">
+                    <div class="flex items-center gap-2 text-amber-400 font-bold font-futurista">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i> Monitoreo Activo
+                    </div>
+                    <p>El sistema actualiza la posición del motorizado en tiempo real a través del GPS integrado de la plataforma.</p>
+                </div>
+            </div>
+        </div>
     </main>
 
     <main id="vista-detalle" class="hidden max-w-7xl w-full mx-auto px-4 py-8 flex-grow relative z-10">
@@ -386,6 +461,11 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxeHRiZGVnY2tlYXVmbmxmcWZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3ODc3NjgsImV4cCI6MjEwNDM2Mzc2OH0.62QheHDSsV-N9S1n_18_uP2_evxwiNS9kZQX2vLGMC8"; 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // Supabase Central para la sincronización de órdenes de delivery
+        const SUPABASE_CENTRAL_URL = "https://cmaishgahyzlhszwaozg.supabase.co";
+        const SUPABASE_CENTRAL_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtYWlzaGdhaHl6bGhzendhb3pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5MjMxMzEsImV4cCI6MjEwMDQ5OTEzMX0.8JVrpQKocnyZa3qLxsX9ZxjygYy4QY3kp_VSvrL1qNQ"; 
+        const supabaseCentral = supabase.createClient(SUPABASE_CENTRAL_URL, SUPABASE_CENTRAL_ANON_KEY);
+
         let carrito = [];
         let capasActuales = []; 
         let catalogoIngredientes3D = [];
@@ -396,7 +476,7 @@
 
         let scene, camera, renderer, hamburguesaGrupo;
 
-        let map;
+        let map, mapRastreo;
         let gpsClienteLat = 8.59941369535553;  
         let gpsClienteLng = -71.14089323410698;
         const LOCAL_LAT = 8.59941369535553;  
@@ -406,6 +486,11 @@
         let costoDeliveryKm = 0;
 
         let datosDePago = {};
+        let ordenesActivasGlobal = [];
+        let markerMotorizado = null;
+        let marcadorDestinoRastreo = null;
+        let directionsRendererRastreo = null;
+        let animacionMotorizadoInterval = null;
 
         async function cargarCuentasPagoSupabase() {
             try {
@@ -526,7 +611,7 @@
         }
 
         async function cambiarPantalla(nombre) {
-            ['vitrina', 'detalle', 'simulador3d', 'carrito'].forEach(v => {
+            ['vitrina', 'rastreo', 'detalle', 'simulador3d', 'carrito'].forEach(v => {
                 const el = document.getElementById(`vista-${v}`);
                 if(el) el.classList.add('hidden');
             });
@@ -534,6 +619,13 @@
             if(target) target.classList.remove('hidden');
 
             if (nombre === 'vitrina') await verificarEstadoTienda();
+            if (nombre === 'rastreo') {
+                setTimeout(async () => {
+                    if (!mapRastreo) inicializarMapaRastreo();
+                    await cargarOrdenesParaRastreo();
+                    google.maps.event.trigger(mapRastreo, "resize");
+                }, 200);
+            }
             if (nombre === 'simulador3d') {
                 setTimeout(async () => {
                     if (!scene) inicializarThreeJS();
@@ -553,12 +645,7 @@
                 await cargarTarifaDeliveryDesdeSupabase();
                 renderizarCarrito();
                 setTimeout(() => {
-                    if (!map) {
-                        initMap();
-                    } else {
-                        google.maps.event.trigger(map, "resize");
-                        map.setCenter({ lat: LOCAL_LAT, lng: LOCAL_LNG });
-                    }
+                    if (map) google.maps.event.trigger(map, "resize");
                 }, 200);
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -650,7 +737,7 @@
         }
 
         function cambiarPantallaDetalleDirecto() {
-            ['vitrina', 'simulador3d', 'carrito'].forEach(v => {
+            ['vitrina', 'rastreo', 'simulador3d', 'carrito'].forEach(v => {
                 const el = document.getElementById(`vista-${v}`);
                 if(el) el.classList.add('hidden');
             });
@@ -987,7 +1074,7 @@
 
         function initMap() {
             const containerMap = document.getElementById("google-map-container");
-            if(containerMap && !map) {
+            if(containerMap) {
                 map = new google.maps.Map(containerMap, {
                     center: { lat: LOCAL_LAT, lng: LOCAL_LNG },
                     zoom: 15,
@@ -1002,6 +1089,143 @@
                     gpsClienteLng = centro.lng();
                 });
             }
+        }
+
+        function inicializarMapaRastreo() {
+            const containerRastreo = document.getElementById("map-rastreo-container");
+            if(containerRastreo) {
+                mapRastreo = new google.maps.Map(containerRastreo, {
+                    center: { lat: LOCAL_LAT, lng: LOCAL_LNG },
+                    zoom: 14,
+                    disableDefaultUI: true,
+                    zoomControl: true,
+                    styles: estilosMapaOscuroNaranja
+                });
+                directionsRendererRastreo = new google.maps.DirectionsRenderer({
+                    map: mapRastreo,
+                    suppressMarkers: true,
+                    polylineOptions: { strokeColor: "#f59e0b", strokeWeight: 5, strokeOpacity: 0.8 }
+                });
+            }
+        }
+
+        async function cargarOrdenesParaRastreo() {
+            try {
+                const { data, error } = await supabaseCentral
+                    .from('ordenes_vip')
+                    .select('*')
+                    .order('id', { ascending: false });
+
+                if (!error && data) {
+                    ordenesActivasGlobal = data;
+                    const select = document.getElementById('select-ordenes-activas');
+                    if(select) {
+                        select.innerHTML = `<option value="">Selecciona orden en curso...</option>`;
+                        data.forEach(o => {
+                            select.innerHTML += `<option value="${o.id}">Orden #${o.id} - ${o.comercio || 'Vendaval House'}</option>`;
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error("Error al cargar órdenes para rastreo:", err);
+            }
+        }
+
+        function seleccionarOrdenRastreo() {
+            const idOrden = document.getElementById('select-ordenes-activas').value;
+            if(!idOrden) return;
+            const orden = ordenesActivasGlobal.find(o => o.id == idOrden);
+            if(!orden) return;
+
+            let latDestino = LOCAL_LAT + 0.01;
+            let lngDestino = LOCAL_LNG + 0.01;
+
+            if (orden.coordenadas_gps && orden.coordenadas_gps.includes(',')) {
+                const partes = orden.coordenadas_gps.split(',');
+                const parsedLat = parseFloat(partes[0]);
+                const parsedLng = parseFloat(partes[1]);
+                if(!isNaN(parsedLat) && !isNaN(parsedLng)) {
+                    latDestino = parsedLat;
+                    lngDestino = parsedLng;
+                }
+            }
+
+            document.getElementById('info-destino-texto').innerText = `Lat: ${latDestino.toFixed(4)}, Lng: ${lngDestino.toFixed(4)}`;
+            trazarRutaEnMapaRastreo(LOCAL_LAT, LOCAL_LNG, latDestino, lngDestino);
+        }
+
+        function trazarRutaEnMapaRastreo(origLat, origLng, destLat, destLng) {
+            if(!mapRastreo) return;
+            const directionsService = new google.maps.DirectionsService();
+            const origin = new google.maps.LatLng(origLat, origLng);
+            const destination = new google.maps.LatLng(destLat, destLng);
+
+            directionsService.route({
+                origin: origin,
+                destination: destination,
+                travelMode: google.maps.TravelMode.DRIVING
+            }, (response, status) => {
+                if (status === 'OK') {
+                    directionsRendererRastreo.setDirections(response);
+                    const route = response.routes[0];
+                    const leg = route.legs[0];
+
+                    document.getElementById('info-distancia-ruta').innerText = leg.distance.text;
+                    document.getElementById('info-tiempo-ruta').innerText = leg.duration.text;
+
+                    if(marcadorDestinoRastreo) marcadorDestinoRastreo.setMap(null);
+                    marcadorDestinoRastreo = new google.maps.Marker({
+                        position: destination,
+                        map: mapRastreo,
+                        title: "Punto de Entrega",
+                        icon: { url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png" }
+                    });
+
+                    iniciarAnimacionMovimientoMotorizado(leg.steps);
+                } else {
+                    console.error("Error al calcular la ruta de delivery:", status);
+                }
+            });
+        }
+
+        function iniciarAnimacionMovimientoMotorizado(steps) {
+            if(animacionMotorizadoInterval) clearInterval(animacionMotorizadoInterval);
+            if(!markerMotorizado) {
+                markerMotorizado = new google.maps.Marker({
+                    map: mapRastreo,
+                    title: "Repartidor VIP",
+                    icon: { url: "https://maps.google.com/mapfiles/ms/icons/motorcycling.png", scaledSize: new google.maps.Size(38, 38) }
+                });
+            }
+
+            let allPoints = [];
+            steps.forEach(step => {
+                step.path.forEach(pt => allPoints.push(pt));
+            });
+
+            if(allPoints.length === 0) return;
+
+            let indexPunto = 0;
+            document.getElementById('texto-estado-repartidor').innerText = "Motorizado en ruta hacia el cliente 🛵";
+
+            animacionMotorizadoInterval = setInterval(() => {
+                if(indexPunto < allPoints.length) {
+                    markerMotorizado.setPosition(allPoints[indexPunto]);
+                    indexPunto++;
+                } else {
+                    document.getElementById('texto-estado-repartidor').innerText = "¡Pedido entregado con éxito! 🎉";
+                    clearInterval(animacionMotorizadoInterval);
+                }
+            }, 800);
+        }
+
+        function reiniciarAnimacionMotorizado() {
+            const idOrden = document.getElementById('select-ordenes-activas').value;
+            if(!idOrden) {
+                alert("Selecciona primero una orden activa de la lista.");
+                return;
+            }
+            seleccionarOrdenRastreo();
         }
 
         function fijarUbicacionActualMapa() {
@@ -1158,6 +1382,19 @@
             lucide.createIcons();
         });
 
+        // Inserción corregida ajustada exactamente a las columnas de la tabla ordenes_vip
+        async function enviarOrdenAlDeliveryCentral(datosPedido) {
+            const { error } = await supabaseCentral
+                .from('ordenes_vip')
+                .insert([datosPedido]);
+
+            if (error) {
+                console.error("Error al notificar a la central de delivery:", error);
+            } else {
+                console.log("¡Orden enviada con éxito a la central de repartidores!");
+            }
+        }
+
         async function enviarPedidoWhatsApp() {
             if(carrito.length === 0) { alert("Agrega productos primero."); return; }
             
@@ -1199,19 +1436,18 @@
             let mensajeMesaExtra = metodo === 'efectivo' ? `🪑 *NÚMERO DE MESA:* ${numeroMesa}\n` : '';
             const mensaje = `🍔 *PEDIDO VIP - Vendaval House* 🍔\n\n${lista}\n\n📦 *Subtotal:* $${subtotalProductos.toFixed(2)}\n🛵 *Delivery (${distanciaCalculadaKm.toFixed(2)} km):* $${costoDeliveryKm.toFixed(2)}\n💵 *TOTAL A PAGAR:* $${totalGeneral.toFixed(2)}\n📍 *Ubicación Google Maps:* ${linkGoogleMaps}\n🏦 *MÉTODO DE PAGO:* ${metodo.toUpperCase()}\n${mensajeMesaExtra}🔢 *REF:* ${ref}\n🎁 *REF. CLIENTE:* ${codigoReferidoCliente}`;
 
-            const datosOrdenPendiente = {
+            // Objeto de inserción limpio adaptado al esquema exacto de ordenes_vip
+            const objetoOrden = {
+                comercio: "Vendaval House",
                 productos: carrito.map(i => i.titulo).join(', '),
-                total: totalGeneral,
-                monto_total: totalGeneral,
-                referencia: ref,
-                referencia_bancaria: ref,
-                estado: "Pendiente",
-                codigo_referido: codigoReferidoCliente,
+                costo_delivery: costoDeliveryKm,
                 coordenadas_gps: `${gpsClienteLat},${gpsClienteLng}`,
-                costo_delivery: costoDeliveryKm
+                estado: "Pendiente"
             };
 
-            await supabaseClient.from('ordenes_vip').insert([datosOrdenPendiente]); 
+            // Notificación simultánea a la base de datos local y central de delivery
+            await supabaseClient.from('ordenes_vip').insert([objetoOrden]); 
+            await enviarOrdenAlDeliveryCentral(objetoOrden);
 
             carrito = [];
             document.getElementById('contador-carrito-badge').innerText = "0";
