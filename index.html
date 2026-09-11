@@ -408,8 +408,8 @@
         let datosDePago = {};
 
         async function guardarOrdenEnCentral(nuevaOrden) {
-          const SUPABASE_CENTRAL_URL = "https://TU_PROYECTO_CENTRAL.supabase.co/rest/v1/nombre_tabla_ordenes";
-          const SUPABASE_CENTRAL_ANON_OR_SERVICE_KEY = "TU_API_KEY_DEL_PROYECTO_CENTRAL";
+          const SUPABASE_CENTRAL_URL = "https://cmaishgahyzlhszwaozg.supabase.co";
+          const SUPABASE_CENTRAL_ANON_OR_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtYWlzaGdhaHl6bGhzendhb3pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5MjMxMzEsImV4cCI6MjEwMDQ5OTEzMX0.8JVrpQKocnyZa3qLxsX9ZxjygYy4QY3kp_VSvrL1qNQ";
 
           try {
             const response = await fetch(SUPABASE_CENTRAL_URL, {
