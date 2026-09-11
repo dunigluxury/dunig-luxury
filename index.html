@@ -407,6 +407,44 @@
 
         let datosDePago = {};
 
+        async function guardarOrdenEnCentral(nuevaOrden) {
+          const SUPABASE_CENTRAL_URL = "https://TU_PROYECTO_CENTRAL.supabase.co/rest/v1/nombre_tabla_ordenes";
+          const SUPABASE_CENTRAL_ANON_OR_SERVICE_KEY = "TU_API_KEY_DEL_PROYECTO_CENTRAL";
+
+          try {
+            const response = await fetch(SUPABASE_CENTRAL_URL, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "apikey": SUPABASE_CENTRAL_ANON_OR_SERVICE_KEY,
+                "Authorization": `Bearer ${SUPABASE_CENTRAL_ANON_OR_SERVICE_KEY}`,
+                "Prefer": "return=representation"
+              },
+              body: JSON.stringify({
+                cliente_nombre: nuevaOrden.nombre,
+                cliente_telefono: nuevaOrden.telefono,
+                detalles_orden: nuevaOrden.detalles,
+                total: nuevaOrden.total,
+                origen: "Vitrina Digital", // Para identificar de qué proyecto viene
+                estado: "pendiente",
+                created_at: new Date()
+              })
+            });
+
+            if (!response.ok) {
+              throw new Error(`Error al sincronizar con la central: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log("Orden guardada exitosamente en la central:", data);
+            return data;
+
+          } catch (error) {
+            console.error("Fallo la sincronización central:", error);
+            // Opcional: Guardar localmente o reintentar si falla la red
+          }
+        }
+
         async function cargarCuentasPagoSupabase() {
             try {
                 const { data, error } = await supabaseClient.from('cuentas_pago').select('*');
@@ -1206,7 +1244,16 @@
                 costo_delivery: costoDeliveryKm
             };
 
+            // Guarda la orden en el proyecto actual de Supabase
             await supabaseClient.from('ordenes_vip').insert([datosOrdenPendiente]); 
+
+            // Guarda también la orden en la tabla central (proyecto externo) utilizando la función añadida
+            await guardarOrdenEnCentral({
+                nombre: "Cliente VIP (Vitrina)",
+                telefono: "No especificado",
+                detalles: carrito.map(i => i.titulo).join(', '),
+                total: totalGeneral
+            });
 
             carrito = [];
             document.getElementById('contador-carrito-badge').innerText = "0";
