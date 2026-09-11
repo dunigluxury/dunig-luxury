@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendaval House - Panel de Repartidor</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #000000; color: #e5e5e5; }
+        .font-futurista { font-family: 'Orbitron', sans-serif; }
+        .glass-panel { background: rgba(18, 18, 18, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-4 md:p-8">
+
+    <header class="max-w-4xl mx-auto w-full flex justify-between items-center pb-6 border-b border-neutral-800">
+        <div class="flex items-center gap-3">
+            <div class="border border-amber-500/30 p-2.5 rounded-2xl bg-stone-950 text-amber-400">
+                <i data-lucide="bike" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="text-base font-black tracking-widest text-white font-futurista">DELIVERY<span class="text-amber-400">APP</span></h1>
+                <p class="text-[9px] text-amber-500 uppercase tracking-widest font-bold">Panel Exclusivo de Repartidor</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 bg-neutral-900 px-3 py-1.5 rounded-xl border border-neutral-800 text-xs font-mono">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-emerald-400 font-bold">En Línea</span>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto w-full flex-grow py-6 space-y-6">
+        <div class="flex justify-between items-center">
+            <h2 class="text-lg font-futurista font-black uppercase text-white">Pedidos Disponibles para Ruta</h2>
+            <button onclick="cargarPedidosEntrantes()" class="bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-xs px-3 py-2 rounded-xl flex items-center gap-2 cursor-pointer font-mono">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-amber-400"></i> Actualizar
+            </button>
+        </div>
+
+        <div id="contenedor-pedidos-repartidor" class="space-y-4">
+            <div class="text-center py-12 text-neutral-500 font-mono text-xs">Buscando nuevas ordenes pendientes...</div>
+        </div>
+    </main>
+
+    <footer class="max-w-4xl mx-auto w-full text-center text-[10px] text-neutral-600 font-mono pt-6 border-t border-neutral-900">
+        © 2026 D'UNIG LUXURY ECOSISTEMA - Modulo Repartidores
+    </footer>
+
+    <script>
+        const SUPABASE_URL = "https://rqxtbdegckeaufnlfqfs.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxeHRiZGVnY2tlYXVmbmxmcWZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3ODc3NjgsImV4cCI6MjEwNDM2Mzc2OH0.62QheHDSsV-N9S1n_18_uP2_evxwiNS9kZQX2vLGMC8";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function cargarPedidosEntrantes() {
+            const contenedor = document.getElementById('contenedor-pedidos-repartidor');
+            contenedor.innerHTML = `<div class="text-center py-6 text-neutral-500 font-mono text-xs">Cargando pedidos...</div>`;
+
+            const { data, error } = await supabaseClient
+                .from('ordenes_vip')
+                .select('*')
+                .order('id', { ascending: false })
+                .limit(10);
+
+            if (error) {
+                contenedor.innerHTML = `<div class="text-center text-red-400 font-mono text-xs">Error al conectar con la base de datos.</div>`;
+                return;
+            }
+
+            if (data && data.length > 0) {
+                contenedor.innerHTML = "";
+                data.forEach(orden => {
+                    const estadoColor = orden.estado === 'Aceptado' ? 'text-amber-400 bg-amber-500/10 border-amber-500/30' : 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30';
+                    
+                    contenedor.innerHTML += `
+                        <div class="glass-panel p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-neutral-800">
+                            <div class="space-y-1.5">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-mono font-bold text-amber-400">#ORDEN-${orden.id}</span>
+                                    <span class="text-[9px] uppercase px-2 py-0.5 rounded-full border font-bold ${estadoColor}">${orden.estado || 'Pendiente'}</span>
+                                </div>
+                                <p class="text-xs text-neutral-300 font-medium"><strong>Productos:</strong> ${orden.productos}</p>
+                                <p class="text-xs text-neutral-400 font-mono"><strong>Total a Cobrar:</strong> $${parseFloat(orden.monto_total || orden.total || 0).toFixed(2)}</p>
+                                <p class="text-xs text-neutral-400 font-mono"><strong>Costo Delivery:</strong> $${parseFloat(orden.costo_delivery || 0).toFixed(2)}</p>
+                            </div>
+                            <div class="flex items-center gap-2 w-full md:w-auto">
+                                <button onclick="abrirRutaGPS('${orden.coordenadas_gps}')" class="flex-1 md:flex-initial bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 font-futurista text-[10px] uppercase font-bold px-4 py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer">
+                                    <i data-lucide="map" class="w-4 h-4 text-amber-400"></i> Ver Ruta GPS
+                                </button>
+                                <button onclick="cambiarEstadoPedido(${orden.id}, 'Aceptado')" class="flex-1 md:flex-initial bg-amber-500 hover:bg-amber-400 text-black font-futurista text-[10px] uppercase font-black px-5 py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-lg">
+                                    <i data-lucide="check-circle" class="w-4 h-4"></i> Aceptar Pedido
+                                </button>
+                            </div>
+                        </div>`;
+                });
+            } else {
+                contenedor.innerHTML = `<div class="text-center py-12 text-neutral-500 font-mono text-xs">No hay pedidos registrados en este momento.</div>`;
+            }
+            lucide.createIcons();
+        }
+
+        async function cambiarEstadoPedido(idOrden, nuevoEstado) {
+            const { error } = await supabaseClient
+                .from('ordenes_vip')
+                .update({ estado: nuevoEstado })
+                .eq('id', idOrden);
+
+            if (!error) {
+                alert(`¡Has aceptado la orden #${idOrden} con éxito! Dirígete al local.`);
+                cargarPedidosEntrantes();
+            } else {
+                alert("Error al actualizar el estado del pedido.");
+            }
+        }
+
+        function abrirRutaGPS(coords) {
+            if (!coords || coords === "null" || coords === "undefined") {
+                alert("Esta orden no contiene coordenadas GPS válidas.");
+                return;
+            }
+            window.open(`https://maps.google.com/?q=${coords}`, '_blank');
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            cargarPedidosEntrantes();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
