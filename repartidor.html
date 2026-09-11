@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vendaval House - Panel de Repartidor</title>
+    <title>Vendaval House - Panel de Repartidor Multicomercio</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -11,7 +11,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;700&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #000000; color: #e5e5e5; }
         .font-futurista { font-family: 'Orbitron', sans-serif; }
-        .glass-panel { background: rgba(18, 18, 18, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .glass-panel { background: rgba(18, 18, 18, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #e5c158; border-radius: 10px; }
     </style>
@@ -25,7 +25,7 @@
             </div>
             <div>
                 <h1 class="text-base font-black tracking-widest text-white font-futurista">DELIVERY<span class="text-amber-400">D'UNIG</span></h1>
-                <p class="text-[9px] text-amber-500 uppercase tracking-widest font-bold">Panel Exclusivo de Repartidor</p>
+                <p class="text-[9px] text-amber-500 uppercase tracking-widest font-bold">Red Multicomercio Afiliada</p>
             </div>
         </div>
         <div class="flex items-center gap-2 bg-neutral-900 px-3 py-1.5 rounded-xl border border-neutral-800 text-xs font-mono">
@@ -36,28 +36,28 @@
 
     <main class="max-w-4xl mx-auto w-full flex-grow py-6 space-y-6">
         <div class="flex justify-between items-center">
-            <h2 class="text-lg font-futurista font-black uppercase text-white">Pedidos Disponibles para Ruta</h2>
+            <h2 class="text-lg font-futurista font-black uppercase text-white">Órdenes Disponibles de Comercios</h2>
             <button onclick="cargarPedidosEntrantes()" class="bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-xs px-3 py-2 rounded-xl flex items-center gap-2 cursor-pointer font-mono transition-colors">
                 <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-amber-400"></i> Actualizar
             </button>
         </div>
 
-        <!-- Alerta flotante de guía para el repartidor -->
+        <!-- Alerta flotante de guía -->
         <div class="bg-amber-500/10 border border-amber-500/30 p-4 rounded-2xl flex items-start gap-3 text-xs text-amber-300 font-mono">
-            <i data-lucide="info" class="w-5 h-5 text-amber-400 shrink-0 mt-0.5"></i>
+            <i data-lucide="shield-check" class="w-5 h-5 text-amber-400 shrink-0 mt-0.5"></i>
             <div>
-                <strong class="text-white font-futurista uppercase block mb-1">Modo de Operación Rápida:</strong>
-                Al presionar <b>"Ver Ruta GPS"</b>, la dirección del cliente se copiará automáticamente a tu portapapeles y se abrirá Google Maps hacia el comercio. Al retirar el pedido, solo mantén presionado el buscador de Maps y pega la dirección para ir a la entrega.
+                <strong class="text-white font-futurista uppercase block mb-1">Operación Segura Sin Efectivo:</strong>
+                Las órdenes ya están pagadas al comercio. No manejas dinero en efectivo ni montos totales. Tu única atención es retirar en el comercio afiliado y ganar tu <b>Costo de Delivery</b> garantizado.
             </div>
         </div>
 
         <div id="contenedor-pedidos-repartidor" class="space-y-4">
-            <div class="text-center py-12 text-neutral-500 font-mono text-xs">Buscando nuevas ordenes pendientes...</div>
+            <div class="text-center py-12 text-neutral-500 font-mono text-xs">Buscando nuevas ordenes de comercios afiliados...</div>
         </div>
     </main>
 
     <footer class="max-w-4xl mx-auto w-full text-center text-[10px] text-neutral-600 font-mono pt-6 border-t border-neutral-900">
-        © 2026 D'UNIG LUXURY ECOSISTEMA - Modulo Repartidores
+        © 2026 D'UNIG LUXURY ECOSISTEMA - Modulo Repartidores Global
     </footer>
 
     <script>
@@ -65,21 +65,21 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxeHRiZGVnY2tlYXVmbmxmcWZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3ODc3NjgsImV4cCI6MjEwNDM2Mzc2OH0.62QheHDSsV-N9S1n_18_uP2_evxwiNS9kZQX2vLGMC8";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Coordenadas o Nombre del Comercio configurado (Vendaval House - Mérida)
         const COMERCIO_DIRECCION = "Vendaval House Merida"; 
 
         async function cargarPedidosEntrantes() {
             const contenedor = document.getElementById('contenedor-pedidos-repartidor');
-            contenedor.innerHTML = `<div class="text-center py-6 text-neutral-500 font-mono text-xs">Cargando pedidos...</div>`;
+            contenedor.innerHTML = `<div class="text-center py-6 text-neutral-500 font-mono text-xs">Sincronizando comercios afiliados...</div>`;
 
+            // Traemos las órdenes de la tabla general (se pueden filtrar o mostrar todas las de la red de comercios)
             const { data, error } = await supabaseClient
                 .from('ordenes_vip')
                 .select('*')
                 .order('id', { ascending: false })
-                .limit(10);
+                .limit(15);
 
             if (error) {
-                contenedor.innerHTML = `<div class="text-center text-red-400 font-mono text-xs">Error al conectar con la base de datos.</div>`;
+                contenedor.innerHTML = `<div class="text-center text-red-400 font-mono text-xs">Error al conectar con la red de comercios.</div>`;
                 return;
             }
 
@@ -87,21 +87,32 @@
                 contenedor.innerHTML = "";
                 data.forEach(orden => {
                     const estadoColor = orden.estado === 'Aceptado' ? 'text-amber-400 bg-amber-500/10 border-amber-500/30' : 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30';
+                    const nombreComercio = orden.comercio || orden.nombre_comercio || 'Comercio Afiliado';
+                    const costoDelivery = parseFloat(orden.costo_delivery || 0).toFixed(2);
                     
                     contenedor.innerHTML += `
                         <div class="glass-panel p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-neutral-800">
                             <div class="space-y-1.5">
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-2 flex-wrap">
                                     <span class="text-xs font-mono font-bold text-amber-400">#ORDEN-${orden.id}</span>
+                                    <span class="text-[9px] uppercase px-2 py-0.5 rounded-full border font-bold bg-neutral-900 text-stone-300 border-neutral-700">🏪 ${nombreComercio}</span>
                                     <span class="text-[9px] uppercase px-2 py-0.5 rounded-full border font-bold ${estadoColor}">${orden.estado || 'Pendiente'}</span>
                                 </div>
                                 <p class="text-xs text-neutral-300 font-medium"><strong>Productos:</strong> ${orden.productos}</p>
-                                <p class="text-xs text-neutral-400 font-mono"><strong>Total a Cobrar:</strong> $${parseFloat(orden.monto_total || orden.total || 0).toFixed(2)}</p>
-                                <p class="text-xs text-neutral-400 font-mono"><strong>Costo Delivery:</strong> $${parseFloat(orden.costo_delivery || 0).toFixed(2)}</p>
-                                <p class="text-[11px] text-amber-300/80 font-mono bg-neutral-900/80 px-2.5 py-1 rounded-lg border border-neutral-800 inline-block">
-                                    📍 <strong>GPS Cliente:</strong> ${orden.coordenadas_gps || 'No especificada'}
-                                </p>
+                                
+                                <!-- Se eliminó totalmente el "Total a Cobrar" por seguridad -->
+                                <div class="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 px-3 py-1.5 rounded-xl">
+                                    <i data-lucide="dollar-sign" class="w-4 h-4 text-amber-400"></i>
+                                    <span class="text-xs font-mono font-bold text-amber-300">Tu Ganancia por Delivery: $${costoDelivery}</span>
+                                </div>
+
+                                <div class="block">
+                                    <span class="text-[11px] text-neutral-400 font-mono bg-neutral-900/80 px-2.5 py-1 rounded-lg border border-neutral-800 inline-block">
+                                        📍 <strong>GPS Cliente:</strong> ${orden.coordenadas_gps || 'No especificada'}
+                                    </span>
+                                </div>
                             </div>
+                            
                             <div class="flex items-center gap-2 w-full md:w-auto">
                                 <button onclick="prepararRutaGPS('${orden.coordenadas_gps}', ${orden.id})" class="flex-1 md:flex-initial bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 font-futurista text-[10px] uppercase font-bold px-4 py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-md">
                                     <i data-lucide="map" class="w-4 h-4 text-amber-400"></i> Ver Ruta GPS
@@ -113,7 +124,7 @@
                         </div>`;
                 });
             } else {
-                contenedor.innerHTML = `<div class="text-center py-12 text-neutral-500 font-mono text-xs">No hay pedidos registrados en este momento.</div>`;
+                contenedor.innerHTML = `<div class="text-center py-12 text-neutral-500 font-mono text-xs">No hay órdenes activas en los comercios afiliados en este momento.</div>`;
             }
             lucide.createIcons();
         }
@@ -125,7 +136,7 @@
                 .eq('id', idOrden);
 
             if (!error) {
-                alert(`¡Has aceptado la orden #${idOrden} con éxito! Dirígete al local.`);
+                alert(`¡Has aceptado la orden #${idOrden}! Dirígete al comercio correspondiente a retirar el paquete.`);
                 cargarPedidosEntrantes();
             } else {
                 alert("Error al actualizar el estado del pedido.");
@@ -138,20 +149,15 @@
                 return;
             }
 
-            // 1. Copiar la dirección/coordenadas del cliente al portapapeles automáticamente
             navigator.clipboard.writeText(coords).then(() => {
-                // Notificar de manera visual rápida
-                console.log("Coordenadas copiadas al portapapeles:", coords);
+                console.log("Coordenadas copiadas:", coords);
             }).catch(err => {
-                console.error("No se pudo copiar automáticamente al portapapeles", err);
+                console.error("Error al copiar al portapapeles", err);
             });
 
-            // 2. Abrir Google Maps directo hacia el comercio para buscar el producto
-            // Utilizamos la URL de navegación de Google Maps apuntando al local
             const urlMapsComercio = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(COMERCIO_DIRECCION)}`;
             
-            // Mensaje de guía para el repartidor antes de abrir la app
-            alert(`✅ ¡Dirección del cliente copiada al portapapeles!\n\nA continuación se abrirá Google Maps hacia el comercio. Al retirar el pedido, solo mantén presionado el buscador y pega (Paste) la ubicación para ir a la entrega de la Orden #${idOrden}.`);
+            alert(`✅ ¡Ubicación del cliente copiada!\n\nSe abrirá Google Maps hacia el comercio afiliado. Al retirar el producto, mantén presionado el buscador y pega la ubicación para entregar la Orden #${idOrden}.`);
 
             window.open(urlMapsComercio, '_blank');
         }
