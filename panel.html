@@ -3,1025 +3,1259 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VendavalHouse- Panel de Control Interno</title>
+    <title>Vendaval house - Ecosistema Studio 3D & VIP</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Google Maps API con Clave Integrada -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLoIMl0UZfglMOIXFxIjOkh5BhRy6sXFw&callback=initMap" async defer></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;700&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: radial-gradient(circle at 50% 0%, #1a1216 0%, #0a0507 100%); background-color: #050204; line-height: 1.25; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: radial-gradient(circle at 50% 0%, #1c1917 0%, #0c0a09 100%); background-color: #000000; overflow-x: hidden; }
         .font-futurista { font-family: 'Orbitron', sans-serif; }
         .glow-gold { box-shadow: 0 0 25px rgba(229, 193, 88, 0.15); }
         .text-gold { color: #e5c158; text-shadow: 0 0 12px rgba(229, 193, 88, 0.2); }
-        .glass-panel { background: linear-gradient(135deg, rgba(28, 20, 24, 0.45) 0%, rgba(12, 8, 10, 0.6) 100%); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.02); }
-        .grid-bg { background-image: linear-gradient(rgba(229, 193, 88, 0.01) 1px, transparent 1px), linear-gradient(90deg, rgba(229, 193, 88, 0.01) 1px, transparent 1px); background-size: 32px 32px; }
-        ::-webkit-scrollbar { width: 4px; }
+        .glass-panel { background: linear-gradient(135deg, rgba(28, 25, 23, 0.45) 0%, rgba(12, 10, 9, 0.6) 100%); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.02); background-color: #000000; }
+        .grid-bg { background-image: radial-gradient(rgba(229, 193, 88, 0.08) 1px, transparent 1px); background-size: 24px 24px; }
+        .draggable-item { cursor: grab; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .draggable-item:active { cursor: grabbing; transform: scale(0.95); }
+        .btn-oro-flotante {
+            background: linear-gradient(135deg, #f5d77f 0%, #dfb347 50%, #c79524 100%);
+            box-shadow: 0 4px 20px rgba(223, 179, 71, 0.4), inset 0 2px 3px rgba(255, 255, 255, 0.6);
+            transition: all 0.3s ease;
+        }
+        .btn-oro-flotante:hover {
+            transform: scale(1.08);
+            box-shadow: 0 6px 25px rgba(223, 179, 71, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.8);
+        }
+        .gmnoprint, .gm-style-cc, .gm-fullscreen-control, .gm-streetview { display: none !important; }
+        a[href^="https://maps.google.com/maps"] { display: none !important; }
+        .gm-bundled-control { display: none !important; }
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #e5c158; border-radius: 10px; }
     </style>
 </head>
 <body class="text-stone-200 antialiased min-h-screen flex flex-col justify-between grid-bg relative">
 
-    <!-- Modal de Autenticación -->
-    <div id="auth-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md">
-        <div class="glass-panel w-full max-w-sm p-8 rounded-3xl border border-stone-800 shadow-2xl">
-            <h2 class="text-xl font-futurista font-black text-white mb-6 uppercase tracking-widest text-center">Acceso VIP</h2>
-            <div class="space-y-4">
-                <input type="email" id="auth-email" placeholder="Correo electrónico" class="w-full bg-stone-950 border border-stone-800 p-3 rounded-xl text-white text-xs">
-                <input type="password" id="auth-pass" placeholder="Contraseña" class="w-full bg-stone-950 border border-stone-800 p-3 rounded-xl text-white text-xs">
-                <button onclick="ejecutarLogin()" class="w-full bg-amber-500 text-black font-black p-3 rounded-xl text-xs uppercase tracking-widest hover:bg-amber-400 transition-colors cursor-pointer">
-                    Ingresar al Panel
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <header class="bg-black/40 backdrop-blur-xl border-b border-stone-900/80 sticky top-0 z-40 px-4">
-        <div class="max-w-7xl mx-auto h-24 flex items-center justify-between relative z-10">
-            <div class="flex items-center space-x-4">
-                <div class="border border-amber-500/30 p-3 rounded-xl bg-stone-950/80 glow-gold"><i data-lucide="terminal" class="w-7 h-7 text-amber-400"></i></div>
+    <header class="bg-black/85 backdrop-blur-xl border-b border-stone-900 sticky top-0 z-50 px-4">
+        <div class="max-w-7xl mx-auto h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="cambiarPantalla('vitrina')">
+                <div class="border border-amber-500/30 p-2.5 rounded-2xl bg-stone-950 shadow-[0_0_20px_rgba(229,193,88,0.15)] glow-gold">
+                    <i data-lucide="cpu" class="w-6 h-6 text-amber-400"></i>
+                </div>
                 <div>
-                    <h1 class="text-2xl font-black tracking-[0.2em] text-white font-futurista">  Vendaval <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-500">          House.</span></h1>
-                    <p class="text-[9px] text-amber-500/70 uppercase tracking-[0.3em] font-bold font-futurista">PANEL DE CONTROL</p>
+                    <h1 class="text-lg font-black tracking-widest text-white font-futurista">
+                       Vendaval<span class="text-amber-400">House</span>
+                    </h1>
+                    <p class="text-[8px] text-amber-500/70 uppercase tracking-[0.25em] font-bold font-futurista">
+                        MERIDA VENEZUELA
+                    </p>
                 </div>
             </div>
-            
-            <div class="flex flex-col gap-1.5 items-end">
-                <!-- Botón Ver Vitrina -->
-                <a href="https://dunigluxury.github.io/dunig-luxury/" target="_blank" class="px-2.5 py-1.5 rounded-lg border border-stone-800 text-stone-400 hover:text-white transition-all text-[10px] font-bold uppercase tracking-wider font-futurista bg-stone-900/30 flex items-center gap-1.5 cursor-pointer">
-                    <i data-lucide="eye" class="w-3.5 h-3.5 text-amber-500"></i> Ver Vitrina
-                </a>
 
-                <!-- Botón Salir -->
-                <button onclick="ejecutarLogout()" class="px-2.5 py-1.5 rounded-lg border border-red-900/30 text-red-400 hover:text-red-300 transition-all text-[10px] font-bold uppercase tracking-wider font-futurista bg-stone-900/30 flex items-center gap-1.5 cursor-pointer">
-                    <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Salir
+            <div class="flex items-center gap-3">
+                <div id="badge-estado-header" class="hidden sm:flex items-center gap-2 bg-stone-950 border border-stone-800 px-3 py-1.5 rounded-xl text-[10px] font-futurista font-bold shadow-inner">
+                    <span id="punto-estado-header" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span id="texto-estado-header" class="text-emerald-400 uppercase tracking-widest">Abierto</span>
+                </div>
+
+                <button onclick="cambiarPantalla('simulador3d')" class="hidden sm:flex bg-stone-900 border border-amber-500/30 hover:border-amber-500/60 px-4 py-2 rounded-xl items-center gap-2 text-xs font-futurista uppercase font-bold text-amber-400 cursor-pointer transition-all">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i> 
+                </button>
+                <button onclick="cambiarPantalla('carrito')" class="bg-stone-900 border border-amber-500/30 p-2.5 rounded-xl flex items-center gap-2 cursor-pointer hover:border-amber-500/60">
+                    <i data-lucide="shopping-cart" class="w-4 h-4 text-amber-400"></i>
+                    <span id="contador-carrito-badge" class="bg-amber-500 text-black font-mono text-[10px] font-black px-1.5 py-0.5 rounded-md">0</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Pestañas de Navegación del Panel -->
-    <div class="w-full max-w-7xl mx-auto px-4 mt-6">
-        <div class="grid grid-cols-3 gap-2 bg-stone-950/80 p-2 rounded-2xl border border-stone-900 shadow-xl">
-            <button onclick="cambiarSeccionPanel('principal')" id="tab-btn-principal" class="py-3 px-4 rounded-xl font-futurista text-xs font-bold uppercase tracking-wider transition-all bg-amber-500 text-black shadow-lg shadow-amber-500/10 cursor-pointer text-center">
-                Gestión General
-            </button>
-            <button onclick="cambiarSeccionPanel('ordenes')" id="tab-btn-ordenes" class="py-3 px-4 rounded-xl font-futurista text-xs font-bold uppercase tracking-wider transition-all text-stone-400 hover:text-white bg-stone-900/50 cursor-pointer text-center">
-                Órdenes VIP
-            </button>
-            <button onclick="cambiarSeccionPanel('extras')" id="tab-btn-extras" class="py-3 px-4 rounded-xl font-futurista text-xs font-bold uppercase tracking-wider transition-all text-stone-400 hover:text-white bg-stone-900/50 cursor-pointer text-center">
-                Configurar Extras
-            </button>
+    <main id="vista-vitrina" class="max-w-7xl w-full mx-auto px-4 py-8 flex-grow space-y-8 relative z-10">
+        <div id="banner-estado-tienda" class="w-full bg-stone-950 border border-stone-800 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+            <div class="flex items-center gap-3">
+                <div id="icono-estado-wrapper" class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                    <i data-lucide="store" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span id="badge-punto-vitrina" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                        <h3 id="titulo-estado-vitrina" class="text-xs font-black font-futurista text-white uppercase tracking-widest">ESTADO DEL LOCAL: ABIERTOS</h3>
+                    </div>
+                    <p id="descripcion-estado-vitrina" class="text-[11px] text-stone-400 mt-0.5">Recibiendo pedidos y despachando con normalidad.</p> 
+                </div>
+            </div>
+            <div class="text-[10px] font-mono text-stone-500 bg-stone-900 px-3 py-1.5 rounded-lg border border-stone-800">
+                Horario: <span id="texto-horario-vitrina" class="text-amber-400 font-bold">Cargando...</span>
+            </div>
         </div>
-    </div>
 
-    <!-- Sección Principal / Gestión General -->
-    <main id="panel-seccion-principal" class="max-w-7xl w-full mx-auto px-4 py-8 flex-grow grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
-        <div class="space-y-6">
-            <!-- Categorías Indexadas -->
-            <div class="glass-panel p-6 rounded-2xl space-y-4 shadow-2xl">
-                <div class="flex items-center gap-2 text-amber-400 border-b border-stone-800/60 pb-3">
-                    <i data-lucide="tag" class="w-4 h-4"></i>
-                    <h3 class="font-futurista font-black text-xs uppercase tracking-[0.2em] text-white">Categorías Indexadas</h3>
-                </div>
-                <div class="space-y-2">
-                    <input type="text" id="cat-nombre" placeholder="Nueva categoría..." class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
-                    <button onclick="agregarCategoria()" class="w-full bg-stone-900 border border-stone-800 text-amber-400 font-futurista font-bold p-3 rounded-xl text-xs uppercase tracking-widest cursor-pointer hover:bg-stone-800">Inyectar Categoría</button>
-                </div>
-                <div id="lista-categorias" class="space-y-1.5 max-h-40 overflow-y-auto"></div>
-            </div>
-
-            <!-- Adicionales -->
-            <div class="glass-panel p-6 rounded-2xl space-y-4 shadow-2xl">
-                <div class="flex items-center gap-2 text-amber-400 border-b border-stone-800/60 pb-3">
-                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                    <h3 class="font-futurista font-black text-xs uppercase tracking-[0.2em] text-white">Adicionales</h3>
-                </div>
-                <div class="space-y-2">
-                    <input type="text" id="add-nombre" placeholder="Nombre (Ej: Extra Salsa)" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
-                    <input type="number" id="add-precio" placeholder="Precio ($)" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
-                    <button onclick="guardarAdicional()" class="w-full bg-stone-900 border border-stone-800 text-amber-400 font-futurista font-bold p-3 rounded-xl text-xs uppercase tracking-widest cursor-pointer hover:bg-stone-800">Inyectar Adicional</button>
-                </div>
-                <div class="border-t border-stone-900 pt-4 mt-4">
-                    <h4 class="font-futurista font-bold text-[10px] uppercase text-amber-400/80 tracking-wider mb-2">Adicionales Registrados</h4>
-                    <div id="lista-adicionales" class="space-y-1.5 max-h-40 overflow-y-auto"></div>
+        <div class="glass-panel rounded-3xl overflow-hidden border border-amber-500/30 shadow-2xl relative">
+            <div class="w-full h-64 md:h-80 relative overflow-hidden bg-black">
+                <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGJrNnV3cnVzdWF2ZjZwOXI3b2U1cjk5ejM2cTh0YnpvZWlvbXplcyZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/3o7TKMYewttqjcp21y/giphy.gif" alt="Banner Animado" class="w-full h-full object-cover opacity-85 transform hover:scale-105 transition-transform duration-700">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent flex flex-col justify-end p-6 md:p-8 space-y-2">
+                    <span class="text-[10px] text-amber-400 font-futurista font-bold uppercase tracking-widest bg-amber-500/20 px-3 py-1 rounded-full border border-amber-500/30 w-max backdrop-blur-md">TU MEJOR OPCION VIP</span>
+                    <h2 class="text-2xl md:text-4xl font-black text-white font-futurista tracking-wider uppercase drop-shadow-lg">
+                        REALIZA TU PEDIDO<span class="text-amber-400">"YA"</span>
+                    </h2>
+                    <p class="text-xs text-stone-300 max-w-xl">Arrastra ingredientes en tiempo real o explora nuestras especialidades certificadas.</p>
                 </div>
             </div>
+            <div class="p-6 bg-black/90 flex flex-col sm:flex-row justify-between items-center gap-4 border-t border-stone-900">
+                <div class="flex items-center gap-3">
+                    <span class="text-xs text-stone-400 font-mono">Tasas oficiales y transacciones seguras al BCV</span>
+                </div>
+                <button onclick="cambiarPantalla('simulador3d')" class="bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-futurista font-black px-8 py-4 rounded-2xl text-xs uppercase tracking-widest flex items-center gap-3 shadow-xl cursor-pointer shrink-0">
+                    <i data-lucide="sparkles" class="w-5 h-5"></i> CREAR MI HAMBURGUESA
+                </button>
+            </div>
+        </div>
 
-            <!-- Formulario de Ingredientes 3D -->
-            <div class="glass-panel p-6 rounded-2xl space-y-4 shadow-2xl mt-6">
-                <div class="flex items-center gap-2 text-amber-400 border-b border-stone-800/60 pb-3">
-                    <i data-lucide="box" class="w-4 h-4"></i>
-                    <h3 class="font-futurista font-black text-xs uppercase tracking-[0.2em] text-white">Ingredientes 3D</h3>
+        <div class="w-full max-w-3xl mx-auto px-2">
+            <div class="relative flex items-center bg-stone-950 border border-stone-800 rounded-2xl p-2 shadow-xl focus-within:border-amber-500/50 transition-colors">
+                <div class="pl-3 pr-2 text-amber-500">
+                    <i data-lucide="search" class="w-5 h-5"></i>
                 </div>
-                <div class="space-y-2">
-                    <input type="text" id="ing3d-nombre" placeholder="Nombre (Ej: Papa Extra)" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
-                    <input type="number" id="ing3d-precio" step="0.01" placeholder="Precio ($)" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
-                    <input type="text" id="ing3d-modelo" placeholder="URL o Referencia del Modelo 3D" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
-                    <button onclick="guardarIngrediente3D()" class="w-full bg-stone-900 border border-stone-800 text-amber-400 font-futurista font-bold p-3 rounded-xl text-xs uppercase tracking-widest cursor-pointer hover:bg-stone-800">Inyectar Ingrediente 3D</button>
+                <input 
+                    type="text" 
+                    id="input-buscador-vitrina" 
+                    placeholder="Buscar especialidades o categorías..." 
+                    oninput="filtrarProductosVitrina()"
+                    class="w-full bg-transparent text-white text-xs sm:text-sm focus:outline-none font-futurista placeholder:text-stone-600 px-2 py-2"
+                >
+                <button onclick="limpiarBuscadorVitrina()" class="p-2 text-stone-500 hover:text-white transition-colors cursor-pointer">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="grid-productos-vitrina" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </main>
+
+    <main id="vista-detalle" class="hidden max-w-7xl w-full mx-auto px-4 py-8 flex-grow relative z-10">
+        <button onclick="cambiarPantalla('vitrina')" class="mb-6 flex items-center gap-2 text-xs font-futurista uppercase tracking-widest text-stone-400 hover:text-amber-400 font-bold cursor-pointer transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Catálogo
+        </button>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div class="lg:col-span-6 space-y-4">
+                <div class="relative group rounded-3xl overflow-hidden bg-stone-950 border border-stone-900 shadow-2xl aspect-video flex items-center justify-center">
+                    <div id="contenedor-media-principal" class="w-full h-full flex items-center justify-center bg-black cursor-zoom-in" onclick="amplificarFotoActual()">
+                        <img id="detalle-visor-principal" src="" alt="Visor Principal" class="w-full h-full object-cover transition-transform duration-300">
+                    </div>
+                    <div class="absolute top-4 right-4 z-20">
+                        <button onclick="amplificarFotoActual()" class="bg-black/80 backdrop-blur-md hover:bg-amber-500 hover:text-black border border-amber-500/40 text-amber-400 px-4 py-2.5 rounded-xl text-[10px] font-futurista font-black tracking-widest uppercase flex items-center gap-2 shadow-2xl transition-all cursor-pointer">
+                            <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Amplificar Foto
+                        </button>
+                    </div>
                 </div>
-                
-                <div class="border-t border-stone-900 pt-4 mt-4">
-                    <h4 class="font-futurista font-bold text-[10px] uppercase text-amber-400/80 tracking-wider mb-2">Ingredientes 3D Registrados</h4>
-                    <div id="lista-ingredientes-3d" class="space-y-1.5 max-h-40 overflow-y-auto"></div>
-                </div>
+                <div id="detalle-contenedor-miniaturas" class="grid grid-cols-5 gap-2"></div>
             </div>
 
-            <!-- Método de Pago -->
-            <div class="glass-panel p-6 rounded-2xl space-y-4 shadow-2xl">
-                <div class="flex items-center gap-2 text-amber-400 border-b border-stone-800/60 pb-3">
-                    <i data-lucide="credit-card" class="w-4 h-4"></i>
-                    <h3 id="pago-form-titulo" class="font-futurista font-black text-xs uppercase tracking-[0.2em] text-white">Registrar Método de Pago</h3>
+            <div class="lg:col-span-6 glass-panel p-6 lg:p-8 rounded-3xl space-y-6 shadow-2xl">
+                <div>
+                    <span id="detalle-categoria" class="text-[10px] uppercase tracking-[0.2em] font-futurista font-black text-amber-400 bg-amber-500/5 px-2.5 py-1 rounded-md border border-amber-500/10">CATEGORÍA</span>
+                    <h2 id="detalle-titulo" class="text-2xl lg:text-3xl font-black font-futurista text-white mt-3 tracking-wide">Título del Producto</h2>
+                    <p id="detalle-precio" class="text-xl font-mono text-amber-400 font-bold mt-1">$0.00</p>
                 </div>
                 
-                <input type="hidden" id="pago-id-edicion" value="">
-                
-                <div class="space-y-3">
+                <div class="border-t border-stone-900 pt-4 space-y-2">
+                    <h4 class="text-[9px] uppercase tracking-widest text-stone-500 font-bold font-futurista">Características & Detalles:</h4>
+                    <p id="detalle-descripcion" class="text-xs text-stone-400 leading-relaxed min-h-12">Procesando descripción...</p>
+                </div>
+
+                <div id="contenedor-adicionales" class="w-full"></div>
+
+                <div class="grid grid-cols-2 gap-4 border-t border-stone-900 pt-4">
                     <div>
-                        <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Banco o Plataforma</label>
-                        <select id="pago-plataforma" onchange="alternarCamposPago()" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none focus:border-amber-500/30">
-                            <option value="pago_movil">Pago Móvil</option>
-                            <option value="zelle">Zelle</option>
-                            <option value="nequi">Nequi</option>
-                            <option value="efectivo">Efectivo</option>
-                        </select>
+                        <span class="text-[9px] uppercase text-stone-500 font-bold block">Disponibilidad:</span>
+                        <span id="detalle-stock" class="text-xs text-white font-bold">0 unidades</span>
+                    </div>
+                    <div>
+                        <span class="text-[9px] uppercase text-stone-500 font-bold block">Autenticidad VIP:</span>
+                        <span class="text-xs text-green-400 font-bold flex items-center gap-1"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Certificada</span>
+                    </div>
+                </div>
+                <button onclick="agregarDetalleAlCarritoYVolver()" class="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-futurista font-black py-4 px-6 rounded-xl text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-2 cursor-pointer shadow-lg transition-all duration-300">
+                    <i data-lucide="shopping-bag" class="w-4 h-4"></i> AÑADIR A LA BOLSA VIP
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <main id="vista-simulador3d" class="hidden max-w-7xl w-full mx-auto px-4 py-6 flex-grow space-y-6 relative z-10">
+        <div class="flex justify-between items-center">
+            <button onclick="cambiarPantalla('vitrina')" class="flex items-center gap-2 text-xs font-futurista uppercase tracking-widest text-stone-400 hover:text-amber-400 font-bold cursor-pointer transition-colors">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Menú
+            </button>
+            <div class="bg-stone-900/90 border border-amber-500/30 px-4 py-1.5 rounded-full flex items-center gap-2.5 shadow-lg">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                <span class="text-[10px] font-futurista uppercase tracking-widest text-amber-400 font-bold">COCINA ACTIVA</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <div class="lg:col-span-7 bg-stone-950/90 border border-stone-800 rounded-3xl p-6 flex flex-col items-center justify-between min-h-[580px] relative overflow-hidden shadow-2xl" id="zona-drop-canvas">
+                <div class="absolute top-4 left-4 bg-black/80 border border-stone-800 px-3 py-1.5 rounded-xl z-20 backdrop-blur-md">
+                    <span class="text-[9px] font-futurista text-amber-400 uppercase tracking-widest">MI PROPIO DISEÑO DE HAMBURGUESA</span>
+                </div>
+
+                <div id="webgl-container" class="w-full h-[400px] flex items-center justify-center cursor-grab active:cursor-grabbing"></div>
+
+                <div class="w-full flex justify-between items-center bg-stone-900/90 border border-stone-800/80 p-4 rounded-2xl z-20 backdrop-blur-md">
+                    <div>
+                        <span class="text-[9px] uppercase tracking-widest text-stone-400 block font-futurista">Valor Total de la Creación</span>
+                        <span id="precio-total-3d" class="text-2xl font-mono text-amber-400 font-black">$1.00</span>
+                    </div>
+                    <button onclick="enviarCreacion3DAlCarrito()" class="bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-futurista font-black px-6 py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg cursor-pointer flex items-center gap-2">
+                        <i data-lucide="check-check" class="w-4 h-4"></i>CARGAR AL CARRITO 🛒 
+                    </button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-5 space-y-5">
+                <div class="glass-panel p-6 rounded-3xl space-y-4">
+                    <div>
+                        <h3 class="text-lg font-black font-futurista text-white uppercase tracking-wide">Ingredientes 3D</h3>
+                        <p class="text-xs text-amber-500/70 font-bold uppercase tracking-wider mt-1">Arrastra o haz clic para agregar</p>
                     </div>
 
-                    <div id="wrapper-campos-dinamicos" class="space-y-3"></div>
-                    
-                    <div class="flex gap-2 pt-2">
-                        <button id="btn-cancelar-pago" onclick="limpiarFormularioPago()" class="hidden bg-stone-900 text-stone-400 font-futurista font-bold px-4 rounded-xl text-xs uppercase cursor-pointer hover:bg-stone-800">X</button>
-                        <button onclick="guardarCuentaPagoSupabase()" id="btn-guardar-pago" class="flex-1 bg-amber-500 text-black font-futurista font-black p-3 rounded-xl text-xs uppercase tracking-[0.2em] cursor-pointer shadow-md hover:bg-amber-600 transition-colors">Sincronizar Cuenta</button>
+                    <div class="grid grid-cols-2 gap-3 max-h-[320px] overflow-y-auto pr-1" id="bandeja-ingredientes-arrastrables">
+                        <div class="text-xs text-stone-500 text-center py-6 col-span-2 font-mono">Cargando ingredientes...</div>
                     </div>
                 </div>
 
-                <div class="border-t border-stone-900 pt-4">
-                    <h4 class="font-futurista font-bold text-[10px] uppercase text-amber-400/80 tracking-wider mb-2">Cuentas Habilitadas</h4>
-                    <div class="overflow-x-auto max-h-48 overflow-y-auto">
-                        <table class="w-full text-left text-[11px]">
-                            <thead>
-                                <tr class="border-b border-stone-900 text-stone-500 uppercase tracking-widest text-[8px] font-futurista">
-                                    <th class="pb-2">Método</th>
-                                    <th class="pb-2">Detalles del Colector</th>
-                                    <th class="pb-2 text-right">Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabla-pagos-body"></tbody>
-                        </table>
+                <div class="glass-panel p-6 rounded-3xl space-y-3">
+                    <div class="flex justify-between items-center border-b border-stone-800 pb-2">
+                        <h4 class="text-xs font-black font-futurista text-stone-300 uppercase tracking-widest">Capas en la Hamburguesa</h4>
+                        <button onclick="limpiarTodasLasCapas()" class="text-[9px] text-red-400 hover:underline uppercase font-bold cursor-pointer">Limpiar Todo</button>
+                    </div>
+                    <div id="lista-capas-activas-pila" class="space-y-2 max-h-[180px] overflow-y-auto pr-1">
+                        <div class="text-xs text-stone-500 text-center py-4 font-mono">Sin ingredientes agregados aún.</div>
                     </div>
                 </div>
             </div>
         </div>
+    </main>
 
-        <div class="lg:col-span-2 space-y-6">
-            <div class="glass-panel p-6 lg:p-8 rounded-3xl space-y-6 shadow-2xl">
-                <div class="flex justify-between items-center border-b border-stone-800/40 pb-4">
-                    <div class="flex items-center gap-2.5 text-amber-400">
-                        <i data-lucide="package-plus" class="w-5 h-5"></i>
-                        <h3 id="form-titulo-accion" class="font-futurista font-black text-xs uppercase tracking-[0.2em] text-white">Materializador de Productos</h3>
-                    </div>
-                    <div class="text-xs font-black text-white font-futurista"><span id="txt-limite-actual" class="text-amber-400">0</span> ITEMS</div>
+    <main id="vista-carrito" class="hidden max-w-7xl w-full mx-auto px-4 py-8 flex-grow relative z-10 grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+        <section class="lg:col-span-3 glass-panel p-6 rounded-3xl space-y-4 shadow-2xl border border-stone-900/60">
+            <div class="border-b border-stone-800 pb-3 mb-4 flex justify-between items-end">
+                <h2 class="text-xl font-black font-futurista tracking-widest text-white uppercase flex items-center gap-2">
+                    <i data-lucide="shopping-basket" class="w-5 h-5 text-amber-400"></i> Bolsa de Pedidos VIP
+                </h2>
+                <span class="text-xs font-futurista text-stone-500 tracking-wider hidden md:block">Precio</span>
+            </div>
+            <div id="lista-items-carrito" class="divide-y divide-stone-900"></div>
+            <div class="text-right text-sm md:text-base border-t border-stone-900 pt-4 mt-4 font-futurista">
+                Subtotal (<span id="cantidad-items-abajo" class="text-amber-400 font-bold font-mono">0</span> products): 
+                <span class="text-white font-black font-mono ml-1" id="carrito-subtotal-monto-abajo">$0.00</span>
+            </div>
+
+            <div class="space-y-3 pt-6 border-t border-stone-900">
+                <div class="flex justify-between items-center">
+                    <label class="text-[10px] uppercase text-amber-400 font-bold tracking-widest block font-futurista flex items-center gap-2">
+                        <i data-lucide="map-pin" class="w-4 h-4"></i> Ubicación de Entrega en el Mapa (Google Maps)
+                    </label>
                 </div>
+                <p class="text-xs text-stone-400">Mueve el mapa para colocar el centro exactamente en el lugar de entrega.</p>
                 
-                <input type="hidden" id="prod-id-edicion" value="">
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="space-y-1">
-                        <label class="text-[9px] uppercase text-stone-400 font-bold">Título de la Pieza</label>
-                        <input type="text" id="prod-titulo" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
+                <div class="flex flex-col h-[500px] bg-neutral-900 text-white rounded-2xl overflow-hidden border border-neutral-800 shadow-2xl relative">
+                    <div id="google-map-container" class="relative w-full h-1/2 md:h-2/3 bg-neutral-800 flex items-center justify-center z-10">
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); z-index: 1000; pointer-events: none; font-size: 35px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">📍</div>
+                        
+                        <button type="button" onclick="centrarEnMiGPS()" class="absolute top-4 right-4 z-[1000] bg-neutral-800/90 hover:bg-neutral-700 p-3 rounded-full shadow-lg border border-neutral-700 cursor-pointer">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </button>
                     </div>
-                    <div class="space-y-1">
-                        <label class="text-[9px] uppercase text-stone-400 font-bold">Categoría</label>
-                        <select id="prod-categoria" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-stone-400 p-3.5 rounded-xl focus:outline-none"></select>
+
+                    <div class="w-full h-1/2 md:h-1/3 bg-neutral-900 rounded-t-3xl p-5 overflow-y-auto shadow-2xl border-t border-neutral-800 z-20">
+                        <div class="w-12 h-1.5 bg-neutral-700 rounded-full mx-auto mb-4"></div>
+                        <h3 class="text-neutral-400 text-sm font-medium mb-3">Lugares cercanos o Guardados</h3>
+                        
+                        <div class="space-y-3">
+                            <div onclick="centrarEnMiGPS()" class="flex items-center space-x-4 p-3 hover:bg-neutral-800 rounded-xl transition cursor-pointer border border-neutral-800">
+                                <div class="bg-neutral-800 p-3 rounded-full text-emerald-400">📍</div>
+                                <div>
+                                    <h4 class="font-semibold text-sm">Enviar tu ubicación actual</h4>
+                                    <p class="text-xs text-neutral-400">Centrar mapa en tu posición GPS</p>
+                                </div>
+                            </div>
+
+                            <div onclick="irAVendavalHouse()" class="flex items-center space-x-4 p-3 hover:bg-neutral-800 rounded-xl transition cursor-pointer border border-neutral-800">
+                                <div class="bg-neutral-800 p-3 rounded-full text-neutral-300">🏢</div>
+                                <div>
+                                    <h4 class="font-semibold text-sm">Vendaval House (Local Principal)</h4>
+                                    <p class="text-xs text-neutral-400">Mérida, Venezuela</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="space-y-1 md:col-span-2">
-                        <label class="text-[9px] uppercase text-stone-400 font-bold">Precio ($)</label>
-                        <input type="number" id="prod-precio" step="0.01" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none">
-                    </div>
-                    
-                    <div class="md:col-span-2 space-y-1">
-                        <label class="text-[9px] uppercase text-stone-400 font-bold">Descripción Exclusiva</label>
-                        <textarea id="prod-descripcion" rows="3" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3.5 rounded-xl focus:outline-none resize-none"></textarea>
-                    </div>
-                </div>
-                
-                <div class="space-y-2 border-t border-stone-900 pt-4">
-                    <div class="flex justify-between items-center">
-                        <label class="text-[10px] uppercase tracking-widest font-futurista font-black text-amber-400">Imágenes del Slider (Alta Calidad)</label>
-                        <span id="contador-fotos-cargadas" class="text-[9px] font-mono text-stone-400 font-bold">0 / 5</span>
-                    </div>
-                    <div class="grid grid-cols-5 gap-2" id="grid-inputs-fotos"></div>
                 </div>
 
-                <div class="flex gap-3 pt-2">
-                    <button id="btn-cancelar-edicion" onclick="limpiarFormularioCompleto()" class="hidden bg-stone-900 text-stone-400 font-futurista font-bold px-6 py-4 rounded-xl text-xs uppercase tracking-widest cursor-pointer hover:bg-stone-850">Cancelar</button>
-                    <button id="btn-guardar-producto" onclick="inyectarProductoASupabase()" class="flex-1 bg-amber-500 text-black font-futurista font-black p-4 rounded-xl text-xs uppercase tracking-[0.2em] cursor-pointer shadow-lg hover:bg-amber-600 transition-colors">Sincronizar Producto</button>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center text-xs font-mono bg-stone-900 p-4 rounded-xl border border-stone-800 mt-4">
+                    <div>
+                        <span class="text-stone-400 block text-[9px] uppercase font-futurista">Distancia calculada:</span>
+                        <span id="display-km" class="text-white font-bold text-sm">0.00 km</span>
+                    </div>
+                    <div>
+                        <span class="text-stone-400 block text-[9px] uppercase font-futurista">Costo Delivery:</span>
+                        <span id="display-costo-km" class="text-amber-400 font-black text-base">$0.00</span>
+                    </div>
+                    <div class="text-right">
+                        <button type="button" id="btn-usar-ubicacion" onclick="fijarUbicacionActualMapa()" class="w-full sm:w-auto bg-amber-500 hover:bg-amber-400 text-black font-futurista font-black px-4 py-2.5 rounded-xl text-[10px] tracking-wider uppercase flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer">
+                            <i data-lucide="check" class="w-3.5 h-3.5"></i> Confirmar Ubicación 📍
+                        </button>
+                    </div>
                 </div>
+                <p id="coordenadas-seleccionadas" style="font-size: 11px; color: #10b981; text-align: center;" class="font-mono"></p>
+            </div>
+        </section>
+
+        <section class="bg-stone-950/90 border border-stone-800 p-6 rounded-3xl shadow-2xl space-y-5">
+            <div class="flex items-start gap-2.5 text-xs text-stone-300 bg-amber-500/5 border border-amber-500/10 p-3 rounded-xl">
+                <span class="bg-emerald-600 text-black font-black rounded-full w-4 h-4 flex items-center justify-center shrink-0 text-[10px] mt-0.5">✓</span>
+                <div>
+                    <span class="text-emerald-400 font-bold">Tu suite califica para Envío Global VIP.</span>
+                </div>
+            </div>
+            <div class="text-base font-normal font-futurista text-stone-300">
+                Total a Pagar (Con Delivery): 
+                <span class="block text-2xl font-black font-mono text-white mt-1" id="carrito-monto-total">$0.00</span>
             </div>
             
-            <div class="glass-panel p-6 rounded-3xl overflow-hidden shadow-2xl">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs">
-                        <thead>
-                            <tr class="border-b border-stone-900 text-stone-500 uppercase tracking-widest text-[9px] font-futurista">
-                                <th class="p-3">ID</th>
-                                <th class="p-3">Objeto</th>
-                                <th class="p-3">Categoría</th>
-                                <th class="p-3">Precio</th>
-                                <th class="p-3 text-right">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-productos-body"></tbody>
-                    </table>
+            <div class="space-y-3 pt-2 border-t border-stone-900">
+                <div class="space-y-1.5">
+                    <label class="text-[9px] uppercase text-stone-400 font-bold tracking-widest block font-futurista">1. Selecciona Método de Pago</label>
+                    <select id="tipoMetodoPago" onchange="gestionarCamposPagoCart()" class="w-full bg-stone-900 border border-stone-800 text-xs text-stone-300 p-3.5 rounded-xl focus:outline-none focus:border-amber-500/40 font-medium">
+                        <option value="">Seleccione una opción...</option>
+                        <option value="zelle">Zelle</option>
+                        <option value="nequi">Nequi</option>
+                        <option value="pago_movil">Pago Móvil</option>
+                        <option value="efectivo">Efectivo</option>
+                    </select>
                 </div>
+
+                <div id="info-metodo-pago" class="hidden p-3 bg-stone-900 border border-amber-500/30 rounded-xl space-y-1 text-xs font-mono">
+                    <div class="flex items-center justify-between text-amber-400 font-bold border-b border-stone-800 pb-1.5 mb-1">
+                        <span id="titulo-metodo-pago">Datos de Pago</span>
+                        <i data-lucide="info" class="w-3.5 h-3.5"></i>
+                    </div>
+                    <div id="detalle-datos-pago" class="text-stone-300 space-y-1"></div>
+                </div>
+
+                <div id="contenedorNumeroMesaCart" class="space-y-1.5 hidden">
+                    <label class="text-[9px] uppercase text-amber-400 font-bold tracking-widest block font-futurista">2. Número de Mesa (Obligatorio)</label>
+                    <input type="text" id="input-num-mesa" placeholder="Ej. Mesa 04" class="w-full bg-stone-900 border border-amber-500/40 text-xs text-white p-3.5 rounded-xl font-mono tracking-wider focus:outline-none focus:border-amber-400">
+                </div>
+
+                <div id="contenedorReferenciaCart" class="space-y-1.5 hidden">
+                    <label class="text-[9px] uppercase text-amber-400 font-bold tracking-widest block font-futurista">2. Número de Referencia</label>
+                    <input type="text" id="input-ref-pago" placeholder="Ingresa datos o código de referencia" class="w-full bg-stone-900 border border-stone-800 text-xs text-white p-3.5 rounded-xl font-mono tracking-wider">
+                </div>
+
+                <div id="contenedor-ref-info" class="hidden bg-stone-900 border border-amber-500/30 p-3 rounded-xl text-xs">
+                    <span class="text-stone-400 font-futurista">Referido Aplicado:</span>
+                    <div id="display-codigo-referido" class="font-bold text-amber-400 font-mono mt-0.5">NINGUNO</div>
+                </div>
+
+                <button onclick="enviarPedidoWhatsApp()" class="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-futurista font-black py-4 rounded-xl text-xs uppercase tracking-wider cursor-pointer shadow-xl flex items-center justify-center gap-2">
+                    <i data-lucide="send" class="w-4 h-4"></i> Enviar Orden por WhatsApp
+                </button>
             </div>
-        </div>
+        </section>
     </main>
 
-    <main id="panel-seccion-ordenes" class="hidden max-w-7xl w-full mx-auto px-4 py-8 flex-grow relative z-10">
-        <div class="glass-panel p-6 rounded-3xl border border-stone-900 shadow-2xl">
-            <div class="flex items-center gap-2 text-amber-400 border-b border-stone-800 pb-4 mb-4">
-                <i data-lucide="shopping-bag" class="w-5 h-5"></i>
-                <h2 class="text-sm font-futurista font-black uppercase tracking-widest text-white">Registro de Órdenes Recibidas</h2>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead>
-                        <tr class="border-b border-stone-900 text-stone-500 uppercase tracking-widest text-[9px] font-futurista">
-                            <th class="p-3">ID Order</th>
-                            <th class="p-3">Fecha</th>
-                            <th class="p-3">Productos Solicitados</th>
-                            <th class="p-3">Total ($)</th>
-                            <th class="p-3">Referencia Registrada</th>
-                            <th class="p-3 text-right">Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-ordenes-body"></tbody>
-                </table>
-            </div>
-        </div>
-    </main>
+    <a href="cuponera.html" class="btn-oro-flotante fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full flex items-center justify-center text-stone-950 shadow-2xl cursor-pointer" title="Ver Cuponera">
+        <i data-lucide="ticket" class="w-7 h-7 stroke-[2.5]"></i>
+    </a>
 
-    <main id="panel-seccion-extras" class="hidden max-w-7xl w-full mx-auto px-4 py-8 flex-grow relative z-10 space-y-6">
-        <!-- Canal WhatsApp -->
-        <div class="max-w-md mx-auto glass-panel p-6 rounded-2xl shadow-2xl border border-stone-900/60 space-y-4">
-            <div class="flex items-center gap-2 text-amber-400 border-b border-stone-800 pb-3">
-                <i data-lucide="phone-call" class="w-4 h-4"></i>
-                <h3 class="font-futurista font-black text-xs uppercase tracking-[0.2em] text-white">Configurar Extras: Canal WhatsApp</h3>
-            </div>
-            <p class="text-[11px] text-stone-400 leading-relaxed font-mono">
-                Introduce el número de teléfono encargado de recibir los pedidos directos (con código de país sin el símbolo '+').
-            </p>
-            <div class="space-y-1.5">
-                <label class="text-[9px] uppercase text-stone-400 font-bold tracking-widest block font-futurista">Número Destinatario Colector</label>
-                <input type="text" id="config-whatsapp-num" placeholder="Ej: 584121234567" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white font-mono p-3.5 rounded-xl focus:outline-none focus:border-amber-400/40">
-            </div>
-            <button onclick="guardarAjusteWhatsAppEnSupabase()" class="w-full bg-gradient-to-r from-amber-400 to-amber-500 text-black font-futurista font-black p-3 rounded-xl text-xs uppercase tracking-widest cursor-pointer shadow-lg transition-transform hover:scale-[1.01]">
-                Sincronizar Canal VIP
-            </button>
-        </div>
+    <div id="modal-lightbox" class="hidden fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4 cursor-zoom-out" onclick="cerrarAmplificacion()">
+        <button class="absolute top-6 right-6 text-stone-400 hover:text-white transition-colors cursor-pointer">
+            <i data-lucide="x" class="w-8 h-8"></i>
+        </button>
+        <img id="lightbox-imagen-completa" src="" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl transition-transform duration-300">
+    </div>
 
-        <!-- Aviso de Abierto / Cerrado para la Vitrina -->
-        <div class="max-w-md mx-auto glass-panel p-6 rounded-2xl shadow-2xl border border-stone-900/60 space-y-4">
-            <div class="flex items-center gap-2 text-amber-400 border-b border-stone-800 pb-3">
-                <i data-lucide="store" class="w-4 h-4"></i>
-                <h3 class="font-futurista font-black text-xs uppercase tracking-[0.2em] text-white">Estado del Negocio (Vitrina)</h3>
-            </div>
-            <p class="text-[11px] text-stone-400 leading-relaxed font-mono">
-                Define si el local se encuentra abierto o cerrado para reflejar el aviso automáticamente en la vitrina pública.
-            </p>
-            <div class="space-y-1.5">
-                <label class="text-[9px] uppercase text-stone-400 font-bold tracking-widest block font-futurista">Estado Actual</label>
-                <select id="config-estado-negocio" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white font-mono p-3.5 rounded-xl focus:outline-none focus:border-amber-400/40">
-                    <option value="abierto">🟢 Abierto - Recibiendo Órdenes</option>
-                    <option value="cerrado">🔴 Cerrado - Temporalmente Inactivo</option>
-                </select>
-            </div>
-            <button onclick="guardarEstadoNegocioEnSupabase()" class="w-full bg-gradient-to-r from-amber-400 to-amber-500 text-black font-futurista font-black p-3 rounded-xl text-xs uppercase tracking-widest cursor-pointer shadow-lg transition-transform hover:scale-[1.01]">
-                Actualizar Estado en Vitrina
-            </button>
-        </div>
-
-        <!-- NUEVO: Configurar Hora en Vitrina -->
-        <div class="max-w-md mx-auto glass-panel p-6 rounded-2xl shadow-2xl border border-stone-900/60 space-y-4">
-            <div class="flex items-center gap-2 text-amber-400 border-b border-stone-800 pb-3">
-                <i data-lucide="clock" class="w-4 h-4"></i>
-                <h3 class="font-futurista font-black text-xs uppercase tracking-[0.2em] text-white">Horario / Hora en Vitrina</h3>
-            </div>
-            <p class="text-[11px] text-stone-400 leading-relaxed font-mono">
-                Configura el texto o la hora personalizada que se visualizará en la vitrina pública (ej: 08:00 AM - 10:00 PM o un mensaje de horario).
-            </p>
-            <div class="space-y-1.5">
-                <label class="text-[9px] uppercase text-stone-400 font-bold tracking-widest block font-futurista">Hora o Texto de Atención</label>
-                <input type="text" id="config-hora-vitrina" placeholder="Ej: 10:00 AM - 11:00 PM" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white font-mono p-3.5 rounded-xl focus:outline-none focus:border-amber-400/40">
-            </div>
-            <button onclick="guardarHoraVitrinaEnSupabase()" class="w-full bg-gradient-to-r from-amber-400 to-amber-500 text-black font-futurista font-black p-3 rounded-xl text-xs uppercase tracking-widest cursor-pointer shadow-lg transition-transform hover:scale-[1.01]">
-                Actualizar Hora en Vitrina
-            </button>
-        </div>
-    </main>
-
-    <footer class="border-t border-stone-950 bg-black/60 p-4 text-center text-[10px] text-stone-600 font-mono tracking-widest mt-12">© 2026 Vendaval House & D'UNIG LUXURY. TODOS LOS DERECHOS RESERVADOS.</footer>
+    <footer class="border-t border-stone-950 bg-black/80 p-4 text-center text-[10px] text-stone-600 font-mono tracking-widest mt-12">© 2026 Casa de las papas & D'UNIG LUXURY ECOSISTEMA. TODOS LOS DERECHOS RESERVADOS.</footer>
 
     <script>
         const SUPABASE_URL = "https://rqxtbdegckeaufnlfqfs.supabase.co"; 
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxeHRiZGVnY2tlYXVmbmxmcWZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3ODc3NjgsImV4cCI6MjEwNDM2Mzc2OH0.62QheHDSsV-N9S1n_18_uP2_evxwiNS9kZQX2vLGMC8"; 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        async function verificarAcceso() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) {
-                window.location.href = "login.html"; 
-                return null;
-            }
-            return session.user.email;
-        }
-
+        let carrito = [];
+        let capasActuales = []; 
+        let catalogoIngredientes3D = [];
         let baseProductos = [];
-        let categoriasDB = []; 
-        let filtroInstagram = "luxury_store";
-        let fotosSliderArray = Array(5).fill("");
-        let listaCuentas = [];
+        let productoSeleccionado = null;
+        let fotoSeleccionadaParaLightbox = "";
+        const precioBasePan = 1.00;
 
-        window.addEventListener('DOMContentLoaded', async () => { 
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (session) {
-                document.getElementById('auth-modal').classList.add('hidden');
+        let scene, camera, renderer, hamburguesaGrupo;
+
+        let map;
+        let gpsClienteLat = 8.59941369535553;  
+        let gpsClienteLng = -71.14089323410698;
+        const LOCAL_LAT = 8.59941369535553;  
+        const LOCAL_LNG = -71.14089323410698;
+        let TARIFA_POR_KM = 0.80; 
+        let distanciaCalculadaKm = 0;
+        let costoDeliveryKm = 0;
+
+        let datosDePago = {};
+
+        async function cargarCuentasPagoSupabase() {
+            try {
+                const { data, error } = await supabaseClient.from('cuentas_pago').select('*');
+                if (!error && data) {
+                    data.forEach(cuenta => {
+                        let htmlDetalle = '';
+                        if (cuenta.plataforma === 'efectivo') {
+                            htmlDetalle = `
+                                <p class="text-amber-400">💵 Pago en efectivo en mesa o local.</p>
+                                <p class="text-[10px] text-stone-400">Por favor indique su número de mesa correspondiente.</p>
+                            `;
+                        } else {
+                            if (cuenta.banco) htmlDetalle += `<p><strong>Banco:</strong> ${cuenta.banco}</p>`;
+                            if (cuenta.telefono) htmlDetalle += `<p><strong>Teléfono:</strong> ${cuenta.telefono}</p>`;
+                            if (cuenta.ci) htmlDetalle += `<p><strong>Cédula / RIF:</strong> ${cuenta.ci}</p>`;
+                            if (cuenta.email) htmlDetalle += `<p><strong>Correo:</strong> ${cuenta.email}</p>`;
+                            if (cuenta.titular) htmlDetalle += `<p><strong>Titular:</strong> ${cuenta.titular}</p>`;
+                            if (cuenta.detalles) htmlDetalle += `<p><strong>Notas:</strong> ${cuenta.detalles}</p>`;
+                        }
+                        datosDePago[cuenta.plataforma] = htmlDetalle;
+                    });
+                }
+            } catch (err) {
+                console.error("Error al cargar cuentas de pago desde Supabase:", err);
             }
-            
-            await descargarCategoriasDesdeSupabase(); 
-            await descargarIngredientes3D();
-            await descargarAdicionales(); 
-            descargarCatalogoDeSupabase(); 
-            alternarCamposPago(); 
-            descargarCuentasPago(); 
-            renderizerInputsMatrizFotos(); 
-            lucide.createIcons(); 
-        });
 
-        async function ejecutarLogin() {
-            const email = document.getElementById('auth-email').value;
-            const password = document.getElementById('auth-pass').value;
+            if (!datosDePago['efectivo']) {
+                datosDePago['efectivo'] = `
+                    <p class="text-amber-400">💵 Pago en efectivo en mesa o local.</p>
+                    <p class="text-[10px] text-stone-400">Por favor indique su número de mesa correspondiente.</p>
+                `;
+            }
+        }
 
-            const { data, error } = await supabaseClient.auth.signInWithPassword({
-                email: email,
-                password: password,
-            });
+        async function verificarEstadoTienda() {
+            let estaAbierto = true; 
+            try {
+                const { data, error } = await supabaseClient
+                    .from('ajustes_sistema')
+                    .select('id, valor')
+                    .in('id', ['estado_negocio', 'hora_vitrina']);
 
-            if (error) {
-                alert("Acceso denegado: " + error.message);
+                if (!error && data) {
+                    data.forEach(item => {
+                        if (item.id === 'estado_negocio') {
+                            const val = String(item.valor).toLowerCase();
+                            if (val === 'cerrado' || val === 'false' || val === '0') {
+                                estaAbierto = false;
+                            }
+                        }
+                        if (item.id === 'hora_vitrina') {
+                            const spanHorario = document.getElementById('texto-horario-vitrina');
+                            if (spanHorario) {
+                                spanHorario.textContent = item.valor;
+                            }
+                        }
+                    });
+                }
+            } catch (err) {
+                console.log("Error al sincronizar con Supabase, usando valores por defecto", err);
+            }
+
+            actualizarInterfazEstadoTienda(estaAbierto);
+        }
+
+        function actualizarInterfazEstadoTienda(estaAbierto) {
+            const puntoHeader = document.getElementById('punto-estado-header');
+            const textoHeader = document.getElementById('texto-estado-header');
+            const badgePuntoVitrina = document.getElementById('badge-punto-vitrina');
+            const tituloVitrina = document.getElementById('titulo-estado-vitrina');
+            const descVitrina = document.getElementById('descripcion-estado-vitrina');
+            const iconoWrapper = document.getElementById('icono-estado-wrapper');
+            const vistaVitrina = document.getElementById('vista-vitrina');
+
+            if (estaAbierto) {
+                if (puntoHeader) puntoHeader.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+                if (textoHeader) {
+                    textoHeader.className = "text-emerald-400 uppercase tracking-widest";
+                    textoHeader.textContent = "Abierto";
+                }
+                if (badgePuntoVitrina) badgePuntoVitrina.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping";
+                if (tituloVitrina) tituloVitrina.textContent = "ESTADO DEL LOCAL: ABIERTOS";
+                if (descVitrina) descVitrina.textContent = "Recibiendo pedidos y despachando con normalidad.";
+                if (iconoWrapper) iconoWrapper.className = "w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400";
+                if (vistaVitrina) {
+                    vistaVitrina.style.pointerEvents = "auto";
+                    vistaVitrina.style.opacity = "1";
+                }
             } else {
-                document.getElementById('auth-modal').classList.add('hidden');
+                if (puntoHeader) puntoHeader.className = "w-2 h-2 rounded-full bg-red-500";
+                if (textoHeader) {
+                    textoHeader.className = "text-red-400 uppercase tracking-widest";
+                    textoHeader.textContent = "Cerrado";
+                }
+                if (badgePuntoVitrina) badgePuntoVitrina.className = "w-2.5 h-2.5 rounded-full bg-red-500";
+                if (tituloVitrina) tituloVitrina.textContent = "ESTADO DEL LOCAL: CERRADOS";
+                if (descVitrina) descVitrina.textContent = "Lo sentimos, nuestro horario de atención ha finalizado.";
+                if (iconoWrapper) iconoWrapper.className = "w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400";
+                if (vistaVitrina) {
+                    vistaVitrina.style.pointerEvents = "none";
+                    vistaVitrina.style.opacity = "0.5";
+                }
             }
         }
 
-        async function ejecutarLogout() {
-            await supabaseClient.auth.signOut();
-            location.reload();
+        async function cargarTarifaDeliveryDesdeSupabase() {
+            const { data, error } = await supabaseClient
+                .from('tarifa_delivery')
+                .select('precio_por_km')
+                .order('id', { ascending: false })
+                .limit(1)
+                .single();
+                
+            if (!error && data && data.precio_por_km !== undefined) {
+                TARIFA_POR_KM = parseFloat(data.precio_por_km);
+            }
         }
 
-        function cambiarSeccionPanel(target) {
-            document.getElementById('panel-seccion-principal').classList.add('hidden');
-            document.getElementById('panel-seccion-ordenes').classList.add('hidden');
-            document.getElementById('panel-seccion-extras').classList.add('hidden');
-
-            document.querySelectorAll('[id^="tab-btn-"]').forEach(btn => {
-                btn.className = "py-3 px-4 rounded-xl font-futurista text-xs font-bold uppercase tracking-wider transition-all text-stone-400 hover:text-white bg-stone-900/50 cursor-pointer text-center";
+        async function cambiarPantalla(nombre) {
+            ['vitrina', 'detalle', 'simulador3d', 'carrito'].forEach(v => {
+                const el = document.getElementById(`vista-${v}`);
+                if(el) el.classList.add('hidden');
             });
+            const target = document.getElementById(`vista-${nombre}`);
+            if(target) target.classList.remove('hidden');
 
-            document.getElementById(`panel-seccion-${target}`).classList.remove('hidden');
-            document.getElementById(`tab-btn-${target}`).className = "py-3 px-4 rounded-xl font-futurista text-xs font-bold uppercase tracking-wider transition-all bg-amber-500 text-black shadow-lg shadow-amber-500/10 cursor-pointer text-center";
-
-            if (target === 'ordenes') descargarHistorialDeOrdenes();
-            if (target === 'extras') {
-                descargarAjusteWhatsApp();
-                descargarEstadoNegocio();
-                descargarHoraVitrina();
+            if (nombre === 'vitrina') await verificarEstadoTienda();
+            if (nombre === 'simulador3d') {
+                setTimeout(async () => {
+                    if (!scene) inicializarThreeJS();
+                    else {
+                        const container = document.getElementById('webgl-container');
+                        if (renderer && container) {
+                            renderer.setSize(container.clientWidth, container.clientHeight);
+                            camera.aspect = container.clientWidth / container.clientHeight;
+                            camera.updateProjectionMatrix();
+                        }
+                    }
+                    await cargarIngredientesDesdeSupabase();
+                    actualizarEscena3D();
+                }, 150);
             }
+            if (nombre === 'carrito') {
+                await cargarTarifaDeliveryDesdeSupabase();
+                renderizarCarrito();
+                setTimeout(() => {
+                    if (map) google.maps.event.trigger(map, "resize");
+                }, 200);
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => lucide.createIcons(), 50);
         }
 
         async function descargarCatalogoDeSupabase() {
-            const { data, error } = await supabaseClient.from('productos').select('*').eq('instagram_dueno', filtroInstagram);
-            if (!error && data) { 
-                baseProductos = data; 
-                renderizarTablaProductosBackend(); 
-                document.getElementById('txt-limite-actual').innerText = baseProductos.length; 
-            }
-        }
+            const grid = document.getElementById('grid-productos-vitrina');
+            if(!grid) return;
 
-        function renderizarTablaProductosBackend() {
-            const tbody = document.getElementById('tabla-productos-body'); if(!tbody) return; tbody.innerHTML = "";
-            if(baseProductos.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-stone-600 font-mono">No hay elementos registrados para este canal.</td></tr>`; return; }
-            
-            baseProductos.forEach(p => {
-                tbody.innerHTML += `<tr class="border-b border-stone-900/40 hover:bg-stone-900/20 transition-colors">
-                    <td class="p-3 font-mono text-stone-500">#${p.id}</td>
-                    <td class="p-3 text-white font-bold">${p.titulo}</td>
-                    <td class="p-3 text-stone-400">${p.categoria}</td>
-                    <td class="p-3 text-amber-400 font-mono font-bold">$${parseFloat(p.precio).toFixed(2)}</td>
-                    <td class="p-3 text-right flex justify-end gap-2">
-                        <button onclick="prepararEdicionProducto(${p.id})" class="p-2 text-amber-400 bg-stone-900 border border-stone-800 rounded-lg cursor-pointer hover:bg-stone-850">✏️</button>
-                        <button onclick="eliminarProductoDeSupabase(${p.id})" class="p-2 text-red-400 bg-stone-900 border border-stone-800 rounded-lg cursor-pointer hover:bg-stone-850">🗑️</button>
-                    </td></tr>`;
-            });
-        }
-
-        async function inyectarProductoASupabase() {
-            const idEdicion = document.getElementById('prod-id-edicion').value;
-            const t = document.getElementById('prod-titulo').value.trim();
-            const c = document.getElementById('prod-categoria').value;
-            const p = parseFloat(document.getElementById('prod-precio').value);
-            const d = document.getElementById('prod-descripcion').value.trim();
-
-            if (!t || isNaN(p)) { alert("Complete todos los campos requeridos."); return; }
-            const sliderValidos = fotosSliderArray.filter(f => f !== "");
-
-            const payload = {
-                titulo: t, 
-                categoria: c || "General", 
-                descripcion: d, 
-                precio: p, 
-                instagram_dueno: filtroInstagram, 
-                imagen_url: sliderValidos[0] || "",
-                imagenes_slider: JSON.stringify(sliderValidos)
-            };
-
-            let error;
-            if (idEdicion) { 
-                const res = await supabaseClient.from('productos').update(payload).eq('id', idEdicion); 
-                error = res.error;
-            } else { 
-                const res = await supabaseClient.from('productos').insert([payload]); 
-                error = res.error;
-            }
-
+            const { data, error } = await supabaseClient.from('productos').select('*');
             if (error) {
-                alert("Error de sincronización: " + error.message);
+                grid.innerHTML = `<div class="col-span-3 text-center text-red-400 font-mono text-xs">Error al conectar con la base de datos.</div>`;
+                return;
+            }
+
+            if (data && data.length > 0) {
+                baseProductos = data;
+                grid.innerHTML = "";
+                data.forEach(p => {
+                    const titulo = p.titulo || p.nombre || "Producto sin nombre";
+                    const precio = parseFloat(p.precio || p.valor || 0);
+                    const imagen = p.imagen_url || p.imagen || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600';
+                    const categoria = p.categoria || 'ESPECIALIDAD';
+
+                    grid.innerHTML += `
+                        <div onclick="verDetalleDeProducto(${p.id})" class="glass-panel rounded-3xl overflow-hidden border border-stone-800 flex flex-col justify-between shadow-xl cursor-pointer hover:border-amber-500/40 transition-all group">
+                            <div class="aspect-video bg-stone-950 overflow-hidden relative">
+                                <img src="${imagen}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <span class="absolute top-3 left-3 bg-black/70 backdrop-blur-md text-[8px] font-futurista font-bold uppercase tracking-widest text-amber-400 px-2.5 py-1 rounded border border-stone-800">${categoria}</span>
+                            </div>
+                            <div class="p-5 space-y-3">
+                                <h3 class="font-futurista font-bold text-xs text-white uppercase truncate">${titulo}</h3>
+                                <div class="flex justify-between items-center pt-2 border-t border-stone-900">
+                                    <span class="font-mono text-xs text-amber-400 font-bold">$${precio.toFixed(2)}</span>
+                                    <span class="text-[10px] font-futurista font-black uppercase text-amber-400 underline">Ver Detalles</span>
+                                </div>
+                            </div>
+                        </div>`;
+                });
             } else {
-                alert("Sincronizado con éxito."); 
-                limpiarFormularioCompleto(); 
-                descargarCatalogoDeSupabase();
-            }
-        }
-
-        function prepararEdicionProducto(idProducto) {
-            const prod = baseProductos.find(p => p.id === idProducto); if(!prod) return;
-            document.getElementById('prod-id-edicion').value = prod.id;
-            document.getElementById('prod-titulo').value = prod.titulo;
-            document.getElementById('prod-categoria').value = prod.categoria;
-            document.getElementById('prod-precio').value = prod.precio;
-            document.getElementById('prod-descripcion').value = prod.descripcion || "";
-            
-            fotosSliderArray = Array(5).fill("");
-            try { if(prod.imagenes_slider) JSON.parse(prod.imagenes_slider).forEach((img, i) => { if(i<5) fotosSliderArray[i] = img; }); } catch(e){}
-
-            document.getElementById('form-titulo-accion').innerText = "Editor Experto de Producto";
-            document.getElementById('btn-guardar-producto').innerText = "Confirmar Cambios";
-            document.getElementById('btn-cancelar-edicion').classList.remove('hidden');
-            renderizerInputsMatrizFotos(); 
-            actualizarContadoresMedia();
-        }
-
-        async function eliminarProductoDeSupabase(idCloud) {
-            if(confirm("¿Estás completamente seguro de remover esta pieza del inventario?")) { 
-                await supabaseClient.from('productos').delete().eq('id', idCloud); 
-                descargarCatalogoDeSupabase(); 
-            }
-        }
-
-        function limpiarFormularioCompleto() {
-            document.getElementById('prod-id-edicion').value = ""; 
-            document.getElementById('prod-titulo').value = "";
-            document.getElementById('prod-precio').value = ""; 
-            document.getElementById('prod-descripcion').value = "";
-            fotosSliderArray = Array(5).fill("");
-            document.getElementById('form-titulo-accion').innerText = "Materializador de Productos";
-            document.getElementById('btn-guardar-producto').innerText = "Sincronizar Producto";
-            document.getElementById('btn-cancelar-edicion').classList.add('hidden');
-            renderizerInputsMatrizFotos(); 
-            actualizarContadoresMedia();
-        }
-
-        function renderizerInputsMatrizFotos() {
-            const container = document.getElementById('grid-inputs-fotos'); if(!container) return; container.innerHTML = "";
-            for(let i=0; i<5; i++) {
-                const img = fotosSliderArray[i];
-                container.innerHTML += `<div class="relative aspect-square bg-stone-950 border ${img ? 'border-amber-500/60' : 'border-stone-800'} rounded-xl flex items-center justify-center overflow-hidden">
-                    ${img ? `<img src="${img}" class="w-full h-full object-cover"><button onclick="removerFoto(${i})" class="absolute top-1 right-1 bg-black text-red-400 p-0.5 rounded text-[9px] cursor-pointer">✕</button>` : 
-                    `<label class="w-full h-full flex flex-col items-center justify-center cursor-pointer text-[8px] text-stone-600 font-mono"><i data-lucide="plus" class="w-3 h-3 mb-1"></i>IMG ${i+1}<input type="file" accept="image/*" onchange="procesarFoto(event, ${i})" class="hidden"></label> `}</div>`;
+                grid.innerHTML = `<div class="col-span-3 text-center text-stone-500 font-mono text-xs">No se encontraron productos registrados en Supabase.</div>`;
             }
             lucide.createIcons();
         }
 
-        function procesarFoto(event, index) {
-            const file = event.target.files[0]; if(!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image(); img.src = e.target.result;
-                img.onload = function() {
-                    const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
-                    canvas.width = Math.min(600, img.width); canvas.height = Math.min(600, img.height);
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    const base64 = canvas.toDataURL('image/jpeg', 0.6);
-                    fotosSliderArray[index] = base64; renderizerInputsMatrizFotos();
-                    actualizarContadoresMedia();
-                };
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function removerFoto(index) {
-            fotosSliderArray[index] = ""; renderizerInputsMatrizFotos();
-            actualizarContadoresMedia();
-        }
-
-        function actualizarContadoresMedia() {
-            document.getElementById('contador-fotos-cargadas').innerText = `${fotosSliderArray.filter(f=>f!=="").length} / 5`;
-        }
-
-        function renderizarCategorias() {
-            const select = document.getElementById('prod-categoria'), 
-                  lista = document.getElementById('lista-categorias');
-            if(!select || !lista) return; 
-            
-            select.innerHTML = ""; 
-            lista.innerHTML = "";
-            
-            categoriasDB.forEach(c => {
-                select.innerHTML += `<option value="${c}">${c}</option>`;
-                lista.innerHTML += `
-                    <div class="bg-stone-950/60 p-3 rounded-xl text-xs border border-stone-900 text-stone-400 flex justify-between items-center">
-                        <span>${c}</span>
-                        <button onclick="eliminarCategoria('${c}')" class="text-red-500 hover:text-red-300 ml-2 font-bold">✕</button>
-                    </div>`;
+        function filtrarProductosVitrina() {
+            const textoBusqueda = document.getElementById('input-buscador-vitrina').value.toLowerCase();
+            const tarjetasProductos = document.querySelectorAll('#grid-productos-vitrina > div'); 
+            tarjetasProductos.forEach(tarjeta => {
+                const textoTarjeta = tarjeta.innerText.toLowerCase();
+                tarjeta.style.display = textoTarjeta.includes(textoBusqueda) ? 'flex' : 'none';
             });
         }
 
-        async function agregarCategoria() { 
-            const inp = document.getElementById('cat-nombre'); 
-            const nom = inp.value.trim(); 
+        function limpiarBuscadorVitrina() {
+            const input = document.getElementById('input-buscador-vitrina');
+            if (input) {
+                input.value = '';
+                filtrarProductosVitrina();
+            }
+        }
+
+        function verDetalleDeProducto(idProducto) {
+            productoSeleccionado = baseProductos.find(p => p.id === idProducto); 
+            if (!productoSeleccionado) return;
+
+            document.getElementById('detalle-titulo').innerText = productoSeleccionado.titulo || productoSeleccionado.nombre;
+            document.getElementById('detalle-categoria').innerText = productoSeleccionado.categoria || 'ESPECIALIDAD';
+            document.getElementById('detalle-precio').innerText = `$${parseFloat(productoSeleccionado.precio || 0).toFixed(2)}`;
+            document.getElementById('detalle-descripcion').innerText = productoSeleccionado.descripcion || "Sin descripción disponible.";
+            document.getElementById('detalle-stock').innerText = `${productoSeleccionado.stock || 10} unidades disponibles`;
+
+            const imgInicial = productoSeleccionado.imagen_url || productoSeleccionado.imagen || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600";
+            actualizarVisorFoto(imgInicial);
+
+            let fotosSlider = [];
+            try { if(productoSeleccionado.imagenes_slider) fotosSlider = JSON.parse(productoSeleccionado.imagenes_slider) || []; } catch(e){}
+            if (fotosSlider.length === 0 && imgInicial) fotosSlider.push(imgInicial);
+
+            const containerMiniaturas = document.getElementById('detalle-contenedor-miniaturas'); 
+            containerMiniaturas.innerHTML = "";
+            fotosSlider.forEach((img) => {
+                if(img) containerMiniaturas.innerHTML += `<div onclick="actualizarVisorFoto('${img}')" class="aspect-square rounded-xl bg-stone-950 border border-stone-800 overflow-hidden cursor-pointer hover:border-amber-500/40 transition-all"><img src="${img}" class="w-full h-full object-cover"></div>`;
+            });
+
+            renderizarAdicionales();
+            cambiarPantallaDetalleDirecto();
+        }
+
+        function cambiarPantallaDetalleDirecto() {
+            ['vitrina', 'simulador3d', 'carrito'].forEach(v => {
+                const el = document.getElementById(`vista-${v}`);
+                if(el) el.classList.add('hidden');
+            });
+            document.getElementById('vista-detalle').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => lucide.createIcons(), 50);
+        }
+
+        function actualizarVisorFoto(url) {
+            fotoSeleccionadaParaLightbox = url;
+            document.getElementById('detalle-visor-principal').src = url;
+        }
+
+        function amplificarFotoActual() {
+            if(!fotoSeleccionadaParaLightbox) return;
+            const lightbox = document.getElementById('modal-lightbox');
+            document.getElementById('lightbox-imagen-completa').src = fotoSeleccionadaParaLightbox;
+            lightbox.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function cerrarAmplificacion() {
+            document.getElementById('modal-lightbox').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        async function descargarAdicionalesDeSupabase() {
+            const { data, error } = await supabaseClient.from('adicionales').select('*');
+            if (!error && data) window.listaAdicionales = data;
+        }
+
+        function renderizarAdicionales() {
+            const contenedor = document.getElementById('contenedor-adicionales');
+            if (!contenedor || !window.listaAdicionales || window.listaAdicionales.length === 0) {
+                if(contenedor) contenedor.innerHTML = "";
+                return;
+            }
+
+            contenedor.innerHTML = `
+                <details class="group bg-stone-900 border border-stone-800 rounded-xl overflow-hidden my-4">
+                    <summary class="list-none p-4 text-[10px] font-bold text-stone-400 cursor-pointer flex justify-between items-center hover:text-amber-400">
+                        <span>SELECCIONAR ADICIONALES / EXTRAS</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 group-open:rotate-180 transition-transform"></i>
+                    </summary>
+                    <div class="p-3 border-t border-stone-800 space-y-2">
+                        ${window.listaAdicionales.map(ad => `
+                            <label class="flex items-center gap-3 cursor-pointer p-2 hover:bg-stone-800 rounded-lg">
+                                <input type="checkbox" class="check-adicional w-4 h-4 accent-amber-500" data-nombre="${ad.nombre}" data-precio="${ad.precio}">
+                                <span class="text-xs text-white font-medium">${ad.nombre}</span>
+                                <span class="text-xs text-amber-400 font-mono ml-auto">+$${parseFloat(ad.precio).toFixed(2)}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </details>`;
+            lucide.createIcons();
+        }
+
+        function agregarDetalleAlCarritoYVolver() {
+            if (!productoSeleccionado) return;
+
+            const checkboxes = document.querySelectorAll('.check-adicional:checked');
+            let adicionalesSeleccionados = [];
+            let extraTotal = 0;
+
+            checkboxes.forEach(cb => {
+                adicionalesSeleccionados.push(cb.getAttribute('data-nombre'));
+                extraTotal += parseFloat(cb.getAttribute('data-precio') || 0);
+            });
+
+            const tituloBase = productoSeleccionado.titulo || productoSeleccionado.nombre;
+            const tituloFinal = `${tituloBase} ${adicionalesSeleccionados.length > 0 ? '(+ ' + adicionalesSeleccionados.join(', ') + ')' : ''}`;
+            const precioFinal = parseFloat(productoSeleccionado.precio || 0) + extraTotal;
+            const imagenFinal = productoSeleccionado.imagen_url || productoSeleccionado.imagen || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600';
+
+            carrito.push({ titulo: tituloFinal, precio: precioFinal, imagen_url: imagenFinal });
+            document.getElementById('contador-carrito-badge').innerText = carrito.length;
             
-            if(nom && !categoriasDB.includes(nom)) { 
-                const { error } = await supabaseClient
-                    .from('categorias')
-                    .insert([{ nombre: nom, instagram_dueno: filtroInstagram }]);
-                    
-                if (!error) {
-                    inp.value = ""; 
-                    await descargarCategoriasDesdeSupabase(); 
+            alert(`¡"${tituloFinal}" agregado al carrito con éxito!`);
+            cambiarPantalla('vitrina');
+        }
+
+        async function cargarIngredientesDesdeSupabase() {
+            try {
+                const { data, error } = await supabaseClient.from('ingredientes_3d').select('*');
+                if (error || !data || data.length === 0) {
+                    catalogoIngredientes3D = [];
                 } else {
-                    alert("Error al guardar: " + error.message);
+                    catalogoIngredientes3D = data.map(item => ({
+                        id: item.id,
+                        nombre: item.nombre || item.titulo,
+                        precio: parseFloat(item.precio || item.valor || 0),
+                        color: item.color || '#c47622',
+                        tipo: item.tipo || 'cilindro',
+                        imagen_url: item.imagen_url || item.imagen || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=300'
+                    }));
+                    renderizarBandejaIngredientes();
                 }
+            } catch (err) {
+                console.error("Error cargando ingredientes:", err);
             }
         }
 
-        async function eliminarCategoria(nombre) {
-            const { error } = await supabaseClient
-                .from('categorias')
-                .delete()
-                .eq('nombre', nombre)
-                .eq('instagram_dueno', filtroInstagram);
+        function inicializarThreeJS() {
+            const container = document.getElementById('webgl-container');
+            if(!container) return;
+            container.innerHTML = ""; 
 
-            if (!error) {
-                await descargarCategoriasDesdeSupabase(); 
-            } else {
-                alert("Error al eliminar: " + error.message);
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(0, 5, 12);
+            camera.lookAt(0, 0, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+            const dirLight = new THREE.DirectionalLight(0xfffaed, 2.0);
+            dirLight.position.set(5, 10, 7);
+            scene.add(dirLight);
+
+            hamburguesaGrupo = new THREE.Group();
+            scene.add(hamburguesaGrupo);
+
+            let isDragging = false;
+            let previousMousePosition = { x: 0, y: 0 };
+
+            container.addEventListener('mousedown', (e) => { isDragging = true; previousMousePosition = { x: e.clientX, y: e.clientY }; });
+            container.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const deltaX = e.clientX - previousMousePosition.x;
+                hamburguesaGrupo.rotation.y += deltaX * 0.01;
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            });
+            window.addEventListener('mouseup', () => { isDragging = false; });
+
+            animarThreeJS();
+        }
+
+        function animarThreeJS() {
+            requestAnimationFrame(animarThreeJS);
+            if(renderer && scene && camera) renderer.render(scene, camera);
+        }
+
+        function renderizarBandejaIngredientes() {
+            const contenedor = document.getElementById('bandeja-ingredientes-arrastrables');
+            if(!contenedor) return;
+            contenedor.innerHTML = "";
+            
+            catalogoIngredientes3D.forEach(ing => {
+                contenedor.innerHTML += `
+                    <div draggable="true" ondragstart="event.dataTransfer.setData('text/plain', '${ing.id}')" onclick="agregarCapa('${ing.id}')" class="draggable-item glass-panel border border-stone-800 hover:border-amber-500/60 p-3 rounded-2xl flex flex-col justify-between items-center text-center cursor-pointer shadow-lg group">
+                        <div class="w-full h-16 rounded-xl overflow-hidden mb-2 relative bg-stone-900">
+                            <img src="${ing.imagen_url}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                        </div>
+                        <span class="text-xs text-white font-bold block">${ing.nombre}</span>
+                        <span class="text-[10px] text-amber-400 font-mono mt-0.5">+$${ing.precio.toFixed(2)}</span>
+                    </div>`;
+            });
+
+            const zonaDrop = document.getElementById('zona-drop-canvas');
+            if(zonaDrop) {
+                zonaDrop.ondragover = (e) => e.preventDefault();
+                zonaDrop.ondrop = (e) => {
+                    e.preventDefault();
+                    const idIngrediente = e.dataTransfer.getData('text/plain');
+                    if(idIngrediente) agregarCapa(idIngrediente);
+                };
             }
         }
 
-        async function descargarCategoriasDesdeSupabase() {
-            const { data, error } = await supabaseClient
-                .from('categorias')
-                .select('nombre')
-                .eq('instagram_dueno', filtroInstagram);
-
-            if (data) {
-                categoriasDB = data.map(c => c.nombre);
-                renderizarCategorias(); 
+        function agregarCapa(id) {
+            const ing = catalogoIngredientes3D.find(i => i.id == id);
+            if(ing) {
+                capasActuales.push({ ...ing, uuid: Math.random().toString(36).substring(2, 9) });
+                actualizarEscena3D();
+                renderizarListaCapasActivas();
             }
         }
 
-        // GESTIÓN DE INGREDIENTES 3D
-        async function guardarIngrediente3D() {
-            const nombre = document.getElementById('ing3d-nombre').value.trim();
-            const precio = parseFloat(document.getElementById('ing3d-precio').value);
-            const modeloUrl = document.getElementById('ing3d-modelo').value.trim();
+        function eliminarCapaPorUuid(uuid) {
+            capasActuales = capasActuales.filter(c => c.uuid !== uuid);
+            actualizarEscena3D();
+            renderizarListaCapasActivas();
+        }
 
-            if (!nombre || isNaN(precio)) {
-                alert("Por favor, ingresa al menos un nombre y un precio válido.");
+        function limpiarTodasLasCapas() {
+            capasActuales = [];
+            actualizarEscena3D();
+            renderizarListaCapasActivas();
+        }
+
+        function renderizarListaCapasActivas() {
+            const contenedor = document.getElementById('lista-capas-activas-pila');
+            if(!contenedor) return;
+            contenedor.innerHTML = "";
+
+            if(capasActuales.length === 0) {
+                contenedor.innerHTML = `<div class="text-xs text-stone-500 text-center py-4 font-mono">Sin ingredientes agregados aún.</div>`;
+                document.getElementById('precio-total-3d').innerText = `$${precioBasePan.toFixed(2)}`;
+                window.precioFinal3D = precioBasePan;
                 return;
             }
 
-            const { error } = await supabaseClient
-                .from('ingredientes_3d')
-                .insert([{ 
-                    nombre: nombre, 
-                    precio: precio, 
-                    imagen_url: modeloUrl, 
-                    instagram_dueno: filtroInstagram 
-                }]);
+            let total = precioBasePan;
+            capasActuales.forEach((capa, index) => {
+                total += capa.precio;
+                contenedor.innerHTML += `
+                    <div class="flex justify-between items-center bg-stone-900/90 border border-stone-800 px-3 py-2 rounded-xl text-xs">
+                        <div class="flex items-center gap-2">
+                            <span class="font-mono text-[10px] text-amber-400 font-bold">#${index + 1}</span>
+                            <span class="text-stone-200 font-bold">${capa.nombre}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="font-mono text-amber-400">+$${capa.precio.toFixed(2)}</span>
+                            <button onclick="eliminarCapaPorUuid('${capa.uuid}')" class="w-5 h-5 bg-red-500/25 hover:bg-red-500 text-red-400 hover:text-white rounded-md flex items-center justify-center transition-colors font-bold text-[10px] cursor-pointer">✕</button>
+                        </div>
+                    </div>`;
+            });
 
-            if (error) {
-                alert("Error al guardar el ingrediente 3D: " + error.message);
+            document.getElementById('precio-total-3d').innerText = `$${total.toFixed(2)}`;
+            window.precioFinal3D = total;
+        }
+
+        function crearPanBeigeOscuroConPuntitos(esSuperior = false) {
+            const grupoPan = new THREE.Group();
+            const materialPan = new THREE.MeshStandardMaterial({ color: 0x8c6747, roughness: 0.55 });
+            
+            if (!esSuperior) {
+                const geoBase = new THREE.CylinderGeometry(2.3, 2.45, 0.6, 32);
+                grupoPan.add(new THREE.Mesh(geoBase, materialPan));
             } else {
-                alert("Ingrediente 3D registrado con éxito.");
-                document.getElementById('ing3d-nombre').value = "";
-                document.getElementById('ing3d-precio').value = "";
-                document.getElementById('ing3d-modelo').value = "";
-                descargarIngredientes3D();
-            }
-        }
+                const geoSup = new THREE.SphereGeometry(2.3, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+                const meshSup = new THREE.Mesh(geoSup, materialPan);
+                meshSup.scale.set(1, 0.75, 1);
+                grupoPan.add(meshSup);
 
-        async function descargarIngredientes3D() {
-            const { data, error } = await supabaseClient
-                .from('ingredientes_3d')
-                .select('*')
-                .eq('instagram_dueno', filtroInstagram);
-
-            if (!error && data) {
-                const lista = document.getElementById('lista-ingredientes-3d');
-                if (lista) {
-                    lista.innerHTML = "";
-                    data.forEach(ing => {
-                        lista.innerHTML += `
-                            <div class="bg-stone-950/60 p-3 rounded-xl text-xs border border-stone-900 text-stone-400 flex justify-between items-center">
-                                <div>
-                                    <span class="text-white font-bold">${ing.nombre}</span> - <span class="text-amber-400">$${ing.precio}</span>
-                                    <div class="text-[9px] text-stone-500 truncate max-w-[150px]">${ing.imagen_url || 'Sin modelo 3D'}</div>
-                                </div>
-                                <button onclick="eliminarIngrediente3D('${ing.id}')" class="text-red-500 hover:text-red-300 ml-2 font-bold cursor-pointer">✕</button>
-                            </div>`;
-                    });
+                const materialPuntito = new THREE.MeshStandardMaterial({ color: 0x3d2715 });
+                const totalPuntitos = 28;
+                for(let i = 0; i < totalPuntitos; i++) {
+                    const geoPunto = new THREE.SphereGeometry(0.05, 8, 8);
+                    const meshPunto = new THREE.Mesh(geoPunto, materialPuntito);
+                    const phi = Math.acos(-1 + (2 * i) / totalPuntitos) * 0.5;
+                    const theta = Math.sqrt(totalPuntitos * Math.PI) * phi;
+                    const radioDist = 1.6 * Math.sin(phi);
+                    meshPunto.position.set(radioDist * Math.cos(theta), 1.1 + (Math.cos(phi) * 0.4), radioDist * Math.sin(theta));
+                    grupoPan.add(meshPunto);
                 }
             }
+            return grupoPan;
         }
 
-        async function eliminarIngrediente3D(id) {
-            if (confirm("¿Estás seguro de eliminar este ingrediente 3D?")) {
-                const { error } = await supabaseClient.from('ingredientes_3d').delete().eq('id', id);
-                if (!error) {
-                    descargarIngredientes3D();
+        function actualizarEscena3D() {
+            if(!hamburguesaGrupo) return;
+            while(hamburguesaGrupo.children.length > 0) hamburguesaGrupo.remove(hamburguesaGrupo.children[0]);
+
+            let alturaActualY = -2.2;
+            const panBaseMesh = crearPanBeigeOscuroConPuntitos(false);
+            panBaseMesh.position.y = alturaActualY;
+            hamburguesaGrupo.add(panBaseMesh);
+            alturaActualY += 0.5;
+
+            capasActuales.forEach((capa) => {
+                let meshCapa;
+                let colorHex = parseInt((capa.color || '#c47622').replace('#', '0x'));
+                const matCapa = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.4 });
+
+                if (capa.tipo === 'cilindro') {
+                    meshCapa = new THREE.Mesh(new THREE.CylinderGeometry(2.35, 2.35, 0.45, 32), matCapa);
+                    alturaActualY += 0.35;
+                } else if (capa.tipo === 'slab') {
+                    meshCapa = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.15, 3.6), matCapa);
+                    alturaActualY += 0.2;
+                } else if (capa.tipo === 'huevo_frito') {
+                    const grupoHuevo = new THREE.Group();
+                    grupoHuevo.add(new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.4, 0.12, 32), new THREE.MeshStandardMaterial({ color: 0xffffff })));
+                    const meshYema = new THREE.Mesh(new THREE.SphereGeometry(0.9, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0xffaa00 }));
+                    meshYema.scale.set(1, 0.5, 1);
+                    meshYema.position.set(0.4, 0.06, -0.3);
+                    grupoHuevo.add(meshYema);
+                    meshCapa = grupoHuevo;
+                    alturaActualY += 0.2;
                 } else {
-                    alert("Error al eliminar: " + error.message);
+                    meshCapa = new THREE.Mesh(new THREE.CylinderGeometry(2.35, 2.35, 0.2, 32), matCapa);
+                    alturaActualY += 0.2;
                 }
-            }
+
+                meshCapa.position.y = alturaActualY;
+                hamburguesaGrupo.add(meshCapa);
+                alturaActualY += 0.2;
+            });
+
+            const panSupMesh = crearPanBeigeOscuroConPuntitos(true);
+            panSupMesh.position.y = alturaActualY + 0.1;
+            hamburguesaGrupo.add(panSupMesh);
         }
 
-        async function guardarAdicional() {
-            const nombre = document.getElementById('add-nombre').value.trim();
-            const precio = parseFloat(document.getElementById('add-precio').value);
-
-            if (!nombre || isNaN(precio)) {
-                alert("Por favor, ingresa un nombre y un precio válido.");
+        function enviarCreacion3DAlCarrito() {
+            if (capasActuales.length === 0) {
+                alert("Arma tu hamburguesa 3D agregando al menos un ingrediente.");
                 return;
             }
-
-            const { error } = await supabaseClient
-                .from('adicionales')
-                .insert([{ 
-                    nombre: nombre, 
-                    precio: precio, 
-                    instagram_dueno: filtroInstagram 
-                }]);
-
-            if (error) {
-                alert("Error al guardar adicional: " + error.message);
-            } else {
-                alert("Adicional registrado con éxito.");
-                document.getElementById('add-nombre').value = "";
-                document.getElementById('add-precio').value = "";
-                descargarAdicionales();
-            }
+            const nombres = capasActuales.map(i => i.nombre).join(', ');
+            
+            carrito.push({
+                titulo: `🍔 Burger 3D Real (${nombres})`,
+                precio: window.precioFinal3D || 1.00,
+                imagen_url: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600",
+                idsIngredientes: capasActuales.map(c => c.id)
+            });
+            
+            document.getElementById('contador-carrito-badge').innerText = carrito.length;
+            alert("¡Hamburguesa 3D agregada con éxito al carrito!");
+            capasActuales = [];
+            cambiarPantalla('vitrina');
         }
 
-        async function descargarAdicionales() {
-            const { data, error } = await supabaseClient
-                .from('adicionales')
-                .select('*')
-                .eq('instagram_dueno', filtroInstagram);
-
-            if (!error && data) {
-                const lista = document.getElementById('lista-adicionales');
-                if(lista) {
-                    lista.innerHTML = "";
-                    data.forEach(a => {
-                        lista.innerHTML += `
-                            <div class="bg-stone-950/60 p-3 rounded-xl text-xs border border-stone-900 text-stone-400 flex justify-between items-center">
-                                <span>${a.nombre} - <span class="text-amber-400">$${a.precio}</span></span>
-                                <button onclick="eliminarAdicional(${a.id})" class="text-red-500 hover:text-red-300 ml-2 font-bold">✕</button>
-                            </div>`;
-                    });
+        function initMap() {
+            const estilosMapaOscuroNaranja = [
+                { elementType: "geometry", stylers: [{ color: "#1d1d1d" }] },
+                { elementType: "labels.text.stroke", stylers: [{ color: "#1a1a1a" }] },
+                { elementType: "labels.text.fill", stylers: [{ color: "#8a8a8a" }] },
+                {
+                    featureType: "administrative.locality",
+                    elementType: "labels.text.fill",
+                    stylers: [{ color: "#ff9f0a" }] 
+                },
+                {
+                    featureType: "poi",
+                    elementType: "labels.text.fill",
+                    stylers: [{ color: "#d59563" }]
+                },
+                {
+                    featureType: "poi.business",
+                    stylers: [{ visibility: "off" }]
+                },
+                {
+                    featureType: "road",
+                    elementType: "geometry",
+                    stylers: [{ color: "#2c2c2c" }]
+                },
+                {
+                    featureType: "road",
+                    elementType: "geometry.stroke",
+                    stylers: [{ color: "#151515" }]
+                },
+                {
+                    featureType: "road",
+                    elementType: "labels.text.fill",
+                    stylers: [{ color: "#ca8a04" }]
+                },
+                {
+                    featureType: "road.highway",
+                    elementType: "geometry",
+                    stylers: [{ color: "#f97316" }] 
+                },
+                {
+                    featureType: "road.highway",
+                    elementType: "geometry.stroke",
+                    stylers: [{ color: "#c2410c" }]
+                },
+                {
+                    featureType: "water",
+                    elementType: "geometry",
+                    stylers: [{ color: "#0f0f0f" }]
+                },
+                {
+                    featureType: "water",
+                    elementType: "labels.text.fill",
+                    stylers: [{ color: "#515151" }]
                 }
-            }
+            ];
+
+            map = new google.maps.Map(document.getElementById("google-map-container"), {
+                center: { lat: LOCAL_LAT, lng: LOCAL_LNG },
+                zoom: 15,
+                disableDefaultUI: true,
+                zoomControl: true,
+                styles: estilosMapaOscuroNaranja 
+            });
+
+            map.addListener("idle", () => {
+                const centro = map.getCenter();
+                gpsClienteLat = centro.lat();
+                gpsClienteLng = centro.lng();
+            });
         }
 
-        async function eliminarAdicional(id) {
-            const { error } = await supabaseClient.from('adicionales').delete().eq('id', id);
-            if (!error) {
-                descargarAdicionales();
-            } else {
-                alert("Error al eliminar: " + error.message);
-            }
-        }
-
-        function alternarCamposPago() {
-            const plataforma = document.getElementById('pago-plataforma').value;
-            const wrapper = document.getElementById('wrapper-campos-dinamicos');
-            wrapper.innerHTML = ""; 
-
-            if (plataforma === "pago_movil") {
-                wrapper.innerHTML = `
-                    <div>
-                        <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Banco:</label>
-                        <input type="text" id="pago-banco" placeholder="Ej: Banesco, Mercantil..." class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Cédula:</label>
-                        <input type="text" id="pago-ci" placeholder="Ej: V-12345678" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none font-mono">
-                    </div>
-                    <div>
-                        <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Teléfono:</label>
-                        <input type="text" id="pago-telefono" placeholder="Ej: 04121234567" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none font-mono">
-                    </div>`;
-            } else if (plataforma === "zelle") {
-                wrapper.innerHTML = `
-                    <div>
-                        <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Correo Electrónico:</label>
-                        <input type="email" id="pago-email" placeholder="ejemplo@zelle.com" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none font-mono">
-                    </div>
-                    <div>
-                        <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Titular de la Cuenta:</label>
-                        <input type="text" id="pago-titular" placeholder="Nombre completo..." class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none">
-                    </div>`;
-            } else if (plataforma === "nequi") {
-                wrapper.innerHTML = `
-                    <div>
-                        <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Número de Cuenta / Teléfono:</label>
-                        <input type="text" id="pago-telefono" placeholder="Ej: 3001234567" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none font-mono">
-                    </div>
-                    <div>
-                        <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Nombre del Titular:</label>
-                        <input type="text" id="pago-titular" placeholder="Nombre en Nequi..." class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none">
-                    </div>`;
-            } else if (plataforma === "efectivo") {
-                wrapper.innerHTML = `
-                    <div>
-                        <label class="text-[9px] uppercase text-stone-400 font-bold tracking-wider">Detalles de Entrega o Retiro:</label>
-                        <input type="text" id="pago-detalles" placeholder="Ej: Retiro en tienda física / Acuerdo previo" class="w-full bg-stone-950/80 border border-stone-800 text-xs text-white p-3 rounded-xl focus:outline-none">
-                    </div>`;
-            }
-        }
-
-        async function descargarCuentasPago() {
-            const { data, error } = await supabaseClient.from('cuentas_pago').select('*').order('id', { ascending: true });
-            if (!error && data) {
-                listaCuentas = data;
-                const tbody = document.getElementById('tabla-pagos-body'); if(!tbody) return;
-                tbody.innerHTML = "";
+        function fijarUbicacionActualMapa() {
+            if(gpsClienteLat !== null && gpsClienteLng !== null) {
+                distanciaCalculadaKm = calcularDistanciaEnKm(LOCAL_LAT, LOCAL_LNG, gpsClienteLat, gpsClienteLng);
                 
-                if(listaCuentas.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-center text-stone-600 font-mono text-[10px]">Sin cuentas registradas.</td></tr>`;
+                let costoCalculado = distanciaCalculadaKm * TARIFA_POR_KM;
+                if (costoCalculado < 1.00 && distanciaCalculadaKm > 0.1) costoCalculado = 1.00; 
+                if (distanciaCalculadaKm <= 0.1) costoCalculado = 0.00;
+
+                costoDeliveryKm = parseFloat(costoCalculado.toFixed(2));
+
+                document.getElementById('display-km').innerText = `${distanciaCalculadaKm.toFixed(2)} km`;
+                document.getElementById('display-costo-km').innerText = `$${costoDeliveryKm.toFixed(2)}`;
+                document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación fijada: Lat: ${gpsClienteLat.toFixed(5)}, Lng: ${gpsClienteLng.toFixed(5)}`;
+                
+                renderizarCarrito();
+            }
+        }
+
+        function irAVendavalHouse() {
+            if(map) {
+                map.setCenter({ lat: LOCAL_LAT, lng: LOCAL_LNG });
+                map.setZoom(17);
+                fijarUbicacionActualMapa();
+            }
+        }
+
+        function centrarEnMiGPS() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        if(map) {
+                            map.setCenter({ lat, lng });
+                            map.setZoom(17);
+                            fijarUbicacionActualMapa();
+                            document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación GPS actual fijada correctamente`;
+                        }
+                    },
+                    () => {
+                        alert("No se pudo obtener tu ubicación GPS. Asegúrate de dar permisos.");
+                    },
+                    { enableHighAccuracy: true }
+                );
+            } else {
+                alert("Tu navegador no soporta geolocalización.");
+            }
+        }
+
+        function calcularDistanciaEnKm(lat1, lon1, lat2, lon2) {
+            const R = 6371; 
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))); 
+        }
+
+        function renderizarCarrito() {
+            const cont = document.getElementById('lista-items-carrito');
+            const contAbajo = document.getElementById('cantidad-items-abajo');
+            if(!cont) return;
+            cont.innerHTML = "";
+            let subtotalProductos = 0;
+            if(contAbajo) contAbajo.innerText = carrito.length;
+
+            if(carrito.length === 0) {
+                cont.innerHTML = `<div class="p-8 text-center text-stone-500 font-mono text-xs">Tu bolsa está vacía.</div>`;
+                document.getElementById('carrito-monto-total').innerText = "$0.00";
+                if(document.getElementById('carrito-subtotal-monto-abajo')) document.getElementById('carrito-subtotal-monto-abajo').innerText = "$0.00";
+                costoDeliveryKm = 0;
+                document.getElementById('display-costo-km').innerText = "$0.00";
+                document.getElementById('display-km').innerText = "0.00 km";
+                return;
+            }
+
+            carrito.forEach((item, idx) => {
+                subtotalProductos += item.precio;
+                cont.innerHTML += `
+                    <div class="flex justify-between items-center py-4 first:pt-2 last:pb-2">
+                        <div class="flex items-center gap-3">
+                            <img src="${item.imagen_url}" class="w-12 h-12 object-cover rounded-xl border border-stone-800">
+                            <div>
+                                <h4 class="text-xs font-bold text-white font-futurista uppercase">${item.titulo}</h4>
+                                <button onclick="carrito.splice(${idx},1);renderizarCarrito();document.getElementById('contador-carrito-badge').innerText=carrito.length;" class="text-[10px] text-red-400 hover:underline cursor-pointer">Eliminar</button>
+                            </div>
+                        </div>
+                        <span class="font-mono text-amber-400 font-bold">$${item.precio.toFixed(2)}</span>
+                    </div>`;
+            });
+
+            let totalGeneral = subtotalProductos + costoDeliveryKm;
+            document.getElementById('carrito-monto-total').innerText = `$${totalGeneral.toFixed(2)}`;
+            if(document.getElementById('carrito-subtotal-monto-abajo')) {
+                document.getElementById('carrito-subtotal-monto-abajo').innerText = `$${subtotalProductos.toFixed(2)}`;
+            }
+        }
+
+        function gestionarCamposPagoCart() {
+            const metodo = document.getElementById('tipoMetodoPago').value;
+            const contenedorRef = document.getElementById('contenedorReferenciaCart');
+            const contenedorMesa = document.getElementById('contenedorNumeroMesaCart');
+            const inputRef = document.getElementById('input-ref-pago');
+            const inputMesa = document.getElementById('input-num-mesa');
+            const contenedorInfoPago = document.getElementById('info-metodo-pago');
+            const detalleDatosPago = document.getElementById('detalle-datos-pago');
+            const tituloMetodoPago = document.getElementById('titulo-metodo-pago');
+
+            if (datosDePago[metodo]) {
+                detalleDatosPago.innerHTML = datosDePago[metodo];
+                tituloMetodoPago.textContent = `Datos para: ${document.getElementById('tipoMetodoPago').selectedOptions[0].text}`;
+                contenedorInfoPago.classList.remove('hidden');
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            } else {
+                contenedorInfoPago.classList.add('hidden');
+            }
+
+            if (metodo === 'efectivo') {
+                contenedorRef.classList.add('hidden');
+                contenedorMesa.classList.remove('hidden');
+                if(inputRef) inputRef.value = 'EFECTIVO';
+            } else if (metodo !== '') {
+                contenedorRef.classList.remove('hidden');
+                contenedorMesa.classList.add('hidden');
+                if(inputMesa) inputMesa.value = '';
+                if(inputRef && inputRef.value === 'EFECTIVO') inputRef.value = '';
+            } else {
+                contenedorRef.classList.add('hidden');
+                contenedorMesa.classList.add('hidden');
+                if(inputRef) inputRef.value = '';
+                if(inputMesa) inputMesa.value = '';
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const codigoReferido = urlParams.get('ref');
+
+            if (codigoReferido) localStorage.setItem('dunig_ref_code', codigoReferido);
+
+            const refGuardado = localStorage.getItem('dunig_ref_code');
+            if (refGuardado) {
+                const displayRef = document.getElementById('display-codigo-referido');
+                const contenedorRef = document.getElementById('contenedor-ref-info');
+                if(displayRef) displayRef.innerText = refGuardado;
+                if(contenedorRef) contenedorRef.classList.remove('hidden');
+            }
+
+            await cargarCuentasPagoSupabase();
+            await verificarEstadoTienda();
+            descargarCatalogoDeSupabase();
+            descargarAdicionalesDeSupabase();
+            lucide.createIcons();
+        });
+
+        async function enviarPedidoWhatsApp() {
+            if(carrito.length === 0) { alert("Agrega productos primero."); return; }
+            
+            if(gpsClienteLat === null || gpsClienteLng === null) {
+                alert("Por favor ubica el pin en el mapa para continuar con la entrega.");
+                return;
+            }
+
+            const metodo = document.getElementById('tipoMetodoPago').value;
+            if(!metodo) { alert("Por favor selecciona un método de pago."); return; }
+
+            let ref = "";
+            let numeroMesa = "";
+
+            if (metodo === 'efectivo') {
+                numeroMesa = document.getElementById('input-num-mesa').value.trim();
+                if(!numeroMesa) {
+                    alert("Por favor ingresa el número de mesa obligatorio para pagos en efectivo.");
+                    document.getElementById('input-num-mesa').focus();
                     return;
                 }
-                
-                listaCuentas.forEach(c => {
-                    let infoRender = "";
-                    if (c.plataforma === "pago_movil") {
-                        infoRender = `<span class="text-stone-300 font-mono">${c.banco || ''} | CI: ${c.ci || ''} | Tlf: ${c.telefono || ''}</span>`;
-                    } else if (c.plataforma === "zelle") {
-                        infoRender = `<span class="text-stone-300 font-mono">${c.email || ''} | ${c.titular || ''}</span>`;
-                    } else if (c.plataforma === "nequi") {
-                        infoRender = `<span class="text-stone-300 font-mono">Nequi: ${c.telefono || ''} | ${c.titular || ''}</span>`;
-                    } else {
-                        infoRender = `<span class="text-stone-300">${c.detalles || 'Pago en efectivo contra entrega'}</span>`;
-                    }
-
-                    const nombrePlataforma = c.plataforma.replace('_', ' ').toUpperCase();
-
-                    tbody.innerHTML += `<tr class="border-b border-stone-900/40 hover:bg-stone-900/20 transition-colors">
-                        <td class="py-2 text-amber-400 font-bold uppercase text-[10px]">${nombrePlataforma}</td>
-                        <td class="py-2 text-stone-300 text-[10px]">${infoRender}</td>
-                        <td class="py-2 text-right flex justify-end gap-1">
-                            <button onclick="cargarEdicionPago(${c.id})" class="p-1 text-amber-400 bg-stone-900 border border-stone-800 rounded cursor-pointer hover:bg-stone-850">✏️</button>
-                            <button onclick="eliminarCuentaPago(${c.id})" class="p-1 text-red-500 bg-stone-900 border border-stone-800 rounded cursor-pointer hover:bg-stone-850">🗑️</button>
-                        </td>
-                    </tr>`;
-                });
-            }
-        }
-
-        async function guardarCuentaPagoSupabase() {
-            const id = document.getElementById('pago-id-edicion').value;
-            const plataforma = document.getElementById('pago-plataforma').value;
-
-            let payload = { plataforma: plataforma };
-
-            if (plataforma === "pago_movil") {
-                payload.banco = document.getElementById('pago-banco').value.trim();
-                payload.ci = document.getElementById('pago-ci').value.trim();
-                payload.telefono = document.getElementById('pago-telefono').value.trim();
-                if(!payload.banco || !payload.ci || !payload.telefono) { alert("Por favor complete todos los datos de Pago Móvil."); return; }
-            } else if (plataforma === "zelle") {
-                payload.email = document.getElementById('pago-email').value.trim();
-                payload.titular = document.getElementById('pago-titular').value.trim();
-                if(!payload.email || !payload.titular) { alert("Complete el correo y el titular de Zelle."); return; }
-            } else if (plataforma === "nequi") {
-                payload.telefono = document.getElementById('pago-telefono').value.trim();
-                payload.titular = document.getElementById('pago-titular').value.trim();
-                if(!payload.telefono || !payload.titular) { alert("Complete el número y titular de Nequi."); return; }
-            } else if (plataforma === "efectivo") {
-                payload.detalles = document.getElementById('pago-detalles').value.trim();
-                if(!payload.detalles) { alert("Escriba los detalles de entrega en efectivo."); return; }
-            }
-
-            let res;
-            if (id) {
-                res = await supabaseClient.from('cuentas_pago').update(payload).eq('id', id);
+                ref = `Efectivo (Mesa: ${numeroMesa})`;
             } else {
-                res = await supabaseClient.from('cuentas_pago').insert([payload]);
+                ref = document.getElementById('input-ref-pago').value.trim();
+                if(!ref) { alert("Por favor ingresa el número o código de referencia."); return; }
             }
 
-            if (!res.error) {
-                alert("¡Cuenta de cobro sincronizada con éxito!");
-                limpiarFormularioPago();
-                descargarCuentasPago();
-            } else {
-                alert("Error al guardar en base de datos: " + res.error.message);
-            }
-        }
-
-        function cargarEdicionPago(id) {
-            const cuenta = listaCuentas.find(c => c.id === id);
-            if (!cuenta) return;
-
-            document.getElementById('pago-id-edicion').value = cuenta.id;
-            document.getElementById('pago-plataforma').value = cuenta.plataforma;
+            const codigoReferidoCliente = localStorage.getItem('dunig_ref_code') || 'NINGUNO';
             
-            alternarCamposPago();
+            let subtotalProductos = carrito.reduce((a, b) => a + b.precio, 0);
+            let totalGeneral = subtotalProductos + costoDeliveryKm;
+            let lista = carrito.map(i => `• ${i.titulo} ($${i.precio.toFixed(2)})`).join('\n');
+            const linkGoogleMaps = `https://maps.google.com/?q=${gpsClienteLat},${gpsClienteLng}`;
 
-            if (cuenta.plataforma === "pago_movil") {
-                document.getElementById('pago-banco').value = cuenta.banco || '';
-                document.getElementById('pago-ci').value = cuenta.ci || '';
-                document.getElementById('pago-telefono').value = cuenta.telefono || '';
-            } else if (cuenta.plataforma === "zelle") {
-                document.getElementById('pago-email').value = cuenta.email || '';
-                document.getElementById('pago-titular').value = cuenta.titular || '';
-            } else if (cuenta.plataforma === "nequi") {
-                document.getElementById('pago-telefono').value = cuenta.telefono || '';
-                document.getElementById('pago-titular').value = cuenta.titular || '';
-            } else if (cuenta.plataforma === "efectivo") {
-                document.getElementById('pago-detalles').value = cuenta.detalles || '';
-            }
+            let wsNum = "584120000000";
+            const { data } = await supabaseClient.from('ajustes_sistema').select('valor').eq('id', 'whatsapp_notificaciones').single();
+            if(data && data.valor) wsNum = data.valor.replace(/[^0-9]/g, "");
 
-            document.getElementById('pago-form-titulo').innerText = "Modificar Cuenta";
-            document.getElementById('btn-guardar-pago').innerText = "Actualizar Cuenta";
-            document.getElementById('btn-cancelar-pago').classList.remove('hidden');
-        }
+            let mensajeMesaExtra = metodo === 'efectivo' ? `🪑 *NÚMERO DE MESA:* ${numeroMesa}\n` : '';
+            const mensaje = `🍔 *PEDIDO VIP - Vendaval House* 🍔\n\n${lista}\n\n📦 *Subtotal:* $${subtotalProductos.toFixed(2)}\n🛵 *Delivery (${distanciaCalculadaKm.toFixed(2)} km):* $${costoDeliveryKm.toFixed(2)}\n💵 *TOTAL A PAGAR:* $${totalGeneral.toFixed(2)}\n📍 *Ubicación Google Maps:* ${linkGoogleMaps}\n🏦 *MÉTODO DE PAGO:* ${metodo.toUpperCase()}\n${mensajeMesaExtra}🔢 *REF:* ${ref}\n🎁 *REF. CLIENTE:* ${codigoReferidoCliente}`;
 
-        function limpiarFormularioPago() {
-            document.getElementById('pago-id-edicion').value = "";
-            document.getElementById('pago-plataforma').value = "pago_movil";
-            alternarCamposPago();
-            document.getElementById('pago-form-titulo').innerText = "Registrar Método de Pago";
-            document.getElementById('btn-guardar-pago').innerText = "Sincronizar Cuenta";
-            document.getElementById('btn-cancelar-pago').classList.add('hidden');
-        }
+            const datosOrdenPendiente = {
+                productos: carrito.map(i => i.titulo).join(', '),
+                total: totalGeneral,
+                monto_total: totalGeneral,
+                referencia: ref,
+                referencia_bancaria: ref,
+                estado: "Pendiente",
+                codigo_referido: codigoReferidoCliente,
+                coordenadas_gps: `${gpsClienteLat},${gpsClienteLng}`,
+                costo_delivery: costoDeliveryKm
+            };
 
-        async function eliminarCuentaPago(id) {
-            if (confirm("¿Estás seguro de remover este método de cobro?")) {
-                await supabaseClient.from('cuentas_pago').delete().eq('id', id);
-                descargarCuentasPago();
-            }
-        }
+            await supabaseClient.from('ordenes_vip').insert([datosOrdenPendiente]); 
 
-        async function descargarHistorialDeOrdenes() {
-            const { data, error } = await supabaseClient
-                .from('ordenes_vip')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (!error && data) {
-                const tbody = document.getElementById('tabla-ordenes-body'); 
-                if (!tbody) return;
-                
-                tbody.innerHTML = "";
-                data.forEach(o => {
-                    const fechaFormateada = new Date(o.created_at).toLocaleDateString();
-                    
-                    tbody.innerHTML += `<tr class="border-b border-stone-900/40 hover:bg-stone-900/10 transition-colors">
-                        <td class="p-3 font-mono text-amber-400 font-bold">#${o.id}</td>
-                        <td class="p-3 text-stone-400">${fechaFormateada}</td>
-                        <td class="p-3 text-white truncate max-w-xs">${o.productos}</td>
-                        <td class="p-3 font-mono font-bold text-stone-200">$${parseFloat(o.total || 0).toFixed(2)}</td>
-                        <td class="p-3 font-mono text-stone-500">${o.referencia || 'N/A'}</td>
-                        <td class="p-3 text-right">
-                            <select 
-                                onchange="actualizarEstadoOrden(${o.id}, this.value)" 
-                                class="bg-stone-950 border border-stone-700 text-[10px] px-2 py-1 rounded-md font-bold uppercase cursor-pointer outline-none transition-colors 
-                                ${o.estado === 'verificado' ? 'text-green-500 border-green-900/50' : 
-                                  o.estado === 'cancelado' ? 'text-red-500 border-red-900/50' : 
-                                  'text-amber-400 border-stone-700'}"
-                            >
-                                <option value="pendiente" ${o.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
-                                <option value="verificado" ${o.estado === 'verificado' ? 'selected' : ''}>Verificado</option>
-                                <option value="cancelado" ${o.estado === 'cancelado' ? 'selected' : ''}>Cancelado</option>
-                            </select>
-                        </td>
-                    </tr>`;
-                });
-            } else if (error) {
-                console.error("Error al descargar órdenes:", error.message);
-            }
-        }
-
-        async function actualizarEstadoOrden(idOrden, nuevoEstado) {
-            const { error } = await supabaseClient
-                .from('ordenes_vip')
-                .update({ estado: nuevoEstado })
-                .eq('id', idOrden);
-
-            if (!error) {
-                await descargarHistorialDeOrdenes();
-            } else {
-                alert("Error al actualizar estado: " + error.message);
-            }
-        }
-
-        async function descargarAjusteWhatsApp() {
-            const { data, error } = await supabaseClient
-                .from('ajustes_sistema')
-                .select('valor')
-                .eq('id', 'whatsapp_notificaciones')
-                .single();
-            
-            if(!error && data) {
-                document.getElementById('config-whatsapp-num').value = data.valor;
-            }
-        }
-
-        async function guardarAjusteWhatsAppEnSupabase() {
-            const num = document.getElementById('config-whatsapp-num').value.trim().replace(/[^0-9]/g, "");
-            if(!num || num.length < 10) { alert("Ingrese un número válido con código de país."); return; }
-
-            const { error } = await supabaseClient
-                .from('ajustes_sistema')
-                .upsert({ id: 'whatsapp_notificaciones', valor: num, updated_at: new Date().toISOString() });
-
-            if(!error) { alert("¡Canal WhatsApp guardado con éxito!"); } else { alert("Error al guardar: " + error.message); }
-        }
-
-        async function descargarEstadoNegocio() {
-            const { data, error } = await supabaseClient
-                .from('ajustes_sistema')
-                .select('valor')
-                .eq('id', 'estado_negocio')
-                .single();
-            
-            if(!error && data) {
-                document.getElementById('config-estado-negocio').value = data.valor;
-            }
-        }
-
-        async function guardarEstadoNegocioEnSupabase() {
-            const estado = document.getElementById('config-estado-negocio').value;
-
-            const { error } = await supabaseClient
-                .from('ajustes_sistema')
-                .upsert({ id: 'estado_negocio', valor: estado, updated_at: new Date().toISOString() });
-
-            if(!error) { 
-                alert("¡Estado del negocio actualizado correctamente para la vitrina!"); 
-            } else { 
-                alert("Error al guardar estado: " + error.message); 
-            }
-        }
-
-        // NUEVO: Funciones para la hora en vitrina
-        async function descargarHoraVitrina() {
-            const { data, error } = await supabaseClient
-                .from('ajustes_sistema')
-                .select('valor')
-                .eq('id', 'hora_vitrina')
-                .single();
-            
-            if(!error && data) {
-                document.getElementById('config-hora-vitrina').value = data.valor;
-            }
-        }
-
-        async function guardarHoraVitrinaEnSupabase() {
-            const hora = document.getElementById('config-hora-vitrina').value.trim();
-            if(!hora) { alert("Por favor ingresa una hora o texto de horario válido."); return; }
-
-            const { error } = await supabaseClient
-                .from('ajustes_sistema')
-                .upsert({ id: 'hora_vitrina', valor: hora, updated_at: new Date().toISOString() });
-
-            if(!error) { 
-                alert("¡Hora en vitrina actualizada correctamente!"); 
-            } else { 
-                alert("Error al guardar hora: " + error.message); 
-            }
+            carrito = [];
+            document.getElementById('contador-carrito-badge').innerText = "0";
+            document.getElementById('tipoMetodoPago').value = "";
+            document.getElementById('input-ref-pago').value = "";
+            document.getElementById('input-num-mesa').value = "";
+            document.getElementById('contenedorReferenciaCart').classList.add('hidden');
+            document.getElementById('contenedorNumeroMesaCart').classList.add('hidden');
+            document.getElementById('info-metodo-pago').classList.add('hidden');
+            localStorage.removeItem('dunig_ref_code');
+            cambiarPantalla('vitrina');
+            window.open(`https://api.whatsapp.com/send?phone=${wsNum}&text=${encodeURIComponent(mensaje)}`, '_blank');
         }
     </script>
-</body>
+</body> 
 </html>
