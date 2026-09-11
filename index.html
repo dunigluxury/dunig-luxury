@@ -408,7 +408,7 @@
         let datosDePago = {};
 
         async function guardarOrdenEnCentral(nuevaOrden) {
-          const SUPABASE_CENTRAL_URL = "https://cmaishgahyzlhszwaozg.supabase.co";
+          const SUPABASE_CENTRAL_URL = "https://cmaishgahyzlhszwaozg.supabase.co/rest/v1/ordenes_central";
           const SUPABASE_CENTRAL_ANON_OR_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtYWlzaGdhaHl6bGhzendhb3pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5MjMxMzEsImV4cCI6MjEwMDQ5OTEzMX0.8JVrpQKocnyZa3qLxsX9ZxjygYy4QY3kp_VSvrL1qNQ";
 
           try {
@@ -421,18 +421,17 @@
                 "Prefer": "return=representation"
               },
               body: JSON.stringify({
-                cliente_nombre: nuevaOrden.nombre,
-                cliente_telefono: nuevaOrden.telefono,
-                detalles_orden: nuevaOrden.detalles,
-                total: nuevaOrden.total,
-                origen: "Vitrina Digital", // Para identificar de qué proyecto viene
-                estado: "pendiente",
-                created_at: new Date()
+                comercio: nuevaOrden.nombre || "Vitrina Digital",
+                productos: nuevaOrden.detalles || "Pedido desde vitrina",
+                costo_delivery: nuevaOrden.costo_delivery || 0.00,
+                coordenadas_gps: nuevaOrden.coordenadas || `${gpsClienteLat}, ${gpsClienteLng}`,
+                estado: "Pendiente"
               })
             });
 
             if (!response.ok) {
-              throw new Error(`Error al sincronizar con la central: ${response.statusText}`);
+              const errorDetalle = await response.text();
+              throw new Error(`Error ${response.status}: ${errorDetalle}`);
             }
 
             const data = await response.json();
@@ -441,7 +440,6 @@
 
           } catch (error) {
             console.error("Fallo la sincronización central:", error);
-            // Opcional: Guardar localmente o reintentar si falla la red
           }
         }
 
