@@ -386,10 +386,6 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxeHRiZGVnY2tlYXVmbmxmcWZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3ODc3NjgsImV4cCI6MjEwNDM2Mzc2OH0.62QheHDSsV-N9S1n_18_uP2_evxwiNS9kZQX2vLGMC8"; 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const SUPABASE_CENTRAL_URL = "https://cmaishgahyzlhszwaozg.supabase.co";
-        const SUPABASE_CENTRAL_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtYWlzaGdhaHl6bGhzendhb3pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5MjMxMzEsImV4cCI6MjEwMDQ5OTEzMX0.8JVrpQKocnyZa3qLxsX9ZxjygYy4QY3kp_VSvrL1qNQ"; 
-        const supabaseCentral = supabase.createClient(SUPABASE_CENTRAL_URL, SUPABASE_CENTRAL_ANON_KEY);
-
         let carrito = [];
         let capasActuales = []; 
         let catalogoIngredientes3D = [];
@@ -446,7 +442,7 @@
         }
 
         async function verificarEstadoTienda() {
-            let estaAbierto = true; // Por defecto abierto para evitar bloqueos accidentales
+            let estaAbierto = true; 
             try {
                 const { data, error } = await supabaseClient
                     .from('ajustes_sistema')
@@ -485,12 +481,6 @@
             const iconoWrapper = document.getElementById('icono-estado-wrapper');
             const vistaVitrina = document.getElementById('vista-vitrina');
 
-            // Siempre restauramos la interactividad para asegurar que los botones no queden bloqueados
-            if (vistaVitrina) {
-                vistaVitrina.style.pointerEvents = "auto";
-                vistaVitrina.style.opacity = "1";
-            }
-
             if (estaAbierto) {
                 if (puntoHeader) puntoHeader.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
                 if (textoHeader) {
@@ -501,6 +491,10 @@
                 if (tituloVitrina) tituloVitrina.textContent = "ESTADO DEL LOCAL: ABIERTOS";
                 if (descVitrina) descVitrina.textContent = "Recibiendo pedidos y despachando con normalidad.";
                 if (iconoWrapper) iconoWrapper.className = "w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400";
+                if (vistaVitrina) {
+                    vistaVitrina.style.pointerEvents = "auto";
+                    vistaVitrina.style.opacity = "1";
+                }
             } else {
                 if (puntoHeader) puntoHeader.className = "w-2 h-2 rounded-full bg-red-500";
                 if (textoHeader) {
@@ -511,6 +505,10 @@
                 if (tituloVitrina) tituloVitrina.textContent = "ESTADO DEL LOCAL: CERRADOS";
                 if (descVitrina) descVitrina.textContent = "Lo sentimos, nuestro horario de atención ha finalizado.";
                 if (iconoWrapper) iconoWrapper.className = "w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400";
+                if (vistaVitrina) {
+                    vistaVitrina.style.pointerEvents = "none";
+                    vistaVitrina.style.opacity = "0.5";
+                }
             }
         }
 
@@ -1155,23 +1153,6 @@
             lucide.createIcons();
         });
 
-        async function enviarOrdenAlDeliveryCentral(datosPedido) {
-            const { data, error } = await supabaseCentral
-                .from('ordenes_central')[cite: 7]
-                .insert([
-                    { 
-                        producto: datosPedido.productos, 
-                        total: datosPedido.total
-                    }
-                ]);
-
-            if (error) {
-                console.error("Error al notificar a la central:", error);
-            } else {
-                console.log("¡Orden enviada con éxito a la central!");
-            }
-        }
-
         async function enviarPedidoWhatsApp() {
             if(carrito.length === 0) { alert("Agrega productos primero."); return; }
             
@@ -1226,7 +1207,6 @@
             };
 
             await supabaseClient.from('ordenes_vip').insert([datosOrdenPendiente]); 
-            await enviarOrdenAlDeliveryCentral(datosOrdenPendiente);[cite: 7]
 
             carrito = [];
             document.getElementById('contador-carrito-badge').innerText = "0";
