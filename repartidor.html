@@ -3,25 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vendaval House - Panel de <!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vendaval House - Panel de Repartidor</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- Google Maps API con Clave Integrada -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLoIMl0UZfglMOIXFxIjOkh5BhRy6sXFw&callback=initMap" async defer></script>
-
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;700&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #000000; color: #e5e5e5; }
         .font-futurista { font-family: 'Orbitron', sans-serif; }
-        .glass-panel { background: rgba(18, 18, 18, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .gmnoprint, .gm-style-cc, .gm-fullscreen-control, .gm-streetview { display: none !important; }
+        .glass-panel { background: rgba(18, 18, 18, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #e5c158; border-radius: 10px; }
     </style>
@@ -52,28 +42,17 @@
             </button>
         </div>
 
-        <div id="contenedor-pedidos-repartidor" class="space-y-4">
-            <div class="text-center py-12 text-neutral-500 font-mono text-xs">Buscando nuevas ordenes pendientes...</div>
+        <!-- Alerta flotante de guía para el repartidor -->
+        <div class="bg-amber-500/10 border border-amber-500/30 p-4 rounded-2xl flex items-start gap-3 text-xs text-amber-300 font-mono">
+            <i data-lucide="info" class="w-5 h-5 text-amber-400 shrink-0 mt-0.5"></i>
+            <div>
+                <strong class="text-white font-futurista uppercase block mb-1">Modo de Operación Rápida:</strong>
+                Al presionar <b>"Ver Ruta GPS"</b>, la dirección del cliente se copiará automáticamente a tu portapapeles y se abrirá Google Maps hacia el comercio. Al retirar el pedido, solo mantén presionado el buscador de Maps y pega la dirección para ir a la entrega.
+            </div>
         </div>
 
-        <!-- SECCIÓN DE MAPA INTERACTIVO PARA LA RUTA DEL REPARTIDOR -->
-        <div id="contenedor-seccion-mapa" class="hidden glass-panel p-6 rounded-3xl space-y-4 border border-amber-500/30 shadow-2xl">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="navigation" class="w-5 h-5 text-amber-400"></i>
-                    <h3 id="titulo-mapa-ruta" class="text-xs font-futurista font-bold uppercase text-white tracking-wider">Ruta de Entrega: Comercio ➔ Cliente</h3>
-                </div>
-                <button onclick="cerrarMapaRuta()" class="text-xs text-neutral-400 hover:text-white font-mono bg-neutral-900 px-3 py-1.5 rounded-lg border border-neutral-800 cursor-pointer">Cerrar Mapa ✕</button>
-            </div>
-            
-            <div class="w-full h-[400px] rounded-2xl overflow-hidden border border-neutral-800 relative shadow-inner">
-                <div id="map-repartidor-canvas" class="w-full h-full bg-neutral-900"></div>
-            </div>
-            
-            <div class="text-[11px] text-stone-400 font-mono flex items-center justify-between bg-neutral-900 p-3 rounded-xl border border-neutral-800">
-                <span>🏢 Origen: Vendaval House (Mérida)</span>
-                <span class="text-amber-400 font-bold">📍 Destino: Ubicación GPS del Cliente</span>
-            </div>
+        <div id="contenedor-pedidos-repartidor" class="space-y-4">
+            <div class="text-center py-12 text-neutral-500 font-mono text-xs">Buscando nuevas ordenes pendientes...</div>
         </div>
     </main>
 
@@ -86,50 +65,8 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxeHRiZGVnY2tlYXVmbmxmcWZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3ODc3NjgsImV4cCI6MjEwNDM2Mzc2OH0.62QheHDSsV-N9S1n_18_uP2_evxwiNS9kZQX2vLGMC8";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Coordenadas del Local Principal (Vendaval House - Mérida, Venezuela)
-        const LOCAL_LAT = 8.59941369535553;
-        const LOCAL_LNG = -71.14089323410698;
-
-        let mapRepartidor;
-        let directionsService;
-        let directionsRenderer;
-
-        // Callback requerida por la API de Google Maps al cargar el script
-        function initMap() {
-            const estilosMapaOscuroNaranja = [
-                { elementType: "geometry", stylers: [{ color: "#1d1d1d" }] },
-                { elementType: "labels.text.stroke", stylers: [{ color: "#1a1a1a" }] },
-                { elementType: "labels.text.fill", stylers: [{ color: "#8a8a8a" }] },
-                { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#ff9f0a" }] },
-                { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
-                { featureType: "poi.business", stylers: [{ visibility: "off" }] },
-                { featureType: "road", elementType: "geometry", stylers: [{ color: "#2c2c2c" }] },
-                { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#151515" }] },
-                { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#ca8a04" }] },
-                { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#f97316" }] },
-                { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#c2410c" }] },
-                { featureType: "water", elementType: "geometry", stylers: [{ color: "#0f0f0f" }] },
-                { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#515151" }] }
-            ];
-
-            mapRepartidor = new google.maps.Map(document.getElementById("map-repartidor-canvas"), {
-                center: { lat: LOCAL_LAT, lng: LOCAL_LNG },
-                zoom: 14,
-                disableDefaultUI: true,
-                zoomControl: true,
-                styles: estilosMapaOscuroNaranja
-            });
-
-            directionsService = new google.maps.DirectionsService();
-            directionsRenderer = new google.maps.DirectionsRenderer({
-                map: mapRepartidor,
-                suppressMarkers: false,
-                polylineOptions: {
-                    strokeColor: "#f5d77f", // Color dorado acorde al estilo VIP
-                    strokeWeight: 6
-                }
-            });
-        }
+        // Coordenadas o Nombre del Comercio configurado (Vendaval House - Mérida)
+        const COMERCIO_DIRECCION = "Vendaval House Merida"; 
 
         async function cargarPedidosEntrantes() {
             const contenedor = document.getElementById('contenedor-pedidos-repartidor');
@@ -161,9 +98,12 @@
                                 <p class="text-xs text-neutral-300 font-medium"><strong>Productos:</strong> ${orden.productos}</p>
                                 <p class="text-xs text-neutral-400 font-mono"><strong>Total a Cobrar:</strong> $${parseFloat(orden.monto_total || orden.total || 0).toFixed(2)}</p>
                                 <p class="text-xs text-neutral-400 font-mono"><strong>Costo Delivery:</strong> $${parseFloat(orden.costo_delivery || 0).toFixed(2)}</p>
+                                <p class="text-[11px] text-amber-300/80 font-mono bg-neutral-900/80 px-2.5 py-1 rounded-lg border border-neutral-800 inline-block">
+                                    📍 <strong>GPS Cliente:</strong> ${orden.coordenadas_gps || 'No especificada'}
+                                </p>
                             </div>
                             <div class="flex items-center gap-2 w-full md:w-auto">
-                                <button onclick="trazarRutaGPS('${orden.coordenadas_gps}', ${orden.id})" class="flex-1 md:flex-initial bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 font-futurista text-[10px] uppercase font-bold px-4 py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-colors">
+                                <button onclick="prepararRutaGPS('${orden.coordenadas_gps}', ${orden.id})" class="flex-1 md:flex-initial bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 font-futurista text-[10px] uppercase font-bold px-4 py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-md">
                                     <i data-lucide="map" class="w-4 h-4 text-amber-400"></i> Ver Ruta GPS
                                 </button>
                                 <button onclick="cambiarEstadoPedido(${orden.id}, 'Aceptado')" class="flex-1 md:flex-initial bg-amber-500 hover:bg-amber-400 text-black font-futurista text-[10px] uppercase font-black px-5 py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-lg transition-colors">
@@ -192,182 +132,28 @@
             }
         }
 
-        function trazarRutaGPS(coords, idOrden) {
+        function prepararRutaGPS(coords, idOrden) {
             if (!coords || coords === "null" || coords === "undefined") {
                 alert("Esta orden no contiene coordenadas GPS válidas.");
                 return;
             }
 
-            // Separar latitud y longitud guardadas en la orden del cliente
-            const partes = coords.split(',');
-            if (partes.length !== 2) {
-                alert("Formato de coordenadas inválido.");
-                return;
-            }
-
-            const clienteLat = parseFloat(partes[0]);
-            const clienteLng = parseFloat(partes[1]);
-
-            // Mostrar el contenedor del mapa
-            const seccionMapa = document.getElementById('contenedor-seccion-mapa');
-            seccionMapa.classList.remove('hidden');
-            document.getElementById('titulo-mapa-ruta').innerText = `Ruta de Entrega: Orden #${idOrden} (Comercio ➔ Cliente)`;
-
-            // Hacer scroll suave hacia el mapa
-            seccionMapa.scrollIntoView({ behavior: 'smooth' });
-
-            if (!directionsService || !directionsRenderer) {
-                alert("El mapa aún se está inicializando. Inténtalo de nuevo en un segundo.");
-                return;
-            }
-
-            const origenComercio = new google.maps.LatLng(LOCAL_LAT, LOCAL_LNG);
-            const destinoCliente = new google.maps.LatLng(clienteLat, clienteLng);
-
-            const request = {
-                origin: origenComercio,
-                destination: destinoCliente,
-                travelMode: google.maps.TravelMode.DRIVING
-            };
-
-            directionsService.route(request, (result, status) => {
-                if (status === "OK") {
-                    directionsRenderer.setDirections(result);
-                    google.maps.event.trigger(mapRepartidor, "resize");
-                } else {
-                    alert("No se pudo trazar la ruta de Google Maps: " + status);
-                }
+            // 1. Copiar la dirección/coordenadas del cliente al portapapeles automáticamente
+            navigator.clipboard.writeText(coords).then(() => {
+                // Notificar de manera visual rápida
+                console.log("Coordenadas copiadas al portapapeles:", coords);
+            }).catch(err => {
+                console.error("No se pudo copiar automáticamente al portapapeles", err);
             });
-        }
 
-        function cerrarMapaRuta() {
-            document.getElementById('contenedor-seccion-mapa').classList.add('hidden');
-        }
+            // 2. Abrir Google Maps directo hacia el comercio para buscar el producto
+            // Utilizamos la URL de navegación de Google Maps apuntando al local
+            const urlMapsComercio = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(COMERCIO_DIRECCION)}`;
+            
+            // Mensaje de guía para el repartidor antes de abrir la app
+            alert(`✅ ¡Dirección del cliente copiada al portapapeles!\n\nA continuación se abrirá Google Maps hacia el comercio. Al retirar el pedido, solo mantén presionado el buscador y pega (Paste) la ubicación para ir a la entrega de la Orden #${idOrden}.`);
 
-        window.addEventListener('DOMContentLoaded', () => {
-            cargarPedidosEntrantes();
-            lucide.createIcons();
-        });
-    </script>
-</body>
-</html>Repartidor</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;700&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #000000; color: #e5e5e5; }
-        .font-futurista { font-family: 'Orbitron', sans-serif; }
-        .glass-panel { background: rgba(18, 18, 18, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
-    </style>
-</head>
-<body class="min-h-screen flex flex-col justify-between p-4 md:p-8">
-
-    <header class="max-w-4xl mx-auto w-full flex justify-between items-center pb-6 border-b border-neutral-800">
-        <div class="flex items-center gap-3">
-            <div class="border border-amber-500/30 p-2.5 rounded-2xl bg-stone-950 text-amber-400">
-                <i data-lucide="bike" class="w-6 h-6"></i>
-            </div>
-            <div>
-                <h1 class="text-base font-black tracking-widest text-white font-futurista">DELIVERY<span class="text-amber-400">D'UNIG</span></h1>
-                <p class="text-[9px] text-amber-500 uppercase tracking-widest font-bold">Panel Exclusivo de Repartidor</p>
-            </div>
-        </div>
-        <div class="flex items-center gap-2 bg-neutral-900 px-3 py-1.5 rounded-xl border border-neutral-800 text-xs font-mono">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span class="text-emerald-400 font-bold">En Línea</span>
-        </div>
-    </header>
-
-    <main class="max-w-4xl mx-auto w-full flex-grow py-6 space-y-6">
-        <div class="flex justify-between items-center">
-            <h2 class="text-lg font-futurista font-black uppercase text-white">Pedidos Disponibles para Ruta</h2>
-            <button onclick="cargarPedidosEntrantes()" class="bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-xs px-3 py-2 rounded-xl flex items-center gap-2 cursor-pointer font-mono">
-                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-amber-400"></i> Actualizar
-            </button>
-        </div>
-
-        <div id="contenedor-pedidos-repartidor" class="space-y-4">
-            <div class="text-center py-12 text-neutral-500 font-mono text-xs">Buscando nuevas ordenes pendientes...</div>
-        </div>
-    </main>
-
-    <footer class="max-w-4xl mx-auto w-full text-center text-[10px] text-neutral-600 font-mono pt-6 border-t border-neutral-900">
-        © 2026 D'UNIG LUXURY ECOSISTEMA - Modulo Repartidores
-    </footer>
-
-    <script>
-        const SUPABASE_URL = "https://rqxtbdegckeaufnlfqfs.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxeHRiZGVnY2tlYXVmbmxmcWZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3ODc3NjgsImV4cCI6MjEwNDM2Mzc2OH0.62QheHDSsV-N9S1n_18_uP2_evxwiNS9kZQX2vLGMC8";
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        async function cargarPedidosEntrantes() {
-            const contenedor = document.getElementById('contenedor-pedidos-repartidor');
-            contenedor.innerHTML = `<div class="text-center py-6 text-neutral-500 font-mono text-xs">Cargando pedidos...</div>`;
-
-            const { data, error } = await supabaseClient
-                .from('ordenes_vip')
-                .select('*')
-                .order('id', { ascending: false })
-                .limit(10);
-
-            if (error) {
-                contenedor.innerHTML = `<div class="text-center text-red-400 font-mono text-xs">Error al conectar con la base de datos.</div>`;
-                return;
-            }
-
-            if (data && data.length > 0) {
-                contenedor.innerHTML = "";
-                data.forEach(orden => {
-                    const estadoColor = orden.estado === 'Aceptado' ? 'text-amber-400 bg-amber-500/10 border-amber-500/30' : 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30';
-                    
-                    contenedor.innerHTML += `
-                        <div class="glass-panel p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-neutral-800">
-                            <div class="space-y-1.5">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-xs font-mono font-bold text-amber-400">#ORDEN-${orden.id}</span>
-                                    <span class="text-[9px] uppercase px-2 py-0.5 rounded-full border font-bold ${estadoColor}">${orden.estado || 'Pendiente'}</span>
-                                </div>
-                                <p class="text-xs text-neutral-300 font-medium"><strong>Productos:</strong> ${orden.productos}</p>
-                                <p class="text-xs text-neutral-400 font-mono"><strong>Total a Cobrar:</strong> $${parseFloat(orden.monto_total || orden.total || 0).toFixed(2)}</p>
-                                <p class="text-xs text-neutral-400 font-mono"><strong>Costo Delivery:</strong> $${parseFloat(orden.costo_delivery || 0).toFixed(2)}</p>
-                            </div>
-                            <div class="flex items-center gap-2 w-full md:w-auto">
-                                <button onclick="abrirRutaGPS('${orden.coordenadas_gps}')" class="flex-1 md:flex-initial bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 font-futurista text-[10px] uppercase font-bold px-4 py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer">
-                                    <i data-lucide="map" class="w-4 h-4 text-amber-400"></i> Ver Ruta GPS
-                                </button>
-                                <button onclick="cambiarEstadoPedido(${orden.id}, 'Aceptado')" class="flex-1 md:flex-initial bg-amber-500 hover:bg-amber-400 text-black font-futurista text-[10px] uppercase font-black px-5 py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-lg">
-                                    <i data-lucide="check-circle" class="w-4 h-4"></i> Aceptar Pedido
-                                </button>
-                            </div>
-                        </div>`;
-                });
-            } else {
-                contenedor.innerHTML = `<div class="text-center py-12 text-neutral-500 font-mono text-xs">No hay pedidos registrados en este momento.</div>`;
-            }
-            lucide.createIcons();
-        }
-
-        async function cambiarEstadoPedido(idOrden, nuevoEstado) {
-            const { error } = await supabaseClient
-                .from('ordenes_vip')
-                .update({ estado: nuevoEstado })
-                .eq('id', idOrden);
-
-            if (!error) {
-                alert(`¡Has aceptado la orden #${idOrden} con éxito! Dirígete al local.`);
-                cargarPedidosEntrantes();
-            } else {
-                alert("Error al actualizar el estado del pedido.");
-            }
-        }
-
-        function abrirRutaGPS(coords) {
-            if (!coords || coords === "null" || coords === "undefined") {
-                alert("Esta orden no contiene coordenadas GPS válidas.");
-                return;
-            }
-            window.open(`https://maps.google.com/?q=${coords}`, '_blank');
+            window.open(urlMapsComercio, '_blank');
         }
 
         window.addEventListener('DOMContentLoaded', () => {
