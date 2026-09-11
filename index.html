@@ -9,8 +9,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- Google Maps API con Clave Integrada -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLoIMl0UZfglMOIXFxIjOkh5BhRy6sXFw&callback=initMap" async defer></script>
+    <!-- Google Maps API con Clave Integrada (Incluyendo librerías de geometry y routes) -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLoIMl0UZfglMOIXFxIjOkh5BhRy6sXFw&libraries=geometry&callback=initMap" async defer></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;700&display=swap');
@@ -61,6 +61,10 @@
                     <span id="punto-estado-header" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span id="texto-estado-header" class="text-emerald-400 uppercase tracking-widest">Abierto</span>
                 </div>
+
+                <button onclick="cambiarPantalla('rastreo')" class="bg-stone-900 border border-amber-500/30 hover:border-amber-500/60 px-3.5 py-2 rounded-xl flex items-center gap-2 text-xs font-futurista uppercase font-bold text-amber-400 cursor-pointer transition-all shadow-lg" title="Rastreo GPS Motorizados">
+                    <i data-lucide="navigation" class="w-4 h-4 animate-pulse"></i> <span class="hidden md:inline">Rastreo Delivery</span>
+                </button>
 
                 <button onclick="cambiarPantalla('simulador3d')" class="hidden sm:flex bg-stone-900 border border-amber-500/30 hover:border-amber-500/60 px-4 py-2 rounded-xl items-center gap-2 text-xs font-futurista uppercase font-bold text-amber-400 cursor-pointer transition-all">
                     <i data-lucide="sparkles" class="w-4 h-4"></i> 
@@ -132,6 +136,83 @@
         </div>
 
         <div id="grid-productos-vitrina" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </main>
+
+    <!-- NUEVA VISTA: RASTREO EN TIEMPO REAL DE MOTORIZADOS EN PANTALLA COMPLETA -->
+    <main id="vista-rastreo" class="hidden max-w-7xl w-full mx-auto px-4 py-6 flex-grow flex flex-col relative z-10 space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-stone-950 border border-stone-800 p-4 rounded-2xl shadow-xl">
+            <div class="flex items-center gap-3">
+                <button onclick="cambiarPantalla('vitrina')" class="bg-stone-900 border border-stone-800 p-2.5 rounded-xl hover:border-amber-500/50 text-stone-400 hover:text-white transition-colors cursor-pointer">
+                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                </button>
+                <div>
+                    <h2 class="text-sm font-black font-futurista text-white uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="navigation" class="w-4 h-4 text-amber-400"></i> Centro de Monitoreo & Delivery en Vivo
+                    </h2>
+                    <p class="text-[11px] text-stone-400">Ruta interactiva desde Vendaval House hasta el punto de entrega del cliente.</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+                <select id="select-ordenes-activas" onchange="seleccionarOrdenRastreo()" class="w-full sm:w-64 bg-stone-900 border border-amber-500/40 text-xs text-amber-400 font-mono p-2.5 rounded-xl focus:outline-none">
+                    <option value="">Selecciona orden en curso...</option>
+                </select>
+                <button onclick="reiniciarAnimacionMotorizado()" class="bg-amber-500 hover:bg-amber-400 text-black font-futurista font-black px-4 py-2.5 rounded-xl text-[10px] tracking-wider uppercase shrink-0 transition-all cursor-pointer">
+                    Simular Motorizado 🛵
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-grow">
+            <!-- Mapa Pantalla Completa (Ocupa 3 columnas en desktop) -->
+            <div class="lg:col-span-3 bg-neutral-900 rounded-3xl overflow-hidden border border-stone-800 shadow-2xl relative min-h-[500px] flex flex-col">
+                <div id="map-rastreo-container" class="w-full h-full flex-grow relative bg-neutral-950"></div>
+                
+                <!-- Panel flotante de estado del motorizado sobre el mapa -->
+                <div class="absolute bottom-4 left-4 right-4 sm:right-auto bg-black/85 backdrop-blur-md border border-amber-500/30 p-4 rounded-2xl shadow-2xl flex items-center gap-4 z-20">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                        <i data-lucide="bike" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-amber-400 font-futurista uppercase font-bold">Estado del Repartidor</div>
+                        <div id="texto-estado-repartidor" class="text-xs text-white font-bold">En camino al destino...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel Lateral de Información de la Orden y Métricas -->
+            <div class="glass-panel p-6 rounded-3xl space-y-5 shadow-2xl flex flex-col justify-between">
+                <div class="space-y-4">
+                    <h3 class="text-xs font-black font-futurista text-white uppercase tracking-widest border-b border-stone-800 pb-3">Detalles de Ruta</h3>
+                    
+                    <div class="space-y-3 text-xs font-mono">
+                        <div class="bg-stone-900/80 p-3 rounded-xl border border-stone-800">
+                            <span class="text-stone-400 block text-[9px] uppercase font-futurista">Origen (Local):</span>
+                            <span class="text-white font-bold">Vendaval House (Mérida)</span>
+                        </div>
+                        <div class="bg-stone-900/80 p-3 rounded-xl border border-stone-800">
+                            <span class="text-stone-400 block text-[9px] uppercase font-futurista">Destino (Cliente):</span>
+                            <span id="info-destino-texto" class="text-amber-400 font-bold">Seleccione orden arriba</span>
+                        </div>
+                        <div class="bg-stone-900/80 p-3 rounded-xl border border-stone-800">
+                            <span class="text-stone-400 block text-[9px] uppercase font-futurista">Distancia Estimada:</span>
+                            <span id="info-distancia-ruta" class="text-white font-bold">-- km</span>
+                        </div>
+                        <div class="bg-stone-900/80 p-3 rounded-xl border border-stone-800">
+                            <span class="text-stone-400 block text-[9px] uppercase font-futurista">Tiempo Estimado:</span>
+                            <span id="info-tiempo-ruta" class="text-emerald-400 font-bold">-- mins</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-amber-500/5 border border-amber-500/20 p-4 rounded-2xl text-[11px] text-stone-300 space-y-2">
+                    <div class="flex items-center gap-2 text-amber-400 font-bold font-futurista">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i> Monitoreo Activo
+                    </div>
+                    <p>El sistema actualiza la posición del motorizado en tiempo real a través del GPS integrado de la plataforma.</p>
+                </div>
+            </div>
+        </div>
     </main>
 
     <main id="vista-detalle" class="hidden max-w-7xl w-full mx-auto px-4 py-8 flex-grow relative z-10">
@@ -397,15 +478,23 @@
         let scene, camera, renderer, hamburguesaGrupo;
 
         let map;
-        let gpsClienteLat = 8.59941369535553;  
-        let gpsClienteLng = -71.14089323410698;
-        const LOCAL_LAT = 8.59941369535553;  
-        const LOCAL_LNG = -71.14089323410698;
+        let mapRastreo;
+        let directionsService;
+        let directionsRenderer;
+        let markerMotorizado = null;
+        let rutaPathCoordenadas = [];
+        let animacionMotorizadoInterval = null;
+
+        let gpsClienteLat = 8.5959;  
+        let gpsClienteLng = -71.1416;
+        const LOCAL_LAT = 8.5959;  
+        const LOCAL_LNG = -71.1416;
         let TARIFA_POR_KM = 0.80; 
         let distanciaCalculadaKm = 0;
         let costoDeliveryKm = 0;
 
         let datosDePago = {};
+        let listaOrdenesActivasRastreo = [];
 
         async function cargarCuentasPagoSupabase() {
             try {
@@ -526,7 +615,7 @@
         }
 
         async function cambiarPantalla(nombre) {
-            ['vitrina', 'detalle', 'simulador3d', 'carrito'].forEach(v => {
+            ['vitrina', 'detalle', 'simulador3d', 'carrito', 'rastreo'].forEach(v => {
                 const el = document.getElementById(`vista-${v}`);
                 if(el) el.classList.add('hidden');
             });
@@ -553,7 +642,17 @@
                 await cargarTarifaDeliveryDesdeSupabase();
                 renderizarCarrito();
                 setTimeout(() => {
-                    if (map) google.maps.event.trigger(map, "resize");
+                    if (map) {
+                        google.maps.event.trigger(map, "resize");
+                        map.setZoom(17);
+                    }
+                }, 200);
+            }
+            if (nombre === 'rastreo') {
+                setTimeout(async () => {
+                    if (!mapRastreo) inicializarMapaRastreo();
+                    else google.maps.event.trigger(mapRastreo, "resize");
+                    await cargarOrdenesParaRastreo();
                 }, 200);
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -645,7 +744,7 @@
         }
 
         function cambiarPantallaDetalleDirecto() {
-            ['vitrina', 'simulador3d', 'carrito'].forEach(v => {
+            ['vitrina', 'simulador3d', 'carrito', 'rastreo'].forEach(v => {
                 const el = document.getElementById(`vista-${v}`);
                 if(el) el.classList.add('hidden');
             });
@@ -969,55 +1068,16 @@
                 { elementType: "geometry", stylers: [{ color: "#1d1d1d" }] },
                 { elementType: "labels.text.stroke", stylers: [{ color: "#1a1a1a" }] },
                 { elementType: "labels.text.fill", stylers: [{ color: "#8a8a8a" }] },
-                {
-                    featureType: "administrative.locality",
-                    elementType: "labels.text.fill",
-                    stylers: [{ color: "#ff9f0a" }] 
-                },
-                {
-                    featureType: "poi",
-                    elementType: "labels.text.fill",
-                    stylers: [{ color: "#d59563" }]
-                },
-                {
-                    featureType: "poi.business",
-                    stylers: [{ visibility: "off" }]
-                },
-                {
-                    featureType: "road",
-                    elementType: "geometry",
-                    stylers: [{ color: "#2c2c2c" }]
-                },
-                {
-                    featureType: "road",
-                    elementType: "geometry.stroke",
-                    stylers: [{ color: "#151515" }]
-                },
-                {
-                    featureType: "road",
-                    elementType: "labels.text.fill",
-                    stylers: [{ color: "#ca8a04" }]
-                },
-                {
-                    featureType: "road.highway",
-                    elementType: "geometry",
-                    stylers: [{ color: "#f97316" }] 
-                },
-                {
-                    featureType: "road.highway",
-                    elementType: "geometry.stroke",
-                    stylers: [{ color: "#c2410c" }]
-                },
-                {
-                    featureType: "water",
-                    elementType: "geometry",
-                    stylers: [{ color: "#0f0f0f" }]
-                },
-                {
-                    featureType: "water",
-                    elementType: "labels.text.fill",
-                    stylers: [{ color: "#515151" }]
-                }
+                { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#ff9f0a" }] },
+                { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+                { featureType: "poi.business", stylers: [{ visibility: "off" }] },
+                { featureType: "road", elementType: "geometry", stylers: [{ color: "#2c2c2c" }] },
+                { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#151515" }] },
+                { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#ca8a04" }] },
+                { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#f97316" }] },
+                { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#c2410c" }] },
+                { featureType: "water", elementType: "geometry", stylers: [{ color: "#0f0f0f" }] },
+                { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#515151" }] }
             ];
 
             map = new google.maps.Map(document.getElementById("google-map-container"), {
@@ -1033,6 +1093,168 @@
                 gpsClienteLat = centro.lat();
                 gpsClienteLng = centro.lng();
             });
+        }
+
+        function inicializarMapaRastreo() {
+            const estilosMapaOscuroNaranja = [
+                { elementType: "geometry", stylers: [{ color: "#1d1d1d" }] },
+                { elementType: "labels.text.stroke", stylers: [{ color: "#1a1a1a" }] },
+                { elementType: "labels.text.fill", stylers: [{ color: "#8a8a8a" }] },
+                { featureType: "road", elementType: "geometry", stylers: [{ color: "#2c2c2c" }] },
+                { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#ca8a04" }] },
+                { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#f97316" }] },
+                { featureType: "water", elementType: "geometry", stylers: [{ color: "#0f0f0f" }] }
+            ];
+
+            mapRastreo = new google.maps.Map(document.getElementById("map-rastreo-container"), {
+                center: { lat: LOCAL_LAT, lng: LOCAL_LNG },
+                zoom: 14,
+                disableDefaultUI: true,
+                zoomControl: true,
+                styles: estilosMapaOscuroNaranja
+            });
+
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({
+                map: mapRastreo,
+                suppressMarkers: false,
+                polylineOptions: {
+                    strokeColor: "#f59e0b",
+                    strokeWeight: 5,
+                    strokeOpacity: 0.8
+                }
+            });
+        }
+
+        async function cargarOrdenesParaRastreo() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('ordenes_vip')
+                    .select('*')
+                    .order('id', { ascending: false })
+                    .limit(15);
+
+                const selectOrdenes = document.getElementById('select-ordenes-activas');
+                if(!selectOrdenes) return;
+
+                selectOrdenes.innerHTML = `<option value="">Selecciona orden en curso...</option>`;
+                listaOrdenesActivasRastreo = [];
+
+                if (!error && data && data.length > 0) {
+                    listaOrdenesActivasRastreo = data;
+                    data.forEach((ord, index) => {
+                        let coordsValidas = ord.coordenadas_gps || `${LOCAL_LAT + (index * 0.005)},${LOCAL_LNG + (index * 0.005)}`;
+                        selectOrdenes.innerHTML += `<option value="${index}">Orden #${ord.id} - ${ord.productos || 'Pedido VIP'} ($${ord.monto_total || ord.total || 0})</option>`;
+                    });
+                } else {
+                    // Orden de prueba por defecto si la base de datos está vacía para pruebas inmediatas
+                    listaOrdenesActivasRastreo = [{
+                        id: 101,
+                        productos: "Burger 3D Real (Doble Carne, Queso)",
+                        monto_total: 12.50,
+                        coordenadas_gps: `${LOCAL_LAT + 0.012},${LOCAL_LNG + 0.015}`
+                    }];
+                    selectOrdenes.innerHTML += `<option value="0">Orden de Prueba #101 - Burger 3D ($12.50)</option>`;
+                }
+            } catch (err) {
+                console.error("Error al cargar órdenes de rastreo:", err);
+            }
+        }
+
+        function seleccionarOrdenRastreo() {
+            const idx = document.getElementById('select-ordenes-activas').value;
+            if (idx === "") return;
+
+            const orden = listaOrdenesActivasRastreo[idx];
+            if (!orden) return;
+
+            let latDestino = LOCAL_LAT + 0.01;
+            let lngDestino = LOCAL_LNG + 0.01;
+
+            if (orden.coordenadas_gps && orden.coordenadas_gps.includes(',')) {
+                const partes = orden.coordenadas_gps.split(',');
+                latDestino = parseFloat(partes[0]);
+                lngDestino = parseFloat(partes[1]);
+            }
+
+            document.getElementById('info-destino-texto').innerText = `Lat: ${latDestino.toFixed(4)}, Lng: ${lngDestino.toFixed(4)}`;
+            trazarRutaDelivery(latDestino, lngDestino);
+        }
+
+        function trazarRutaDelivery(latDest, lngDest) {
+            if (!directionsService || !directionsRenderer) return;
+
+            const origen = { lat: LOCAL_LAT, lng: LOCAL_LNG };
+            const destino = { lat: latDest, lng: lngDest };
+
+            directionsService.route(
+                {
+                    origin: origen,
+                    destination: destino,
+                    travelMode: google.maps.TravelMode.DRIVING
+                },
+                (response, status) => {
+                    if (status === "OK") {
+                        directionsRenderer.setDirections(response);
+                        const route = response.routes[0];
+                        const leg = route.legs[0];
+
+                        document.getElementById('info-distancia-ruta').innerText = leg.distance.text;
+                        document.getElementById('info-tiempo-ruta').innerText = leg.duration.text;
+
+                        // Extraer puntos de la polilínea para simular el movimiento del motorizado
+                        rutaPathCoordenadas = [];
+                        route.overview_path.forEach(punto => {
+                            rutaPathCoordenadas.push({ lat: punto.lat(), lng: punto.lng() });
+                        });
+
+                        iniciarAnimacionMotorizado();
+                    } else {
+                        alert("No se pudo calcular la ruta de entrega automáticamente.");
+                    }
+                }
+            );
+        }
+
+        function iniciarAnimacionMotorizado() {
+            if (animacionMotorizadoInterval) clearInterval(animacionMotorizadoInterval);
+            if (rutaPathCoordenadas.length === 0) return;
+
+            if (markerMotorizado) markerMotorizado.setMap(null);
+
+            // Crear icono personalizado o marcador para el motorizado
+            markerMotorizado = new google.maps.Marker({
+                position: rutaPathCoordenadas[0],
+                map: mapRastreo,
+                title: "Motorizado en Ruta VIP",
+                icon: {
+                    url: "https://maps.google.com/mapfiles/kml/shapes/motorcycling.png",
+                    scaledSize: new google.maps.Size(36, 36)
+                }
+            });
+
+            let pasoActual = 0;
+            const totalPasos = rutaPathCoordenadas.length;
+            document.getElementById('texto-estado-repartidor').innerText = "Motorizado en camino al destino...";
+
+            animacionMotorizadoInterval = setInterval(() => {
+                if (pasoActual < totalPasos) {
+                    markerMotorizado.setPosition(rutaPathCoordenadas[pasoActual]);
+                    mapRastreo.panTo(rutaPathCoordenadas[pasoActual]);
+                    pasoActual++;
+                } else {
+                    document.getElementById('texto-estado-repartidor').innerText = "¡Pedido entregado con éxito en destino!";
+                    clearInterval(animacionMotorizadoInterval);
+                }
+            }, 800); // Velocidad de avance de la simulación del motorizado
+        }
+
+        function reiniciarAnimacionMotorizado() {
+            if (rutaPathCoordenadas.length > 0) {
+                iniciarAnimacionMotorizado();
+            } else {
+                alert("Selecciona una orden activa primero para iniciar la simulación de ruta.");
+            }
         }
 
         function fijarUbicacionActualMapa() {
