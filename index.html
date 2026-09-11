@@ -9,12 +9,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- Google Maps API con carga optimizada para velocidad instantánea -->
+    <!-- Google Maps API con librerías de geometría para rutas y cálculos -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLoIMl0UZfglMOIXFxIjOkh5BhRy6sXFw&libraries=geometry&callback=initMap" async defer></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;700&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: radial-gradient(circle at 50% 0%, #1c1917 0%, #0c0a09 100%); background-color: #000000; overflow-x: hidden; touch-action: manipulation; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: radial-gradient(circle at 50% 0%, #1c1917 0%, #0c0a09 100%); background-color: #000000; overflow-x: hidden; }
         .font-futurista { font-family: 'Orbitron', sans-serif; }
         .glow-gold { box-shadow: 0 0 25px rgba(229, 193, 88, 0.15); }
         .text-gold { color: #e5c158; text-shadow: 0 0 12px rgba(229, 193, 88, 0.2); }
@@ -36,7 +36,6 @@
         .gm-bundled-control { display: none !important; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #e5c158; border-radius: 10px; }
-        button, a, input, select { touch-action: manipulation; cursor: pointer; }
     </style>
 </head>
 <body class="text-stone-200 antialiased min-h-screen flex flex-col justify-between grid-bg relative">
@@ -397,7 +396,7 @@
 
         let scene, camera, renderer, hamburguesaGrupo;
 
-        let map = null;
+        let map;
         let gpsClienteLat = 8.59941369535553;  
         let gpsClienteLng = -71.14089323410698;
         const LOCAL_LAT = 8.59941369535553;  
@@ -410,7 +409,7 @@
 
         async function guardarOrdenEnCentral(nuevaOrden) {
           const SUPABASE_CENTRAL_URL = "https://cmaishgahyzlhszwaozg.supabase.co/rest/v1/ordenes_central";
-          const SUPABASE_CENTRAL_ANON_OR_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxeHRiZGVnY2tlYXVmbmxmcWZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5MjMxMzEsImV4cCI6MjEwMDQ5OTEzMX0.8JVrpQKocnyZa3qLxsX9ZxjygYy4QY3kp_VSvrL1qNQ";
+          const SUPABASE_CENTRAL_ANON_OR_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtYWlzaGdhaHl6bGhzendhb3pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5MjMxMzEsImV4cCI6MjEwMDQ5OTEzMX0.8JVrpQKocnyZa3qLxsX9ZxjygYy4QY3kp_VSvrL1qNQ";
 
           try {
             const response = await fetch(SUPABASE_CENTRAL_URL, {
@@ -584,23 +583,20 @@
                     }
                     await cargarIngredientesDesdeSupabase();
                     actualizarEscena3D();
-                }, 50);
+                }, 150);
             }
             if (nombre === 'carrito') {
                 await cargarTarifaDeliveryDesdeSupabase();
                 renderizarCarrito();
-                // Velocidad de la luz: carga instantánea del mapa al cambiar de pantalla
                 setTimeout(() => {
-                    if (!map) {
-                        initMap();
-                    } else {
+                    if (map) {
                         google.maps.event.trigger(map, "resize");
                         map.setCenter({ lat: gpsClienteLat, lng: gpsClienteLng });
                     }
-                }, 10);
+                }, 150);
             }
-            window.scrollTo({ top: 0, behavior: 'instant' });
-            setTimeout(() => lucide.createIcons(), 10);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => lucide.createIcons(), 50);
         }
 
         async function descargarCatalogoDeSupabase() {
@@ -693,8 +689,8 @@
                 if(el) el.classList.add('hidden');
             });
             document.getElementById('vista-detalle').classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'instant' });
-            setTimeout(() => lucide.createIcons(), 10);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => lucide.createIcons(), 50);
         }
 
         function actualizarVisorFoto(url) {
@@ -766,6 +762,7 @@
             carrito.push({ titulo: tituloFinal, precio: precioFinal, imagen_url: imagenFinal });
             document.getElementById('contador-carrito-badge').innerText = carrito.length;
             
+            alert(`¡"${tituloFinal}" agregado al carrito con éxito!`);
             cambiarPantalla('vitrina');
         }
 
@@ -1001,6 +998,7 @@
             });
             
             document.getElementById('contador-carrito-badge').innerText = carrito.length;
+            alert("¡Hamburguesa 3D agregada con éxito al carrito!");
             capasActuales = [];
             cambiarPantalla('vitrina');
         }
@@ -1023,13 +1021,12 @@
 
         function initMap() {
             const containerMap = document.getElementById("google-map-container");
-            if(containerMap && !map) {
+            if(containerMap) {
                 map = new google.maps.Map(containerMap, {
-                    center: { lat: gpsClienteLat, lng: gpsClienteLng },
-                    zoom: 16,
+                    center: { lat: LOCAL_LAT, lng: LOCAL_LNG },
+                    zoom: 15,
                     disableDefaultUI: true,
                     zoomControl: true,
-                    gestureHandling: 'greedy',
                     styles: estilosMapaOscuroNaranja 
                 });
 
@@ -1063,11 +1060,9 @@
 
         function irAVendavalHouse() {
             if(map) {
-                gpsClienteLat = LOCAL_LAT;
-                gpsClienteLng = LOCAL_LNG;
                 map.setCenter({ lat: LOCAL_LAT, lng: LOCAL_LNG });
                 map.setZoom(17);
-                fijarUbicacionActualMapa();
+                setTimeout(fijarUbicacionActualMapa, 100);
             }
         }
 
@@ -1077,19 +1072,17 @@
                     (position) => {
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
-                        gpsClienteLat = lat;
-                        gpsClienteLng = lng;
                         if(map) {
                             map.setCenter({ lat, lng });
                             map.setZoom(17);
-                            fijarUbicacionActualMapa();
+                            setTimeout(fijarUbicacionActualMapa, 100);
                             document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación GPS actual fijada correctamente`;
                         }
                     },
                     () => {
                         alert("No se pudo obtener tu ubicación GPS. Asegúrate de dar permisos.");
                     },
-                    { enableHighAccuracy: true, timeout: 5000 }
+                    { enableHighAccuracy: true }
                 );
             } else {
                 alert("Tu navegador no soporta geolocalización.");
@@ -1193,9 +1186,6 @@
                 if(displayRef) displayRef.innerText = refGuardado;
                 if(contenedorRef) contenedorRef.classList.remove('hidden');
             }
-
-            // Fijar ubicación por defecto al cargar para evitar retardos
-            fijarUbicacionActualMapa();
 
             await cargarCuentasPagoSupabase();
             await verificarEstadoTienda();
