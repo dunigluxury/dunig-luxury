@@ -423,11 +423,12 @@
               body: JSON.stringify({
                 comercio: nuevaOrden.nombre || "Vitrina Digital",
                 productos: nuevaOrden.detalles || "Pedido desde vitrina",
-                costo_delivery: nuevaOrden.costo_delivery || 0.00,
+                costo_delivery: nuevaOrden.costo_delivery !== undefined ? nuevaOrden.costo_delivery : (window.costoDeliveryKm || costoDeliveryKm || 0.00), // <-- Toma la variable global si no se pasa
                 coordenadas_gps: nuevaOrden.coordenadas || `${gpsClienteLat}, ${gpsClienteLng}`,
                 estado: "Pendiente"
               })
             });
+            // ... resto del código
 
             if (!response.ok) {
               const errorDetalle = await response.text();
