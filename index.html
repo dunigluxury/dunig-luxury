@@ -409,7 +409,7 @@
 
         async function guardarOrdenEnCentral(nuevaOrden) {
           const SUPABASE_CENTRAL_URL = "https://cmaishgahyzlhszwaozg.supabase.co/rest/v1/ordenes_central";
-          const SUPABASE_CENTRAL_ANON_OR_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtYWlzaGdhaHl6bGhzendhb3pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5MjMxMzEsImV4cCI6MjEwMDQ5OTEzMX0.8JVrpQKocnyZa3qLxsX9ZxjygYy4QY3kp_VSvrL1qNQ";
+          const SUPABASE_CENTRAL_ANON_OR_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtYWlzaGdhaHl6bGhzendhb3pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5MjMxMzEsImV4cCI6MjEwMDQ5OTEzMX0.8JVrpQKocnyZa3qLxsX9ZxjygYy4QY3kp_VSvrL1qNQ";
 
           try {
             const response = await fetch(SUPABASE_CENTRAL_URL, {
@@ -561,6 +561,7 @@
             }
         }
 
+        // Función unificada para cambiar de pantallas de forma limpia y eficiente
         async function cambiarPantalla(nombre) {
             ['vitrina', 'detalle', 'simulador3d', 'carrito'].forEach(v => {
                 const el = document.getElementById(`vista-${v}`);
@@ -589,8 +590,11 @@
                 await cargarTarifaDeliveryDesdeSupabase();
                 renderizarCarrito();
                 setTimeout(() => {
-                    if (map) google.maps.event.trigger(map, "resize");
-                }, 200);
+                    if (map) {
+                        google.maps.event.trigger(map, "resize");
+                        map.setCenter({ lat: gpsClienteLat || LOCAL_LAT, lng: gpsClienteLng || LOCAL_LNG });
+                    }
+                }, 300);
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
             setTimeout(() => lucide.createIcons(), 50);
@@ -737,46 +741,6 @@
                     </div>
                 </details>`;
             lucide.createIcons();
-        }
-
-        async function cambiarPantalla(nombre) {
-            ['vitrina', 'detalle', 'simulador3d', 'carrito'].forEach(v => {
-                const el = document.exports ? null : document.getElementById(`vista-${v}`);
-                if(el) el.classList.add('hidden');
-            });
-            const target = document.getElementById(`vista-${nombre}`);
-            if(target) target.classList.remove('hidden');
-
-            if (nombre === 'vitrina') await verificarEstadoTienda();
-            if (nombre === 'simulador3d') {
-                setTimeout(async () => {
-                    if (!scene) inicializarThreeJS();
-                    else {
-                        const container = document.getElementById('webgl-container');
-                        if (renderer && container) {
-                            renderer.setSize(container.clientWidth, container.clientHeight);
-                            camera.aspect = container.clientWidth / container.clientHeight;
-                            camera.updateProjectionMatrix();
-                        }
-                    }
-                    await cargarIngredientesDesdeSupabase();
-                    actualizarEscena3D();
-                }, 150);
-            }
-            if (nombre === 'carrito') {
-                await cargarTarifaDeliveryDesdeSupabase();
-                renderizarCarrito();
-                
-                // Forzar el reajuste del mapa y centrado una vez visible el contenedor
-                setTimeout(() => {
-                    if (map) {
-                        google.maps.event.trigger(map, "resize");
-                        map.setCenter({ lat: gpsClienteLat || LOCAL_LAT, lng: gpsClienteLng || LOCAL_LNG });
-                    }
-                }, 300);
-            }
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            setTimeout(() => lucide.createIcons(), 50);
         }
 
         function agregarDetalleAlCarritoYVolver() {
@@ -1282,10 +1246,8 @@
                 costo_delivery: costoDeliveryKm
             };
 
-            // Guarda la orden en el proyecto actual de Supabase
             await supabaseClient.from('ordenes_vip').insert([datosOrdenPendiente]); 
 
-            // Guarda también la orden en la tabla central (proyecto externo) utilizando la función añadida
             await guardarOrdenEnCentral({
                 nombre: "Cliente VIP (Vitrina)",
                 telefono: "No especificado",
