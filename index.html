@@ -266,6 +266,7 @@
                     <div id="google-map-container" class="relative w-full h-1/2 md:h-2/3 bg-neutral-800 flex items-center justify-center z-10">
                         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); z-index: 1000; pointer-events: none; font-size: 35px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">📍</div>
                         
+                        <!-- Botón GPS Directo Integrado -->
                         <button type="button" onclick="obtenerUbicacionGPSDirecta()" class="absolute top-4 right-4 z-[1000] bg-neutral-800/90 hover:bg-neutral-700 p-3 rounded-full shadow-lg border border-neutral-700 cursor-pointer" title="Obtener mi ubicación GPS directa">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </button>
@@ -1069,11 +1070,11 @@
                         const latCliente = position.coords.latitude;
                         const lngCliente = position.coords.longitude;
                         
-                        // Una vez obtenidas las coordenadas, calculas el delivery automáticamente
+                        // Calcula el delivery y centra el mapa de inmediato automáticamente
                         calcularDeliverySinMapa(latCliente, lngCliente);
                     },
                     (error) => {
-                        alert("No se pudo obtener la ubicación GPS. Verifica los permisos.");
+                        alert("No se pudo obtener la ubicación GPS. Verifica los permisos de tu navegador.");
                     },
                     { enableHighAccuracy: true }
                 );
@@ -1106,10 +1107,6 @@
                 map.setZoom(17);
                 fijarUbicacionActualMapa();
             }
-        }
-
-        function centrarEnMiGPS() {
-            obtenerUbicacionGPSDirecta();
         }
 
         function calcularDistanciaEnKm(lat1, lon1, lat2, lon2) {
