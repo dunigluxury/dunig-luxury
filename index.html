@@ -276,7 +276,7 @@
                         <h3 class="text-neutral-400 text-sm font-medium mb-3">Lugares cercanos o Guardados</h3>
                         
                         <div class="space-y-3">
-                            <div onclick="centrarEnMiGPS()" class="flex items-center space-x-4 p-3 hover:bg-neutral-800 rounded-xl transition cursor-pointer border border-neutral-800">
+                            <div onclick="activarBotonUbicacion(this, 'gps')" class="flex items-center space-x-4 p-3 hover:bg-neutral-800 rounded-xl transition cursor-pointer border border-neutral-800">
                                 <div class="bg-neutral-800 p-3 rounded-full text-emerald-400">📍</div>
                                 <div>
                                     <h4 class="font-semibold text-sm">Enviar tu ubicación actual</h4>
@@ -284,7 +284,7 @@
                                 </div>
                             </div>
 
-                            <div onclick="irAVendavalHouse()" class="flex items-center space-x-4 p-3 hover:bg-neutral-800 rounded-xl transition cursor-pointer border border-neutral-800">
+                            <div onclick="activarBotonUbicacion(this, 'vendaval')" class="flex items-center space-x-4 p-3 hover:bg-neutral-800 rounded-xl transition cursor-pointer border border-neutral-800">
                                 <div class="bg-neutral-800 p-3 rounded-full text-neutral-300">🏢</div>
                                 <div>
                                     <h4 class="font-semibold text-sm">Vendaval House (Local Principal)</h4>
@@ -423,12 +423,11 @@
               body: JSON.stringify({
                 comercio: nuevaOrden.nombre || "Vitrina Digital",
                 productos: nuevaOrden.detalles || "Pedido desde vitrina",
-                costo_delivery: nuevaOrden.costo_delivery !== undefined ? nuevaOrden.costo_delivery : (window.costoDeliveryKm || costoDeliveryKm || 0.00), // <-- Toma la variable global si no se pasa
+                costo_delivery: nuevaOrden.costo_delivery !== undefined ? nuevaOrden.costo_delivery : (window.costoDeliveryKm || costoDeliveryKm || 0.00),
                 coordenadas_gps: nuevaOrden.coordenadas || `${gpsClienteLat}, ${gpsClienteLng}`,
                 estado: "Pendiente"
               })
             });
-            // ... resto del código
 
             if (!response.ok) {
               const errorDetalle = await response.text();
@@ -1036,8 +1035,37 @@
             }
         }
 
+        function activarBotonUbicacion(elemento, tipo) {
+            elemento.classList.remove('border-neutral-800', 'bg-neutral-900', 'hover:bg-neutral-800');
+            elemento.classList.add('bg-amber-500/20', 'border-amber-500', 'text-amber-300', 'shadow-[0_0_15px_rgba(245,158,11,0.3)]');
+            
+            setTimeout(() => {
+                elemento.classList.remove('bg-amber-500/20', 'border-amber-500', 'text-amber-300', 'shadow-[0_0_15px_rgba(245,158,11,0.3)]');
+                elemento.classList.add('border-neutral-800', 'bg-neutral-900', 'hover:bg-neutral-800');
+            }, 800);
+
+            if (tipo === 'gps') {
+                centrarEnMiGPS();
+            } else if (tipo === 'vendaval') {
+                irAVendavalHouse();
+            }
+        }
+
         function fijarUbicacionActualMapa() {
-            // GPS Directo automático al confirmar o interactuar
+            const btn = document.getElementById('btn-usar-ubicacion');
+            if(btn) {
+                btn.classList.remove('bg-amber-500', 'hover:bg-amber-400');
+                btn.classList.add('bg-emerald-500', 'text-black');
+                btn.innerHTML = `<i data-lucide="check-check" class="w-3.5 h-3.5"></i> ¡Ubicación Confirmada! ✓`;
+                setTimeout(() => {
+                    btn.classList.remove('bg-emerald-500');
+                    btn.classList.add('bg-amber-500');
+                    btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i> Confirmar Ubicación 📍`;
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }, 1500);
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
@@ -1050,7 +1078,6 @@
                         procesarCalculoDistanciaYCostos();
                     },
                     () => {
-                        // Respaldo manual si falla el GPS directo del navegador
                         procesarCalculoDistanciaYCostos();
                     },
                     { enableHighAccuracy: true, timeout: 5000 }
@@ -1084,7 +1111,7 @@
                 map.setZoom(17);
                 gpsClienteLat = LOCAL_LAT;
                 gpsClienteLng = LOCAL_LNG;
-                fijarUbicacionActualMapa();
+                procesarCalculoDistanciaYCostos();
             }
         }
 
@@ -1200,7 +1227,6 @@
         async function enviarPedidoWhatsApp() {
             if(carrito.length === 0) { alert("Agrega productos primero."); return; }
             
-            // Forzar captura de GPS directo antes de validar o enviar
             fijarUbicacionActualMapa();
 
             const metodo = document.getElementById('tipoMetodoPago').value;
