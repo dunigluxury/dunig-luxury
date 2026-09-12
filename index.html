@@ -588,9 +588,14 @@
             if (nombre === 'carrito') {
                 await cargarTarifaDeliveryDesdeSupabase();
                 renderizarCarrito();
+                
+                // Forzar el reajuste del mapa y centrado una vez visible el contenedor
                 setTimeout(() => {
-                    if (map) google.maps.event.trigger(map, "resize");
-                }, 200);
+                    if (map) {
+                        google.maps.event.trigger(map, "resize");
+                        map.setCenter({ lat: gpsClienteLat || LOCAL_LAT, lng: gpsClienteLng || LOCAL_LNG });
+                    }
+                }, 300);
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
             setTimeout(() => lucide.createIcons(), 50);
@@ -737,46 +742,6 @@
                     </div>
                 </details>`;
             lucide.createIcons();
-        }
-
-        async function cambiarPantalla(nombre) {
-            ['vitrina', 'detalle', 'simulador3d', 'carrito'].forEach(v => {
-                const el = document.exports ? null : document.getElementById(`vista-${v}`);
-                if(el) el.classList.add('hidden');
-            });
-            const target = document.getElementById(`vista-${nombre}`);
-            if(target) target.classList.remove('hidden');
-
-            if (nombre === 'vitrina') await verificarEstadoTienda();
-            if (nombre === 'simulador3d') {
-                setTimeout(async () => {
-                    if (!scene) inicializarThreeJS();
-                    else {
-                        const container = document.getElementById('webgl-container');
-                        if (renderer && container) {
-                            renderer.setSize(container.clientWidth, container.clientHeight);
-                            camera.aspect = container.clientWidth / container.clientHeight;
-                            camera.updateProjectionMatrix();
-                        }
-                    }
-                    await cargarIngredientesDesdeSupabase();
-                    actualizarEscena3D();
-                }, 150);
-            }
-            if (nombre === 'carrito') {
-                await cargarTarifaDeliveryDesdeSupabase();
-                renderizarCarrito();
-                
-                // Forzar el reajuste del mapa y centrado una vez visible el contenedor
-                setTimeout(() => {
-                    if (map) {
-                        google.maps.event.trigger(map, "resize");
-                        map.setCenter({ lat: gpsClienteLat || LOCAL_LAT, lng: gpsClienteLng || LOCAL_LNG });
-                    }
-                }, 300);
-            }
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            setTimeout(() => lucide.createIcons(), 50);
         }
 
         function agregarDetalleAlCarritoYVolver() {
