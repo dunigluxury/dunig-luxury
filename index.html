@@ -1020,23 +1020,32 @@
         ];
 
         function initMap() {
-            const containerMap = document.getElementById("google-map-container");
-            if(containerMap) {
-                map = new google.maps.Map(containerMap, {
-                    center: { lat: LOCAL_LAT, lng: LOCAL_LNG },
-                    zoom: 15,
-                    disableDefaultUI: true,
-                    zoomControl: true,
-                    styles: estilosMapaOscuroNaranja 
-                });
+    const containerMap = document.getElementById("google-map-container");
+    if(containerMap) {
+        map = new google.maps.Map(containerMap, {
+            center: { lat: LOCAL_LAT, lng: LOCAL_LNG },
+            zoom: 15,
+            disableDefaultUI: true,
+            zoomControl: true,
+            styles: estilosMapaOscuroNaranja 
+        });
 
-                map.addListener("idle", () => {
-                    const centro = map.getCenter();
-                    gpsClienteLat = centro.lat();
-                    gpsClienteLng = centro.lng();
-                });
-            }
-        }
+        map.addListener("idle", () => {
+            const centro = map.getCenter();
+            gpsClienteLat = centro.lat();
+            gpsClienteLng = centro.lng();
+        });
+    }
+}
+
+// Y cada vez que agrupes o cambies el tamaño de tu contenedor de mapa, ejecuta esto:
+function redimensionarMapa() {
+    if (typeof map !== 'undefined' && map !== null) {
+        google.maps.event.trigger(map, 'resize');
+        // Opcional: si quieres que mantenga el centro tras cambiar de tamaño
+        // map.setCenter({ lat: gpsClienteLat, lng: gpsClienteLng });
+    }
+}
 
         function fijarUbicacionActualMapa() {
             if(gpsClienteLat !== null && gpsClienteLng !== null) {
