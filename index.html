@@ -3,18 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vendaval House - Cálculo de Delivery GPS</title>
+    <title>Vendaval House - Ecosistema Studio 3D & VIP</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: radial-gradient(circle at 50% 0%, #1c1917 0%, #0c0a09 100%); color: #e5e5e5; }
+        .font-futurista { font-family: 'Orbitron', sans-serif; }
+        .glass-panel { background: rgba(18, 18, 18, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #e5c158; border-radius: 3px; }
+    </style>
 </head>
-<body class="bg-black text-white flex flex-col items-center justify-center min-h-screen p-4">
+<body class="min-h-screen pb-20">
 
-    <div class="glass-panel p-6 rounded-2xl max-w-md w-full text-center border border-white/10 bg-zinc-900/80 shadow-2xl">
-        <h1 class="text-xl font-bold mb-4">Calculadora de Delivery</h1>
-        <p class="text-sm text-zinc-400 mb-6">Obtén el valor exacto de tu envío usando el GPS de tu dispositivo sin mapas en pantalla.</p>
-        <button onclick="obtenerUbicacionGPSDirecta()" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold py-3 px-4 rounded-xl transition duration-300 flex items-center justify-center gap-2">
-            <i data-lucide="navigation"></i> Calcular Delivery por GPS
-        </button>
+    <div id="app" class="max-w-4xl mx-auto p-4">
+        <header class="flex justify-between items-center py-4 border-b border-white/10 mb-6">
+            <h1 class="font-futurista text-xl font-bold text-amber-400">Vendaval House</h1>
+            <button onclick="cambiarPantalla('carrito')" class="relative bg-zinc-900 border border-white/10 px-4 py-2 rounded-xl flex items-center gap-2 hover:border-amber-500/50 transition">
+                <i data-lucide="shopping-cart" class="w-5 h-5 text-amber-400"></i>
+                <span id="contador-carrito-badge" class="bg-amber-500 text-black text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+            </button>
+        </header>
+
+        <div id="pantalla-carrito" class="glass-panel p-6 rounded-3xl shadow-2xl">
+            <h2 class="font-futurista text-lg font-bold mb-4 text-amber-400">Finalizar Pedido</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs text-zinc-400 mb-1">Nombre y Apellido</label>
+                    <input type="text" id="input-nombre-cliente" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-amber-500 outline-none" placeholder="Tu nombre...">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-zinc-400 mb-1">Teléfono de contacto</label>
+                    <input type="tel" id="input-telefono-cliente" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-amber-500 outline-none" placeholder="Ej: 04121234567">
+                </div>
+
+                <div class="border border-amber-500/30 bg-amber-500/5 p-4 rounded-2xl">
+                    <label class="block text-xs font-bold text-amber-400 mb-2 uppercase tracking-wider">Ubicación y Delivery por GPS</label>
+                    <p class="text-xs text-zinc-400 mb-3">Presiona el botón para calcular automáticamente la distancia y el costo del delivery desde nuestro local.</p>
+                    
+                    <button type="button" onclick="obtenerUbicacionGPSDirecta()" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold py-3 px-4 rounded-xl transition duration-300 flex items-center justify-center gap-2 shadow-lg">
+                        <i data-lucide="navigation" class="w-5 h-5"></i> Obtener mi Ubicación y Calcular Delivery
+                    </button>
+
+                    <div id="resultado-gps-info" class="mt-3 text-xs text-zinc-300 hidden bg-black/40 p-3 rounded-xl border border-white/5">
+                        <p>📍 Estado: <span id="estado-gps-texto" class="text-emerald-400 font-bold">Ubicado con éxito</span></p>
+                        <p>📏 Distancia aproximada: <span id="span-distancia-km" class="text-amber-400 font-bold">0.00</span> km</p>
+                        <p>🛵 Costo de envío: $<span id="span-costo-delivery" class="text-amber-400 font-bold">0.00</span></p>
+                    </div>
+                </div>
+
+                <button onclick="enviarPedidoWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-xl transition">
+                    Enviar Pedido por WhatsApp
+                </button>
+            </div>
+        </div>
     </div>
 
     <div id="modalCargaGPS" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
@@ -26,18 +74,33 @@
     </div>
 
     <script>
-        // ================= CONFIGURACIÓN =================
+        // ================= CONFIGURACIÓN DE SUPABASE Y LOCAL =================
+        const SUPABASE_URL = 'TU_SUPABASE_URL';
+        const SUPABASE_ANON_KEY = 'TU_SUPABASE_ANON_KEY';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         const LOCAL_LAT = 8.59941369535553;  // Coordenada fija de tu local
         const LOCAL_LNG = -71.14089323410698;
         const TARIFA_POR_KM = 0.80;          // Tarifa configurable por kilómetro
-        
+
+        // Variables globales para almacenar la ubicación del cliente
+        let gpsClienteLat = null;
+        let gpsClienteLng = null;
+        let costoDeliveryKm = 0;
+        let distanciaClienteKm = 0;
+        let codigoReferidoCliente = "";
+        let carrito = []; // Ejemplo de carrito
+
         // Puedes cambiar esta URL por el enlace directo de cualquier GIF animado de tu preferencia
         const URL_GIF_CARGANDO = "https://i.giphy.com/media/l3vR4CdLInXOhr3rO/giphy.gif";
-        // =================================================
+        // =====================================================================
 
-        // Función principal para iniciar la captura de ubicación
+        function cambiarPantalla(pantalla) {
+            console.log("Cambiando a pantalla:", pantalla);
+        }
+
+        // Función principal para iniciar la captura de ubicación GPS sin mapa
         function obtenerUbicacionGPSDirecta() {
-            // Mostrar modal con GIF animado
             const modal = document.getElementById('modalCargaGPS');
             const imgGif = document.getElementById('gifAnimadoCarga');
             const textoEstado = document.getElementById('textoEstadoCarga');
@@ -49,17 +112,14 @@
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
-                        const latCliente = position.coords.latitude;
-                        const lngCliente = position.coords.longitude;
+                        gpsClienteLat = position.coords.latitude;
+                        gpsClienteLng = position.coords.longitude;
                         
                         // Ocultar modal al completar con éxito
                         modal.classList.add('hidden');
 
-                        // Una vez obtenidas las coordenadas, calculas el delivery automáticamente
-                        const resultadoDelivery = calcularDeliverySinMapa(latCliente, lngCliente);
-                        
-                        // Ejemplo de uso del resultado obtenido
-                        alert(`¡Ubicación calculada con éxito!\n\nDistancia: ${resultadoDelivery.distancia} km\nCosto Delivery: $${resultadoDelivery.costo}`);
+                        // Calcular costos y distancias automáticamente
+                        calcularDeliverySinMapa(gpsClienteLat, gpsClienteLng);
                     },
                     (error) => {
                         modal.classList.add('hidden');
@@ -83,31 +143,72 @@
             return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
         }
 
-        // Función para procesar costos y generar enlace de texto
+        // Función para procesar costos y actualizar interfaz
         function calcularDeliverySinMapa(latCliente, lngCliente) {
-            // 1. Calcular distancia
-            const distanciaKm = calcularDistanciaEnKm(LOCAL_LAT, LOCAL_LNG, latCliente, lngCliente);
+            distanciaClienteKm = calcularDistanciaEnKm(LOCAL_LAT, LOCAL_LNG, latCliente, lngCliente);
             
-            // 2. Calcular costo basado en kilómetros
-            let costoDelivery = distanciaKm * TARIFA_POR_KM;
+            let costoDelivery = distanciaClienteKm * TARIFA_POR_KM;
             
-            // Aplicar reglas mínimas
-            if (costoDelivery < 1.00 && distanciaKm > 0.1) costoDelivery = 1.00;
-            if (distanciaKm <= 0.1) costoDelivery = 0.00;
+            if (costoDelivery < 1.00 && distanciaClienteKm > 0.1) costoDelivery = 1.00;
+            if (distanciaClienteKm <= 0.1) costoDelivery = 0.00;
 
-            costoDelivery = parseFloat(costoDelivery.toFixed(2));
+            costoDeliveryKm = parseFloat(costoDelivery.toFixed(2));
 
-            console.log(`Distancia: ${distanciaKm.toFixed(2)} km`);
-            console.log(`Costo de Delivery: $${costoDelivery}`);
+            // Mostrar el panel informativo con los resultados
+            document.getElementById('resultado-gps-info').classList.remove('hidden');
+            document.getElementById('span-distancia-km').innerText = distanciaClienteKm.toFixed(2);
+            document.getElementById('span-costo-delivery').innerText = costoDeliveryKm;
+        }
 
-            // 3. Generar el enlace de coordenadas para enviar por WhatsApp o guardar en Base de Datos
-            const linkGoogleMaps = `https://maps.google.com/?q=${latCliente},${lngCliente}`;
+        async function guardarOrdenEnCentral(datos) {
+            console.log("Guardando orden en central...", datos);
+        }
+
+        // Envío de pedido integrando las coordenadas calculadas
+        async function enviarPedidoWhatsApp() {
+            if (!gpsClienteLat || !gpsClienteLng) {
+                alert("Por favor, obtén primero tu ubicación GPS presionando el botón correspondiente.");
+                return;
+            }
+
+            const nombreCliente = document.getElementById('input-nombre-cliente').value.trim();
+            const telefonoCliente = document.getElementById('input-telefono-cliente').value.trim();
+
+            if (!nombreCliente || !telefonoCliente) {
+                alert("Por favor completa tu nombre y teléfono.");
+                return;
+            }
+
+            const wsNum = "584121234567"; // Número de WhatsApp de destino
+            const linkGoogleMaps = `https://maps.google.com/?q=${gpsClienteLat},${gpsClienteLng}`;
             
-            return {
-                distancia: distanciaKm.toFixed(2),
-                costo: costoDelivery,
-                enlaceMaps: linkGoogleMaps
+            let mensaje = `*Nuevo Pedido - Vendaval House*\n`;
+            mensaje += `Nombre: ${nombreCliente}\n`;
+            mensaje += `Teléfono: ${telefonoCliente}\n`;
+            mensaje += `Distancia: ${distanciaClienteKm.toFixed(2)} km\n`;
+            mensaje += `Costo Delivery: $${costoDeliveryKm}\n`;
+            mensaje += `📍 Ubicación GPS: ${linkGoogleMaps}`;
+
+            const datosOrdenPendiente = {
+                nombre_cliente: nombreCliente,
+                telefono: telefonoCliente,
+                coordenadas_gps: `${gpsClienteLat},${gpsClienteLng}`,
+                costo_delivery: costoDeliveryKm
             };
+
+            try {
+                await supabaseClient.from('ordenes_vip').insert([datosOrdenPendiente]); 
+                await guardarOrdenEnCentral({
+                    nombre: nombreCliente,
+                    telefono: telefonoCliente,
+                    detalles: "Pedido desde Ecosistema",
+                    total: costoDeliveryKm
+                });
+            } catch (e) {
+                console.log("Error al sincronizar con Supabase (simulado o sin conexión):", e);
+            }
+
+            window.open(`https://api.whatsapp.com/send?phone=${wsNum}&text=${encodeURIComponent(mensaje)}`, '_blank');
         }
 
         // Inicializar iconos
@@ -117,5 +218,5 @@
             }
         });
     </script>
-</body>
+</body> 
 </html>
