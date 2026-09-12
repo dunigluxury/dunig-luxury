@@ -266,7 +266,7 @@
                     <div id="google-map-container" class="relative w-full h-1/2 md:h-2/3 bg-neutral-800 flex items-center justify-center z-10">
                         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); z-index: 1000; pointer-events: none; font-size: 35px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">📍</div>
                         
-                        <button type="button" onclick="centrarEnMiGPS()" class="absolute top-4 right-4 z-[1000] bg-neutral-800/90 hover:bg-neutral-700 p-3 rounded-full shadow-lg border border-neutral-700 cursor-pointer">
+                        <button type="button" onclick="obtenerUbicacionGPSDirecta()" class="absolute top-4 right-4 z-[1000] bg-neutral-800/90 hover:bg-neutral-700 p-3 rounded-full shadow-lg border border-neutral-700 cursor-pointer" title="Obtener mi ubicación GPS directa">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </button>
                     </div>
@@ -276,11 +276,11 @@
                         <h3 class="text-neutral-400 text-sm font-medium mb-3">Lugares cercanos o Guardados</h3>
                         
                         <div class="space-y-3">
-                            <div onclick="centrarEnMiGPS()" class="flex items-center space-x-4 p-3 hover:bg-neutral-800 rounded-xl transition cursor-pointer border border-neutral-800">
+                            <div onclick="obtenerUbicacionGPSDirecta()" class="flex items-center space-x-4 p-3 hover:bg-neutral-800 rounded-xl transition cursor-pointer border border-neutral-800">
                                 <div class="bg-neutral-800 p-3 rounded-full text-emerald-400">📍</div>
                                 <div>
-                                    <h4 class="font-semibold text-sm">Enviar tu ubicación actual</h4>
-                                    <p class="text-xs text-neutral-400">Centrar mapa en tu posición GPS</p>
+                                    <h4 class="font-semibold text-sm">Enviar tu ubicación actual (GPS Directo)</h4>
+                                    <p class="text-xs text-neutral-400">Calcular delivery automático por GPS</p>
                                 </div>
                             </div>
 
@@ -1038,6 +1038,50 @@
             }
         }
 
+        function calcularDeliverySinMapa(latCliente, lngCliente) {
+            gpsClienteLat = latCliente;
+            gpsClienteLng = lngCliente;
+
+            if (map) {
+                map.setCenter({ lat: latCliente, lng: lngCliente });
+                map.setZoom(17);
+            }
+
+            distanciaCalculadaKm = calcularDistanciaEnKm(LOCAL_LAT, LOCAL_LNG, gpsClienteLat, gpsClienteLng);
+            
+            let costoCalculado = distanciaCalculadaKm * TARIFA_POR_KM;
+            if (costoCalculado < 1.00 && distanciaCalculadaKm > 0.1) costoCalculado = 1.00; 
+            if (distanciaCalculadaKm <= 0.1) costoCalculado = 0.00;
+
+            costoDeliveryKm = parseFloat(costoCalculado.toFixed(2));
+
+            document.getElementById('display-km').innerText = `${distanciaCalculadaKm.toFixed(2)} km`;
+            document.getElementById('display-costo-km').innerText = `$${costoDeliveryKm.toFixed(2)}`;
+            document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación GPS directa fijada: Lat: ${gpsClienteLat.toFixed(5)}, Lng: ${gpsClienteLng.toFixed(5)}`;
+            
+            renderizarCarrito();
+        }
+
+        function obtenerUbicacionGPSDirecta() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const latCliente = position.coords.latitude;
+                        const lngCliente = position.coords.longitude;
+                        
+                        // Una vez obtenidas las coordenadas, calculas el delivery automáticamente
+                        calcularDeliverySinMapa(latCliente, lngCliente);
+                    },
+                    (error) => {
+                        alert("No se pudo obtener la ubicación GPS. Verifica los permisos.");
+                    },
+                    { enableHighAccuracy: true }
+                );
+            } else {
+                alert("Tu navegador no soporta geolocalización.");
+            }
+        }
+
         function fijarUbicacionActualMapa() {
             if(gpsClienteLat !== null && gpsClienteLng !== null) {
                 distanciaCalculadaKm = calcularDistanciaEnKm(LOCAL_LAT, LOCAL_LNG, gpsClienteLat, gpsClienteLng);
@@ -1065,26 +1109,7 @@
         }
 
         function centrarEnMiGPS() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                        if(map) {
-                            map.setCenter({ lat, lng });
-                            map.setZoom(17);
-                            fijarUbicacionActualMapa();
-                            document.getElementById('coordenadas-seleccionadas').innerText = `✓ Ubicación GPS actual fijada correctamente`;
-                        }
-                    },
-                    () => {
-                        alert("No se pudo obtener tu ubicación GPS. Asegúrate de dar permisos.");
-                    },
-                    { enableHighAccuracy: true }
-                );
-            } else {
-                alert("Tu navegador no soporta geolocalización.");
-            }
+            obtenerUbicacionGPSDirecta();
         }
 
         function calcularDistanciaEnKm(lat1, lon1, lat2, lon2) {
@@ -1196,7 +1221,7 @@
             if(carrito.length === 0) { alert("Agrega productos primero."); return; }
             
             if(gpsClienteLat === null || gpsClienteLng === null) {
-                alert("Por favor ubica el pin en el mapa para continuar con la entrega.");
+                alert("Por favor ubica el pin en el mapa o usa la ubicación GPS para continuar con la entrega.");
                 return;
             }
 
