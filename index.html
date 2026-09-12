@@ -589,13 +589,8 @@
                 await cargarTarifaDeliveryDesdeSupabase();
                 renderizarCarrito();
                 setTimeout(() => {
-                    if (map) {
-                        google.maps.event.trigger(map, "resize");
-                        map.setCenter({ lat: gpsClienteLat, lng: gpsClienteLng });
-                    } else {
-                        initMap();
-                    }
-                }, 250);
+                    if (map) google.maps.event.trigger(map, "resize");
+                }, 200);
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
             setTimeout(() => lucide.createIcons(), 50);
@@ -1023,7 +1018,7 @@
 
         function initMap() {
             const containerMap = document.getElementById("google-map-container");
-            if(containerMap && !map) {
+            if(containerMap) {
                 map = new google.maps.Map(containerMap, {
                     center: { lat: LOCAL_LAT, lng: LOCAL_LNG },
                     zoom: 15,
@@ -1034,14 +1029,11 @@
 
                 map.addListener("idle", () => {
                     const centro = map.getCenter();
-                    if(centro) {
-                        gpsClienteLat = centro.lat();
-                        gpsClienteLng = centro.lng();
-                    }
+                    gpsClienteLat = centro.lat();
+                    gpsClienteLng = centro.lng();
                 });
             }
         }
-        window.initMap = initMap;
 
         function fijarUbicacionActualMapa() {
             if(gpsClienteLat !== null && gpsClienteLng !== null) {
@@ -1258,9 +1250,7 @@
                 nombre: "Cliente VIP (Vitrina)",
                 telefono: "No especificado",
                 detalles: carrito.map(i => i.titulo).join(', '),
-                total: totalGeneral,
-                costo_delivery: costoDeliveryKm,
-                coordenadas: `${gpsClienteLat},${gpsClienteLng}`
+                total: totalGeneral
             });
 
             carrito = [];
