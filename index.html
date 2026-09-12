@@ -409,7 +409,7 @@
 
         async function guardarOrdenEnCentral(nuevaOrden) {
           const SUPABASE_CENTRAL_URL = "https://cmaishgahyzlhszwaozg.supabase.co/rest/v1/ordenes_central";
-          const SUPABASE_CENTRAL_ANON_OR_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtYWlzaGdhaHl6bGhzendhb3pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5MjMxMzEsImV4cCI6MjEwMDQ5OTEzMX0.8JVrpQKocnyZa3qLxsX9ZxjygYy4QY3kp_VSvrL1qNQ";
+          const SUPABASE_CENTRAL_ANON_OR_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtYWlzaGdhaHl6bGhzendhb3pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5MjMxMzEsImV4cCI6MjEwMDQ5OTEzMX0.8JVrpQKocnyZa3qLxsX9ZxjygYy4QY3kp_VSvrL1qNQ";
 
           try {
             const response = await fetch(SUPABASE_CENTRAL_URL, {
@@ -589,8 +589,13 @@
                 await cargarTarifaDeliveryDesdeSupabase();
                 renderizarCarrito();
                 setTimeout(() => {
-                    if (map) google.maps.event.trigger(map, "resize");
-                }, 200);
+                    if (map) {
+                        google.maps.event.trigger(map, "resize");
+                        map.setCenter({ lat: gpsClienteLat, lng: gpsClienteLng });
+                    } else {
+                        initMap();
+                    }
+                }, 250);
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
             setTimeout(() => lucide.createIcons(), 50);
@@ -1018,7 +1023,7 @@
 
         function initMap() {
             const containerMap = document.getElementById("google-map-container");
-            if(containerMap) {
+            if(containerMap && !map) {
                 map = new google.maps.Map(containerMap, {
                     center: { lat: LOCAL_LAT, lng: LOCAL_LNG },
                     zoom: 15,
@@ -1029,11 +1034,14 @@
 
                 map.addListener("idle", () => {
                     const centro = map.getCenter();
-                    gpsClienteLat = centro.lat();
-                    gpsClienteLng = centro.lng();
+                    if(centro) {
+                        gpsClienteLat = centro.lat();
+                        gpsClienteLng = centro.lng();
+                    }
                 });
             }
         }
+        window.initMap = initMap;
 
         function fijarUbicacionActualMapa() {
             if(gpsClienteLat !== null && gpsClienteLng !== null) {
@@ -1250,7 +1258,9 @@
                 nombre: "Cliente VIP (Vitrina)",
                 telefono: "No especificado",
                 detalles: carrito.map(i => i.titulo).join(', '),
-                total: totalGeneral
+                total: totalGeneral,
+                costo_delivery: costoDeliveryKm,
+                coordenadas: `${gpsClienteLat},${gpsClienteLng}`
             });
 
             carrito = [];
