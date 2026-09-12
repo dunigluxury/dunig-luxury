@@ -63,7 +63,7 @@
                 </div>
 
                 <button onclick="cambiarPantalla('simulador3d')" class="hidden sm:flex bg-stone-900 border border-amber-500/30 hover:border-amber-500/60 px-4 py-2 rounded-xl items-center gap-2 text-xs font-futurista uppercase font-bold text-amber-400 cursor-pointer transition-all">
-                    <i data-lucide="sparkles" class="w-4 h-4"></i> Crear 3D
+                    <i data-lucide="sparkles" class="w-4 h-4"></i> 
                 </button>
                 <button onclick="cambiarPantalla('carrito')" class="bg-stone-900 border border-amber-500/30 p-2.5 rounded-xl flex items-center gap-2 cursor-pointer hover:border-amber-500/60">
                     <i data-lucide="shopping-cart" class="w-4 h-4 text-amber-400"></i>
@@ -94,7 +94,7 @@
 
         <div class="glass-panel rounded-3xl overflow-hidden border border-amber-500/30 shadow-2xl relative">
             <div class="w-full h-64 md:h-80 relative overflow-hidden bg-black">
-                <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1200" alt="Banner Local" class="w-full h-full object-cover opacity-85 transform hover:scale-105 transition-transform duration-700">
+                <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGJrNnV3cnVzdWF2ZjZwOXI3b2U1cjk5ejM2cTh0YnpvZWlvbXplcyZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/3o7TKMYewttqjcp21y/giphy.gif" alt="Banner Animado" class="w-full h-full object-cover opacity-85 transform hover:scale-105 transition-transform duration-700">
                 <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent flex flex-col justify-end p-6 md:p-8 space-y-2">
                     <span class="text-[10px] text-amber-400 font-futurista font-bold uppercase tracking-widest bg-amber-500/20 px-3 py-1 rounded-full border border-amber-500/30 w-max backdrop-blur-md">TU MEJOR OPCION VIP</span>
                     <h2 class="text-2xl md:text-4xl font-black text-white font-futurista tracking-wider uppercase drop-shadow-lg">
@@ -262,8 +262,8 @@
                 </div>
                 <p class="text-xs text-stone-400">Mueve el mapa para colocar el centro exactamente en el lugar de entrega.</p>
                 
-                <div class="flex flex-col h-[700px] bg-neutral-900 text-white rounded-2xl overflow-hidden border border-neutral-800 shadow-2xl relative">
-    <div id="google-map-container" class="relative w-full h-[550px] md:h-[600px] bg-neutral-800 flex items-center justify-center z-10">
+                <div class="flex flex-col h-[500px] bg-neutral-900 text-white rounded-2xl overflow-hidden border border-neutral-800 shadow-2xl relative">
+                    <div id="google-map-container" class="relative w-full h-1/2 md:h-2/3 bg-neutral-800 flex items-center justify-center z-10">
                         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); z-index: 1000; pointer-events: none; font-size: 35px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">📍</div>
                         
                         <button type="button" onclick="centrarEnMiGPS()" class="absolute top-4 right-4 z-[1000] bg-neutral-800/90 hover:bg-neutral-700 p-3 rounded-full shadow-lg border border-neutral-700 cursor-pointer">
@@ -409,7 +409,7 @@
 
         async function guardarOrdenEnCentral(nuevaOrden) {
           const SUPABASE_CENTRAL_URL = "https://cmaishgahyzlhszwaozg.supabase.co/rest/v1/ordenes_central";
-          const SUPABASE_CENTRAL_ANON_OR_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtYWlzaGdhaHl6bGhzendhb3pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5MjMxMzEsImV4cCI6MjEwMDQ5OTEzMX0.8JVrpQKocnyZa3qLxsX9ZxjygYy4QY3kp_VSvrL1qNQ";
+          const SUPABASE_CENTRAL_ANON_OR_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtYWlzaGdhaHl6bGhzendhb3pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5MjMxMzEsImV4cCI6MjEwMDQ5OTEzMX0.8JVrpQKocnyZa3qLxsX9ZxjygYy4QY3kp_VSvrL1qNQ";
 
           try {
             const response = await fetch(SUPABASE_CENTRAL_URL, {
@@ -589,11 +589,8 @@
                 await cargarTarifaDeliveryDesdeSupabase();
                 renderizarCarrito();
                 setTimeout(() => {
-                    if (map) {
-                        google.maps.event.trigger(map, "resize");
-                        map.setCenter({ lat: gpsClienteLat || LOCAL_LAT, lng: gpsClienteLng || LOCAL_LNG });
-                    }
-                }, 300);
+                    if (map) google.maps.event.trigger(map, "resize");
+                }, 200);
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
             setTimeout(() => lucide.createIcons(), 50);
@@ -740,6 +737,46 @@
                     </div>
                 </details>`;
             lucide.createIcons();
+        }
+
+        async function cambiarPantalla(nombre) {
+            ['vitrina', 'detalle', 'simulador3d', 'carrito'].forEach(v => {
+                const el = document.exports ? null : document.getElementById(`vista-${v}`);
+                if(el) el.classList.add('hidden');
+            });
+            const target = document.getElementById(`vista-${nombre}`);
+            if(target) target.classList.remove('hidden');
+
+            if (nombre === 'vitrina') await verificarEstadoTienda();
+            if (nombre === 'simulador3d') {
+                setTimeout(async () => {
+                    if (!scene) inicializarThreeJS();
+                    else {
+                        const container = document.getElementById('webgl-container');
+                        if (renderer && container) {
+                            renderer.setSize(container.clientWidth, container.clientHeight);
+                            camera.aspect = container.clientWidth / container.clientHeight;
+                            camera.updateProjectionMatrix();
+                        }
+                    }
+                    await cargarIngredientesDesdeSupabase();
+                    actualizarEscena3D();
+                }, 150);
+            }
+            if (nombre === 'carrito') {
+                await cargarTarifaDeliveryDesdeSupabase();
+                renderizarCarrito();
+                
+                // Forzar el reajuste del mapa y centrado una vez visible el contenedor
+                setTimeout(() => {
+                    if (map) {
+                        google.maps.event.trigger(map, "resize");
+                        map.setCenter({ lat: gpsClienteLat || LOCAL_LAT, lng: gpsClienteLng || LOCAL_LNG });
+                    }
+                }, 300);
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => lucide.createIcons(), 50);
         }
 
         function agregarDetalleAlCarritoYVolver() {
@@ -1020,32 +1057,23 @@
         ];
 
         function initMap() {
-    const containerMap = document.getElementById("google-map-container");
-    if(containerMap) {
-        map = new google.maps.Map(containerMap, {
-            center: { lat: LOCAL_LAT, lng: LOCAL_LNG },
-            zoom: 15,
-            disableDefaultUI: true,
-            zoomControl: true,
-            styles: estilosMapaOscuroNaranja 
-        });
+            const containerMap = document.getElementById("google-map-container");
+            if(containerMap) {
+                map = new google.maps.Map(containerMap, {
+                    center: { lat: LOCAL_LAT, lng: LOCAL_LNG },
+                    zoom: 15,
+                    disableDefaultUI: true,
+                    zoomControl: true,
+                    styles: estilosMapaOscuroNaranja 
+                });
 
-        map.addListener("idle", () => {
-            const centro = map.getCenter();
-            gpsClienteLat = centro.lat();
-            gpsClienteLng = centro.lng();
-        });
-    }
-}
-
-// Y cada vez que agrupes o cambies el tamaño de tu contenedor de mapa, ejecuta esto:
-function redimensionarMapa() {
-    if (typeof map !== 'undefined' && map !== null) {
-        google.maps.event.trigger(map, 'resize');
-        // Opcional: si quieres que mantenga el centro tras cambiar de tamaño
-        // map.setCenter({ lat: gpsClienteLat, lng: gpsClienteLng });
-    }
-}
+                map.addListener("idle", () => {
+                    const centro = map.getCenter();
+                    gpsClienteLat = centro.lat();
+                    gpsClienteLng = centro.lng();
+                });
+            }
+        }
 
         function fijarUbicacionActualMapa() {
             if(gpsClienteLat !== null && gpsClienteLng !== null) {
@@ -1254,15 +1282,15 @@ function redimensionarMapa() {
                 costo_delivery: costoDeliveryKm
             };
 
+            // Guarda la orden en el proyecto actual de Supabase
             await supabaseClient.from('ordenes_vip').insert([datosOrdenPendiente]); 
 
+            // Guarda también la orden en la tabla central (proyecto externo) utilizando la función añadida
             await guardarOrdenEnCentral({
                 nombre: "Cliente VIP (Vitrina)",
                 telefono: "No especificado",
                 detalles: carrito.map(i => i.titulo).join(', '),
-                total: totalGeneral,
-                costo_delivery: costoDeliveryKm,
-                coordenadas: `${gpsClienteLat}, ${gpsClienteLng}`
+                total: totalGeneral
             });
 
             carrito = [];
