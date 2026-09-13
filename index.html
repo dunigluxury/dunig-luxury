@@ -1277,7 +1277,7 @@
             await supabaseClient.from('ordenes_vip').insert([datosOrdenPendiente]); 
 
             await guardarOrdenEnCentral({
-                nombre: "Cliente VIP (Vitrina)",
+                nombre: "VENDAVAL HOUSE",
                 telefono: "No especificado",
                 detalles: carrito.map(i => i.titulo).join(', '),
                 total: totalGeneral
