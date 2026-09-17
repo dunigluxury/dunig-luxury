@@ -910,7 +910,7 @@
                     tbody.innerHTML += `<tr class="border-b border-stone-900/40 hover:bg-stone-900/10 transition-colors">
                         <td class="p-3 font-mono text-amber-400 font-bold">#${o.id}</td>
                         <td class="p-3 text-stone-400">${fechaFormateada}</td>
-                        <td class="p-3 text-white truncate max-w-xs">${o.productos}</td>
+                        <td class="p-3 text-white whitespace-pre-line break-words max-w-md">${o.productos}</td>
                         <td class="p-3 font-mono font-bold text-stone-200">$${parseFloat(o.total || 0).toFixed(2)}</td>
                         <td class="p-3 font-mono text-stone-500">${o.referencia || 'N/A'}</td>
                         <td class="p-3 text-right">
