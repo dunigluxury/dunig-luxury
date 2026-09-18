@@ -1277,7 +1277,7 @@
             await supabaseClient.from('ordenes_vip').insert([datosOrdenPendiente]); 
 
             await guardarOrdenEnCentral({
-                nombre: "VENDAVAL HOUSE",
+                nombre: "8°35'56.9"N 71°08'30.7"W ",
                 telefono: "No especificado",
                 detalles: carrito.map(i => i.titulo).join(', '),
                 total: totalGeneral
